@@ -2,7 +2,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { AppShell, StatusBar } from '@/components/layout/AppShell'
+import { Shell, Topbar } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/Button'
 import { Input, Field, Textarea } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
@@ -109,23 +109,18 @@ export default function NovaDemandaPage() {
   }
 
   return (
-    <AppShell>
-      <StatusBar />
-      <div className="px-5 pt-4 pb-12">
-        <button onClick={() => router.back()} className="back-btn mb-4">←</button>
+    <Shell>
+      <Topbar title="Nova demanda" />
 
-        <h1 className="text-2xl font-black mb-1">Nova demanda</h1>
-        <p className="text-sm text-white/65 mb-5">Etapa {etapa} de 3</p>
+      <main className="p-6 max-w-2xl space-y-5">
+        <p className="text-sm text-ink-muted -mt-2">Etapa {etapa} de 3</p>
 
         {/* Stepper */}
-        <div className="flex gap-1.5 mb-6">
+        <div className="flex gap-1.5">
           {[1, 2, 3].map(n => (
             <div
               key={n}
-              className="flex-1 h-1 rounded-full transition-colors"
-              style={{
-                background: n <= etapa ? 'linear-gradient(90deg, #E8671A, #FF7A2E)' : 'rgba(255,255,255,0.1)',
-              }}
+              className={`flex-1 h-1 rounded-full transition-colors ${n <= etapa ? 'bg-orange' : 'bg-surface-border'}`}
             />
           ))}
         </div>
@@ -133,12 +128,12 @@ export default function NovaDemandaPage() {
         {/* ───────── ETAPA 1 · Escolher serviço ───────── */}
         {etapa === 1 && (
           <>
-            <div className="glass-card-accent mb-5">
+            <div className="card p-4 border-orange-200 bg-orange-50">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black text-white" style={{ background: 'linear-gradient(135deg, #9B6DFF, #7C3AED)' }}>S</div>
-                <p className="text-sm font-bold">SUE · Pergunte para a IA</p>
+                <div className="w-8 h-8 rounded flex items-center justify-center text-sm font-bold text-white bg-teal">S</div>
+                <p className="text-sm font-semibold text-navy">SUE · Pergunte para a IA</p>
               </div>
-              <p className="text-xs text-white/65 mb-3">
+              <p className="text-xs text-ink-muted mb-3">
                 Descreva o que precisa em linguagem natural. Ex: "trincas no teto" ou "vou comprar um apartamento".
               </p>
               <div className="flex gap-2">
@@ -154,28 +149,28 @@ export default function NovaDemandaPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-[10px] text-white/45 uppercase tracking-wider">ou escolha</span>
-              <div className="flex-1 h-px bg-white/10" />
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-surface-border" />
+              <span className="text-2xs text-ink-muted uppercase tracking-wider">ou escolha</span>
+              <div className="flex-1 h-px bg-surface-border" />
             </div>
 
             <div className="space-y-2">
               {svcs.length === 0 ? (
-                <p className="text-center text-white/50 py-6">Carregando serviços...</p>
+                <p className="text-center text-sm text-ink-muted py-6">Carregando serviços...</p>
               ) : svcs.filter(s => s.codigo !== 'SVC000').map(s => (
                 <button
                   key={s.codigo}
                   onClick={() => { setSvcSelecionado(s); setEtapa(2) }}
-                  className={`glass-card w-full text-left transition-all ${svcSelecionado?.codigo === s.codigo ? 'ring-2 ring-orange' : 'hover:border-orange'}`}
+                  className={`card w-full text-left p-4 transition-colors ${svcSelecionado?.codigo === s.codigo ? 'border-orange ring-1 ring-orange' : 'hover:bg-surface-hover'}`}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <span className="text-[10px] font-mono text-white/50">{s.codigo}</span>
+                    <span className="text-2xs font-mono text-ink-muted">{s.codigo}</span>
                     <Badge variant="orange">a partir de {formatBRL(s.piso || 680)}</Badge>
                   </div>
-                  <p className="text-sm font-bold mb-1">{s.nome}</p>
-                  <p className="text-xs text-white/60 line-clamp-2">{s.descricao || 'Serviço técnico SUEDFLOW'}</p>
-                  <div className="flex gap-3 mt-2 text-[11px] text-white/50">
+                  <p className="text-sm font-semibold text-navy mb-1">{s.nome}</p>
+                  <p className="text-xs text-ink-muted line-clamp-2">{s.descricao || 'Serviço técnico SUEDFLOW'}</p>
+                  <div className="flex gap-3 mt-2 text-2xs text-ink-muted">
                     <span>⏱ {s.sla_dias || 5} dias</span>
                     <span>📐 até 1.000m²</span>
                   </div>
@@ -188,17 +183,17 @@ export default function NovaDemandaPage() {
         {/* ───────── ETAPA 2 · Dados do imóvel ───────── */}
         {etapa === 2 && svcSelecionado && (
           <>
-            <div className="glass-card mb-4 flex justify-between items-center">
+            <div className="card p-4 flex justify-between items-center">
               <div>
-                <p className="text-[10px] text-white/50 font-mono">{svcSelecionado.codigo}</p>
-                <p className="text-sm font-bold">{svcSelecionado.nome}</p>
+                <p className="text-2xs text-ink-muted font-mono">{svcSelecionado.codigo}</p>
+                <p className="text-sm font-semibold text-navy">{svcSelecionado.nome}</p>
               </div>
-              <button onClick={() => setEtapa(1)} className="text-xs text-orange font-semibold">Trocar</button>
+              <button onClick={() => setEtapa(1)} className="text-xs text-orange font-semibold hover:underline">Trocar</button>
             </div>
 
-            <div className="space-y-3 mb-4">
+            <div className="space-y-3">
               <Field label="Tipo de imóvel" required>
-                <select className="input-field" value={imovel.tipo_imovel} onChange={e => setImovel(i => ({ ...i, tipo_imovel: e.target.value as any }))}>
+                <select className="input" value={imovel.tipo_imovel} onChange={e => setImovel(i => ({ ...i, tipo_imovel: e.target.value as any }))}>
                   <option value="RESIDENCIAL">Residencial</option>
                   <option value="COMERCIAL">Comercial</option>
                   <option value="INDUSTRIAL">Industrial</option>
@@ -209,7 +204,7 @@ export default function NovaDemandaPage() {
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Estado" required>
-                  <select className="input-field" value={imovel.estado} onChange={e => setImovel(i => ({ ...i, estado: e.target.value }))}>
+                  <select className="input" value={imovel.estado} onChange={e => setImovel(i => ({ ...i, estado: e.target.value }))}>
                     <option value="PB">Paraíba</option>
                     <option value="PE">Pernambuco</option>
                     <option value="RN">Rio Grande do Norte</option>
@@ -232,10 +227,9 @@ export default function NovaDemandaPage() {
                       key={u}
                       type="button"
                       onClick={() => setImovel(i => ({ ...i, urgencia: u }))}
-                      className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all ${imovel.urgencia === u ? 'text-white' : 'text-white/60'}`}
-                      style={imovel.urgencia === u
-                        ? { background: 'linear-gradient(135deg, #E8671A, #FF7A2E)' }
-                        : { background: 'var(--glass)', border: '1px solid var(--border)' }}
+                      className={`py-2.5 px-2 rounded text-xs font-semibold border transition-colors ${
+                        imovel.urgencia === u ? 'bg-orange text-white border-orange' : 'bg-white text-ink-secondary border-surface-border hover:bg-surface-hover'
+                      }`}
                     >
                       {u === 'NORMAL' ? 'Normal' : u === 'PRIORITARIA' ? '+30%' : '+60%'}
                     </button>
@@ -246,22 +240,22 @@ export default function NovaDemandaPage() {
 
             {/* Motor UTS · preview de preço */}
             {precoCalc && (
-              <div className="glass-card-accent mb-4">
+              <div className="card p-4 border-orange-200 bg-orange-50">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-orange">⚡</span>
-                  <p className="text-[11px] uppercase tracking-wider font-bold text-orange">Motor UTS · Preço estimado</p>
+                  <p className="text-2xs uppercase tracking-wider font-semibold text-orange">Motor UTS · Preço estimado</p>
                 </div>
                 <div className="space-y-1.5 text-sm">
-                  <div className="flex justify-between text-white/70"><span>Serviço</span><span>{formatBRL(precoCalc.preco_servico || 0)}</span></div>
-                  <div className="flex justify-between text-white/70"><span>ART/RRT</span><span>{formatBRL(precoCalc.art_fee || 0)}</span></div>
-                  <div className="flex justify-between text-white/70"><span>Taxa plataforma</span><span>{formatBRL(precoCalc.taxa_plataforma || 0)}</span></div>
-                  <div className="border-t border-white/10 my-2" />
+                  <div className="flex justify-between text-ink-secondary"><span>Serviço</span><span>{formatBRL(precoCalc.preco_servico || 0)}</span></div>
+                  <div className="flex justify-between text-ink-secondary"><span>ART/RRT</span><span>{formatBRL(precoCalc.art_fee || 0)}</span></div>
+                  <div className="flex justify-between text-ink-secondary"><span>Taxa plataforma</span><span>{formatBRL(precoCalc.taxa_plataforma || 0)}</span></div>
+                  <div className="border-t border-surface-border my-2" />
                   <div className="flex justify-between items-center">
-                    <span className="font-bold">Total</span>
-                    <span className="text-2xl font-black text-orange">{formatBRL(precoCalc.preco_cliente || 0)}</span>
+                    <span className="font-semibold text-navy">Total</span>
+                    <span className="text-2xl font-bold text-orange font-mono">{formatBRL(precoCalc.preco_cliente || 0)}</span>
                   </div>
                 </div>
-                <p className="text-[10px] text-white/50 mt-2">
+                <p className="text-2xs text-ink-muted mt-2">
                   Profissional pode ajustar ±15% (autonomia técnica · STF Tema 1291)
                 </p>
               </div>
@@ -283,8 +277,8 @@ export default function NovaDemandaPage() {
         {/* ───────── ETAPA 3 · Confirmação ───────── */}
         {etapa === 3 && svcSelecionado && precoCalc && (
           <>
-            <div className="glass-card mb-3">
-              <p className="text-[11px] uppercase tracking-wider font-bold text-white/65 mb-2">Resumo</p>
+            <div className="card p-4">
+              <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-2">Resumo</p>
               <div className="space-y-1.5 text-sm">
                 <Row label="Serviço" value={`${svcSelecionado.codigo} · ${svcSelecionado.nome}`} />
                 <Row label="Tipo" value={`${imovel.tipo_imovel} · ${imovel.area_m2}m²`} />
@@ -294,24 +288,24 @@ export default function NovaDemandaPage() {
               </div>
             </div>
 
-            <div className="glass-card-accent mb-4 text-center">
-              <p className="text-[11px] uppercase tracking-wider font-bold text-orange mb-1">Total a pagar</p>
-              <p className="text-4xl font-black text-orange mb-1">{formatBRL(precoCalc.preco_cliente)}</p>
-              <p className="text-xs text-white/60">PIX via Pagar.me · Escrow protegido</p>
+            <div className="card p-4 border-orange-200 bg-orange-50 text-center">
+              <p className="text-2xs uppercase tracking-wider font-semibold text-orange mb-1">Total a pagar</p>
+              <p className="text-4xl font-bold text-orange font-mono mb-1">{formatBRL(precoCalc.preco_cliente)}</p>
+              <p className="text-xs text-ink-muted">PIX via Pagar.me · Escrow protegido</p>
             </div>
 
             {/* FSM */}
-            <div className="glass-card mb-4">
-              <p className="text-[11px] uppercase tracking-wider font-bold text-white/65 mb-3">Fluxo</p>
-              <div className="flex gap-1 items-center text-[10px] font-bold uppercase">
+            <div className="card p-4">
+              <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-3">Fluxo</p>
+              <div className="flex gap-1 items-center text-2xs font-semibold uppercase">
                 <FsmStep label="Aguard." current />
-                <span className="text-white/30">→</span>
+                <span className="text-ink-light">→</span>
                 <FsmStep label="Aceita" />
-                <span className="text-white/30">→</span>
+                <span className="text-ink-light">→</span>
                 <FsmStep label="Paga" />
-                <span className="text-white/30">→</span>
+                <span className="text-ink-light">→</span>
                 <FsmStep label="Exec." />
-                <span className="text-white/30">→</span>
+                <span className="text-ink-light">→</span>
                 <FsmStep label="Concl." />
               </div>
             </div>
@@ -324,16 +318,16 @@ export default function NovaDemandaPage() {
             </div>
           </>
         )}
-      </div>
-    </AppShell>
+      </main>
+    </Shell>
   )
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-3">
-      <span className="text-white/60">{label}</span>
-      <span className="font-semibold text-right">{value}</span>
+      <span className="text-ink-muted">{label}</span>
+      <span className="font-semibold text-navy text-right">{value}</span>
     </div>
   )
 }
@@ -341,13 +335,9 @@ function Row({ label, value }: { label: string; value: string }) {
 function FsmStep({ label, current }: { label: string; current?: boolean }) {
   return (
     <div
-      className="flex-1 px-1 py-1.5 rounded-md text-center text-[9px]"
-      style={{
-        background: current ? 'linear-gradient(135deg, #E8671A, #FF7A2E)' : 'var(--glass)',
-        border: '1px solid var(--border)',
-        color: current ? 'white' : 'var(--text2)',
-        animation: current ? 'pulseOrange 2s ease-in-out infinite' : 'none',
-      }}
+      className={`flex-1 px-1 py-1.5 rounded text-center border ${
+        current ? 'bg-orange text-white border-orange animate-pulse' : 'bg-surface text-ink-muted border-surface-border'
+      }`}
     >
       {label}
     </div>

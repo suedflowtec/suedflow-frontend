@@ -1,8 +1,8 @@
 // app/cliente/demandas/[id]/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { AppShell, StatusBar } from '@/components/layout/AppShell'
+import { useParams } from 'next/navigation'
+import { Shell, Topbar } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { orders } from '@/lib/api'
@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/useToast'
 
 export default function DemandaDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const { toast } = useToast()
   const [demanda, setDemanda] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -30,7 +29,6 @@ export default function DemandaDetailPage() {
     try {
       const r = await orders.pagarPix(id)
       if (r.qr_code || r.pix_code) {
-        // Em demo, usuário vê QR · em produção integraria Pagar.me
         toast('PIX gerado · veja o QR', 'success')
       }
     } catch {
@@ -50,10 +48,10 @@ export default function DemandaDetailPage() {
   }
 
   if (loading) return (
-    <AppShell><StatusBar /><div className="p-8 text-center text-white/50">Carregando...</div></AppShell>
+    <Shell><Topbar title="Demanda" /><div className="p-8 text-center text-sm text-ink-muted">Carregando...</div></Shell>
   )
   if (!demanda) return (
-    <AppShell><StatusBar /><div className="p-8 text-center text-white/50">Demanda não encontrada</div></AppShell>
+    <Shell><Topbar title="Demanda" /><div className="p-8 text-center text-sm text-ink-muted">Demanda não encontrada</div></Shell>
   )
 
   const s = statusLabel(demanda.status)
@@ -61,21 +59,21 @@ export default function DemandaDetailPage() {
   const currentIdx = fsmStates.indexOf(demanda.status)
 
   return (
-    <AppShell>
-      <StatusBar />
-      <div className="px-5 pt-4 pb-12">
-        <button onClick={() => router.back()} className="back-btn mb-3">←</button>
+    <Shell>
+      <Topbar
+        title={demanda.numero || demanda.id?.slice(0,8)}
+        actions={<span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span>}
+      />
 
-        <div className="flex justify-between items-start mb-1">
-          <p className="text-[10px] font-mono text-white/50">{demanda.numero || demanda.id?.slice(0,8)}</p>
-          <Badge variant={s.variant as any}>{s.text}</Badge>
+      <main className="p-6 max-w-2xl space-y-4">
+        <div>
+          <h2 className="text-lg font-bold text-navy">{demanda.svc_nome || demanda.svc_codigo}</h2>
+          <p className="text-sm text-ink-muted">{demanda.area_m2}m² · {demanda.cidade}</p>
         </div>
-        <h1 className="text-xl font-black mb-1">{demanda.svc_nome || demanda.svc_codigo}</h1>
-        <p className="text-sm text-white/65 mb-5">{demanda.area_m2}m² · {demanda.cidade}</p>
 
         {/* FSM */}
-        <div className="glass-card mb-4">
-          <p className="text-[11px] uppercase tracking-wider font-bold text-white/65 mb-3">Fluxo da demanda</p>
+        <div className="card p-4">
+          <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-3">Fluxo da demanda</p>
           <div className="space-y-2">
             {[
               { idx: 0, label: 'Aguardando pagamento' },
@@ -91,17 +89,15 @@ export default function DemandaDetailPage() {
               return (
                 <div key={step.idx} className="flex items-center gap-3">
                   <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                    style={{
-                      background: isDone ? 'rgba(0,214,143,0.15)' : isCurrent ? 'linear-gradient(135deg, #E8671A, #FF7A2E)' : 'var(--glass)',
-                      color: isDone ? '#00D68F' : isCurrent ? 'white' : 'var(--text3)',
-                      border: `1px solid ${isDone ? 'rgba(0,214,143,0.3)' : isCurrent ? 'transparent' : 'var(--border)'}`,
-                      animation: isCurrent ? 'pulseOrange 2s ease-in-out infinite' : 'none',
-                    }}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border ${
+                      isDone ? 'bg-green-50 text-green-700 border-green-200'
+                        : isCurrent ? 'bg-orange text-white border-orange animate-pulse'
+                        : 'bg-surface text-ink-light border-surface-border'
+                    }`}
                   >
                     {isDone ? '✓' : step.idx + 1}
                   </div>
-                  <span className={`text-sm ${isCurrent ? 'font-bold' : isDone ? 'text-white/80' : 'text-white/40'}`}>
+                  <span className={`text-sm ${isCurrent ? 'font-semibold text-navy' : isDone ? 'text-ink-secondary' : 'text-ink-light'}`}>
                     {step.label}
                   </span>
                 </div>
@@ -111,26 +107,26 @@ export default function DemandaDetailPage() {
         </div>
 
         {/* Resumo financeiro */}
-        <div className="glass-card mb-4">
-          <p className="text-[11px] uppercase tracking-wider font-bold text-white/65 mb-3">Pagamento</p>
+        <div className="card p-4">
+          <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-3">Pagamento</p>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-white/65">Total</span><span className="font-bold text-orange text-lg">{formatBRL(demanda.preco_cliente || demanda.preco_servico || 0)}</span></div>
-            <div className="flex justify-between"><span className="text-white/65">Status</span><Badge variant={demanda.pago_em ? 'green' : 'gold'}>{demanda.pago_em ? '🔒 Em escrow' : 'Aguardando pagamento'}</Badge></div>
-            {demanda.pago_em && <div className="flex justify-between"><span className="text-white/65">Pago em</span><span>{formatDate(demanda.pago_em)}</span></div>}
+            <div className="flex justify-between"><span className="text-ink-muted">Total</span><span className="font-bold text-orange text-lg font-mono">{formatBRL(demanda.preco_cliente || demanda.preco_servico || 0)}</span></div>
+            <div className="flex justify-between"><span className="text-ink-muted">Status</span><Badge variant={demanda.pago_em ? 'green' : 'gold'}>{demanda.pago_em ? '🔒 Em escrow' : 'Aguardando pagamento'}</Badge></div>
+            {demanda.pago_em && <div className="flex justify-between"><span className="text-ink-muted">Pago em</span><span className="text-navy">{formatDate(demanda.pago_em)}</span></div>}
           </div>
         </div>
 
         {/* Profissional designado */}
         {demanda.profissional && (
-          <div className="glass-card mb-4">
-            <p className="text-[11px] uppercase tracking-wider font-bold text-white/65 mb-3">Profissional</p>
+          <div className="card p-4">
+            <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-3">Profissional</p>
             <div className="flex gap-3 items-center">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg" style={{ background: 'rgba(232,103,26,0.15)', color: '#FF7A2E' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg bg-orange-50 text-orange">
                 {(demanda.profissional?.nome || 'P').charAt(0)}
               </div>
               <div className="flex-1">
-                <p className="font-bold">{demanda.profissional?.nome || 'Profissional'}</p>
-                <p className="text-[11px] text-white/50 font-mono">{demanda.profissional?.conselho || 'CREA'}-{demanda.profissional?.uf_conselho || 'PB'} {demanda.profissional?.numero_conselho?.replace(/(\d{3})\d+/, '$1XXX-X')}</p>
+                <p className="font-semibold text-navy">{demanda.profissional?.nome || 'Profissional'}</p>
+                <p className="text-2xs text-ink-muted font-mono">{demanda.profissional?.conselho || 'CREA'}-{demanda.profissional?.uf_conselho || 'PB'} {demanda.profissional?.numero_conselho?.replace(/(\d{3})\d+/, '$1XXX-X')}</p>
                 <div className="flex gap-1 mt-1">
                   <Badge variant="orange">{demanda.profissional?.nivel || 'PLENO'}</Badge>
                   <Badge variant="green">✓ CREA verificado</Badge>
@@ -153,7 +149,7 @@ export default function DemandaDetailPage() {
             <Button variant="ghost" className="w-full" onClick={() => toast('Em desenvolvimento', 'info')}>💬 Chat com profissional</Button>
           )}
         </div>
-      </div>
-    </AppShell>
+      </main>
+    </Shell>
   )
 }

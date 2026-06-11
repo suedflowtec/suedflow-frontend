@@ -1,15 +1,13 @@
 // app/admin/profissionais/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { AppShell, StatusBar } from '@/components/layout/AppShell'
+import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { admin } from '@/lib/api'
 import { useToast } from '@/hooks/useToast'
 
 export default function AdminProfissionais() {
-  const router = useRouter()
   const { toast } = useToast()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -33,49 +31,68 @@ export default function AdminProfissionais() {
   const lista: any[] = Array.isArray(data) ? data : (data?.profissionais || [])
 
   return (
-    <AppShell>
-      <StatusBar />
-      <div className="px-5 pt-4 pb-12">
-        <button onClick={() => router.back()} className="back-btn mb-3">←</button>
-        <h1 className="text-xl font-extrabold mb-4">Profissionais</h1>
+    <Shell>
+      <Topbar title="Profissionais" />
 
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="glass-card !p-3 text-center"><p className="text-lg font-black">{lista.length}</p><p className="text-[10px] text-white/60">Total</p></div>
-          <div className="glass-card !p-3 text-center"><p className="text-lg font-black text-gold">{lista.filter(p => !p.kyc_aprovado).length}</p><p className="text-[10px] text-white/60">KYC pend.</p></div>
-          <div className="glass-card !p-3 text-center"><p className="text-lg font-black text-green">{lista.filter(p => p.kyc_aprovado).length}</p><p className="text-[10px] text-white/60">Ativos</p></div>
+      <main className="p-6 space-y-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="kpi-card">
+            <p className="kpi-value">{lista.length}</p>
+            <p className="kpi-label">Total</p>
+          </div>
+          <div className="kpi-card">
+            <p className="kpi-value text-orange">{lista.filter(p => !p.kyc_aprovado).length}</p>
+            <p className="kpi-label">KYC pendente</p>
+          </div>
+          <div className="kpi-card">
+            <p className="kpi-value">{lista.filter(p => p.kyc_aprovado).length}</p>
+            <p className="kpi-label">Ativos</p>
+          </div>
         </div>
 
-        {loading ? (
-          <p className="text-center text-white/50 py-8">Carregando...</p>
-        ) : lista.length === 0 ? (
-          <p className="text-center text-white/50 py-8">Nenhum profissional cadastrado</p>
-        ) : (
-          <div className="space-y-2">
-            {lista.map(p => (
-              <div key={p.id} className="glass-card">
-                <div className="flex gap-3 mb-2">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center font-black" style={{ background: 'rgba(232,103,26,0.15)', color: '#FF7A2E' }}>
-                    {(p.nome || 'P').charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold truncate">{p.nome || p.email}</p>
-                    <p className="text-[11px] text-white/50 font-mono">{p.conselho || 'CREA'}-{p.uf_conselho || 'PB'} {p.numero_conselho}</p>
-                    <div className="flex gap-1 mt-1 flex-wrap">
-                      <Badge variant={p.nivel === 'ELITE' ? 'gold' : p.nivel === 'SENIOR' ? 'purple' : 'orange'}>{p.nivel || 'CANDIDATO'}</Badge>
+        <div className="card">
+          {loading ? (
+            <div className="px-4 py-10 text-center text-sm text-ink-muted">Carregando...</div>
+          ) : lista.length === 0 ? (
+            <div className="px-4 py-10 text-center text-sm text-ink-muted">Nenhum profissional cadastrado</div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Profissional</th>
+                  <th>Conselho</th>
+                  <th>Nível</th>
+                  <th>KYC</th>
+                  <th className="text-right">Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lista.map(p => (
+                  <tr key={p.id}>
+                    <td className="font-medium text-navy">{p.nome || p.email}</td>
+                    <td className="mono">{p.conselho || 'CREA'}-{p.uf_conselho || 'PB'} {p.numero_conselho}</td>
+                    <td>
+                      <span className={`badge ${p.nivel === 'ELITE' ? 'badge-gold' : p.nivel === 'SENIOR' ? 'badge-purple' : 'badge-orange'}`}>
+                        {p.nivel || 'CANDIDATO'}
+                      </span>
+                    </td>
+                    <td>
                       <Badge variant={p.kyc_aprovado ? 'green' : 'gold'}>
                         {p.kyc_aprovado ? '✓ KYC' : 'KYC pend.'}
                       </Badge>
-                    </div>
-                  </div>
-                </div>
-                {!p.kyc_aprovado && (
-                  <Button onClick={() => aprovar(p.id)} size="sm" className="w-full mt-2">Aprovar KYC</Button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </AppShell>
+                    </td>
+                    <td className="text-right" onClick={e => e.stopPropagation()}>
+                      {!p.kyc_aprovado && (
+                        <Button onClick={() => aprovar(p.id)} size="sm">Aprovar KYC</Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </main>
+    </Shell>
   )
 }

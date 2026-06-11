@@ -1,13 +1,12 @@
 // app/admin/demandas/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AppShell, StatusBar } from '@/components/layout/AppShell'
+import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { admin } from '@/lib/api'
-import { formatBRL, statusLabel, formatDate } from '@/lib/utils'
+import { formatBRL, statusLabel } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 
 export default function AdminDemandas() {
@@ -31,41 +30,48 @@ export default function AdminDemandas() {
   )
 
   return (
-    <AppShell>
-      <StatusBar />
-      <div className="px-5 pt-4 pb-12">
-        <button onClick={() => router.back()} className="back-btn mb-3">←</button>
-        <h1 className="text-xl font-extrabold mb-3">Todas as demandas</h1>
+    <Shell>
+      <Topbar title="Todas as demandas" />
 
-        <Input placeholder="🔍 Buscar por número ou cliente" value={busca} onChange={e => setBusca(e.target.value)} className="mb-4" />
+      <main className="p-6 space-y-4">
+        <Input placeholder="Buscar por número ou cliente" value={busca} onChange={e => setBusca(e.target.value)} className="max-w-sm" />
 
-        {loading ? (
-          <div className="text-center py-8 text-white/50">Carregando...</div>
-        ) : filtradas.length === 0 ? (
-          <p className="text-center text-white/50 py-8">Nenhuma demanda encontrada</p>
-        ) : (
-          <div className="space-y-2">
-            {filtradas.map(d => {
-              const s = statusLabel(d.status)
-              return (
-                <Link key={d.id} href={`/admin/demandas/${d.id}`} className="glass-card block hover:scale-[1.01] transition-transform">
-                  <div className="flex justify-between items-start mb-1">
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-mono text-white/50">{d.numero || d.id?.slice(0,8)}</p>
-                      <p className="text-sm font-bold truncate">{d.cliente?.nome || '—'}</p>
-                    </div>
-                    <Badge variant={s.variant as any}>{s.text}</Badge>
-                  </div>
-                  <div className="flex justify-between text-xs text-white/60">
-                    <span>{d.svc_codigo} · {d.profissional?.nome || 'Sem prof.'}</span>
-                    <span className="font-bold text-orange">{formatBRL(d.preco_cliente || 0)}</span>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
-      </div>
-    </AppShell>
+        <div className="card">
+          {loading ? (
+            <div className="px-4 py-10 text-center text-sm text-ink-muted">Carregando...</div>
+          ) : filtradas.length === 0 ? (
+            <div className="px-4 py-10 text-center text-sm text-ink-muted">Nenhuma demanda encontrada</div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Cliente</th>
+                  <th>Serviço</th>
+                  <th>Profissional</th>
+                  <th>Status</th>
+                  <th className="text-right">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtradas.map(d => {
+                  const s = statusLabel(d.status)
+                  return (
+                    <tr key={d.id} onClick={() => router.push(`/admin/demandas/${d.id}`)}>
+                      <td className="mono">{d.numero || d.id?.slice(0,8)}</td>
+                      <td className="font-medium text-navy">{d.cliente?.nome || '—'}</td>
+                      <td>{d.svc_codigo}</td>
+                      <td>{d.profissional?.nome || 'Sem prof.'}</td>
+                      <td><span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span></td>
+                      <td className="text-right font-mono font-semibold text-navy">{formatBRL(d.preco_cliente || 0)}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </main>
+    </Shell>
   )
 }

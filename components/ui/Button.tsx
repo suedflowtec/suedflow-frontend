@@ -11,12 +11,19 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
 }
 
+const VARIANT_CLASS: Record<Variant, string> = {
+  orange: 'btn-primary',
+  ghost: 'btn-ghost',
+  navy: 'btn-secondary bg-navy text-white border-navy hover:bg-navy-600',
+  green: 'btn bg-teal text-white hover:bg-teal-600 focus:ring-teal',
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'orange', size = 'md', loading, children, disabled, ...props }, ref) => (
     <button
       ref={ref}
       disabled={disabled || loading}
-      className={cn(`btn-${variant}`, size === 'sm' ? 'btn-sm' : size === 'lg' ? 'btn-lg' : '', className)}
+      className={cn(VARIANT_CLASS[variant], size === 'sm' ? 'btn-sm' : size === 'lg' ? 'btn-lg' : '', className)}
       {...props}
     >
       {loading ? (

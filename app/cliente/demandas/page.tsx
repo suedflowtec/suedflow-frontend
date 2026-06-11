@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AppShell, StatusBar } from '@/components/layout/AppShell'
-import { BottomNav } from '@/components/layout/BottomNav'
-import { Badge } from '@/components/ui/Badge'
+import { Shell, Topbar } from '@/components/layout/Shell'
 import { orders } from '@/lib/api'
 import { formatBRL, statusLabel, formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
@@ -31,61 +29,65 @@ export default function DemandasPage() {
   })
 
   return (
-    <AppShell withBottomNav>
-      <StatusBar />
-      <div className="px-5 pt-4 pb-4">
-        <button onClick={() => router.back()} className="back-btn mb-3">←</button>
-        <h1 className="text-2xl font-extrabold mb-3">Minhas demandas</h1>
+    <Shell>
+      <Topbar title="Minhas demandas" />
 
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+      <main className="p-6 space-y-4">
+        <div className="flex gap-2">
           {(['TODAS', 'ATIVAS', 'CONCLUIDAS'] as const).map(f => (
             <button
               key={f}
               onClick={() => setFiltro(f)}
-              className="px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all"
-              style={filtro === f
-                ? { background: 'linear-gradient(135deg, #E8671A, #FF7A2E)', color: 'white' }
-                : { background: 'var(--glass)', border: '1px solid var(--border)', color: 'var(--text2)' }}
+              className={`px-4 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                filtro === f ? 'bg-orange text-white border-orange' : 'bg-white text-ink-secondary border-surface-border hover:bg-surface-hover'
+              }`}
             >
               {f}
             </button>
           ))}
         </div>
-      </div>
 
-      <div className="px-5 space-y-2">
-        {loading ? (
-          <div className="text-center py-8 text-white/50">Carregando...</div>
-        ) : filtradas.length === 0 ? (
-          <div className="glass-card text-center py-10">
-            <div className="text-4xl mb-2 opacity-50">📋</div>
-            <p className="text-sm font-bold">Nenhuma demanda nesta categoria</p>
-            <Link href="/cliente/nova-demanda" className="btn-orange btn-sm inline-flex mt-4">Criar demanda</Link>
-          </div>
-        ) : (
-          filtradas.map(d => {
-            const s = statusLabel(d.status)
-            return (
-              <Link key={d.id} href={`/cliente/demandas/${d.id}`} className="glass-card block hover:scale-[1.01] transition-transform">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-white/50 font-mono">{d.numero || d.id?.slice(0,8)}</p>
-                    <p className="text-sm font-bold truncate">{d.svc_nome || d.svc_codigo}</p>
-                  </div>
-                  <Badge variant={s.variant as any}>{s.text}</Badge>
-                </div>
-                <div className="flex justify-between text-xs text-white/60">
-                  <span>{d.cidade} · {d.area_m2}m²</span>
-                  <span className="font-bold text-orange">{formatBRL(d.preco_cliente || d.preco_servico || 0)}</span>
-                </div>
-                <p className="text-[10px] text-white/45 mt-1">{formatDate(d.created_at || d.criado_em)}</p>
-              </Link>
-            )
-          })
-        )}
-      </div>
-
-      <BottomNav />
-    </AppShell>
+        <div className="card">
+          {loading ? (
+            <div className="px-4 py-10 text-center text-sm text-ink-muted">Carregando...</div>
+          ) : filtradas.length === 0 ? (
+            <div className="px-4 py-12 text-center">
+              <p className="text-sm text-ink-muted mb-4">Nenhuma demanda nesta categoria</p>
+              <Link href="/cliente/nova-demanda" className="btn btn-primary btn-sm">Criar demanda</Link>
+            </div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Serviço</th>
+                  <th>Status</th>
+                  <th>Cidade</th>
+                  <th>Área</th>
+                  <th>Criada em</th>
+                  <th className="text-right">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtradas.map(d => {
+                  const s = statusLabel(d.status)
+                  return (
+                    <tr key={d.id} onClick={() => router.push(`/cliente/demandas/${d.id}`)}>
+                      <td className="mono">{d.numero || d.id?.slice(0,8)}</td>
+                      <td className="font-medium text-navy">{d.svc_nome || d.svc_codigo}</td>
+                      <td><span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span></td>
+                      <td>{d.cidade}</td>
+                      <td>{d.area_m2}m²</td>
+                      <td>{formatDate(d.created_at || d.criado_em)}</td>
+                      <td className="text-right font-mono font-semibold text-navy">{formatBRL(d.preco_cliente || d.preco_servico || 0)}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </main>
+    </Shell>
   )
 }
