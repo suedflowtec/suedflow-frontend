@@ -50,9 +50,14 @@ export default function ClienteHome() {
       <Topbar
         title={`Olá, ${user.nome.split(' ')[0]}`}
         actions={
-          <Link href="/cliente/nova-demanda" className="btn btn-primary">
-            + Nova demanda
-          </Link>
+          <>
+            <Link href="/cliente/catalogo" className="btn btn-secondary">
+              Ver catálogo
+            </Link>
+            <Link href="/cliente/nova-demanda" className="btn btn-primary">
+              + Nova demanda
+            </Link>
+          </>
         }
       />
 

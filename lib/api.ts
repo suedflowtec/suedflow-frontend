@@ -62,6 +62,18 @@ export const orders = {
     request(`/api/orders/${id}/confirmar-entrega`, { method: 'POST', body: { avaliacao_estrelas: estrelas, avaliacao_comentario: comentario } }),
   cancelar: (id: string, motivo: string) =>
     request(`/api/orders/${id}/cancelar`, { method: 'POST', body: { motivo } }),
+  registrarMarco: (id: string, tipo: string, obs?: string) => {
+    const fd = new FormData()
+    fd.append('tipo', tipo)
+    if (obs) fd.append('obs', obs)
+    return request<any>(`/api/orders/${id}/marco`, { method: 'POST', formData: fd })
+  },
+  submeterEntregavel: (id: string, arquivo: File) => {
+    const fd = new FormData()
+    fd.append('entregavel', arquivo)
+    return request<any>(`/api/orders/${id}/submeter-qa`, { method: 'POST', formData: fd })
+  },
+  avc: (id: string) => request<any>(`/api/orders/${id}/avc`),
 }
 
 export const admin = {
@@ -84,6 +96,10 @@ export const admin = {
     loginAs: (email: string) =>
       request<{ token: string; usuario: any }>('/api/admin/teste/login-as', { method: 'POST', body: { email } }),
   },
+}
+
+export const notificacoes = {
+  listar: () => request<any>('/api/notificacoes'),
 }
 
 export const health = () => request<{ status: string; version: string; ts: string }>('/health', { auth: false })
