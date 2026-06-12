@@ -12,7 +12,7 @@ export default function CadastroClient() {
   const { toast } = useToast()
   const [tipo, setTipo] = useState<'CLIENTE' | 'PROFISSIONAL'>('CLIENTE')
   const [form, setForm] = useState({
-    nome: '', email: '', senha: '', cpf_cnpj: '', telefone: '',
+    nome: '', email: '', senha: '', cpf: '', cnpj: '', telefone: '',
     estado: 'PB', cidade: 'João Pessoa',
   })
   const [showSenha, setShowSenha] = useState(false)
@@ -103,7 +103,7 @@ export default function CadastroClient() {
             </div>
             <div>
               <label className="label">{tipo === 'CLIENTE' ? 'CPF ou CNPJ' : 'CPF'}</label>
-              <input className="input" value={form.cpf_cnpj} onChange={e => update('cpf_cnpj', e.target.value)} placeholder="000.000.000-00" required />
+              <input className="input" value={form.cpf} onChange={e => update('cpf', e.target.value)} placeholder="000.000.000-00" required />
             </div>
             <div>
               <label className="label">E-mail</label>

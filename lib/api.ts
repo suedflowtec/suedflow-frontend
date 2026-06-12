@@ -41,12 +41,12 @@ export const auth = {
 }
 
 export const svc = {
-  listar: () => request<any[]>('/api/svc', { auth: false }),
-  buscar: (codigo: string) => request<any>(`/api/svc/${codigo}`, { auth: false }),
+  listar: () => request<any[]>('/api/servicos', { auth: false }),
+  buscar: (codigo: string) => request<any>(`/api/servicos/${codigo}`, { auth: false }),
 }
 
 export const sue = {
-  buscarSvc: (descricao: string) => request<any>('/api/busca', { method: 'POST', body: { descricao }, auth: false }),
+  buscarSvc: (descricao: string) => request<any>('/api/busca-svc', { method: 'POST', body: { descricao }, auth: false }),
 }
 
 export const orders = {
