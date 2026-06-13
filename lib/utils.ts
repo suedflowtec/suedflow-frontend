@@ -27,6 +27,7 @@ export function statusLabel(status: string): { text: string; variant: string } {
     PARALISADA_CLIENTE:      { text: 'Paralisada', variant: 'glass' },
     QA_REPROVADO:            { text: 'QA reprovado', variant: 'red' },
     DEMANDA_ESPECIAL:        { text: 'Proposta especial', variant: 'purple' },
+    EM_DISPUTA:              { text: 'Em disputa', variant: 'red' },
   }
   return map[status] || { text: status, variant: 'glass' }
 }

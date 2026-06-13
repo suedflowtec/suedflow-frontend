@@ -18,6 +18,24 @@ const NOTAS_INICIAIS = {
   completude: 0,
 }
 
+const FSM_STEPS = [
+  { status: 'AGUARDANDO_PAGAMENTO', label: 'Aguardando pagamento' },
+  { status: 'AGUARDANDO',           label: 'Visível para profissionais' },
+  { status: 'ACEITA',               label: 'Profissional aceitou' },
+  { status: 'EM_EXECUCAO',          label: 'Em execução' },
+  { status: 'AGUARDANDO_QA',        label: 'Em revisão SUE' },
+  { status: 'AGUARDANDO_CONFIRMACAO', label: 'Aguardando sua confirmação' },
+  { status: 'CONCLUIDA',            label: 'Concluída' },
+]
+
+function formatEvento(h: any): string {
+  if (h.evento === 'STATUS_CHANGED' && h.para) {
+    return `Status alterado para "${statusLabel(h.para).text}"`
+  }
+  if (h.evento) return h.evento.replace(/_/g, ' ')
+  return 'Evento registrado'
+}
+
 export default function DemandaDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -94,187 +112,264 @@ export default function DemandaDetailPage() {
   }
 
   if (loading) return (
-    <Shell><Topbar title="Demanda" /><div className="p-8 text-center text-sm text-ink-muted">Carregando...</div></Shell>
+    <Shell><Topbar title="Demanda" /><main className="p-6"><p style={{ color: 'var(--text3)' }}>Carregando...</p></main></Shell>
   )
   if (!demanda) return (
-    <Shell><Topbar title="Demanda" /><div className="p-8 text-center text-sm text-ink-muted">Demanda não encontrada</div></Shell>
+    <Shell><Topbar title="Demanda" /><main className="p-6"><p style={{ color: 'var(--text3)' }}>Demanda não encontrada.</p></main></Shell>
   )
 
   const s = statusLabel(demanda.status)
-  const fsmStates = ['AGUARDANDO_PAGAMENTO', 'AGUARDANDO', 'ACEITA', 'EM_EXECUCAO', 'AGUARDANDO_QA', 'AGUARDANDO_CONFIRMACAO', 'CONCLUIDA']
-  const currentIdx = fsmStates.indexOf(demanda.status)
+  const currentIdx = FSM_STEPS.findIndex(step => step.status === demanda.status)
+  const historico: any[] = demanda.historico || []
+  const marcoArt = (demanda.marcos_execucao || []).find((m: any) => m.tipo === 'ART_ATIVA')
 
   return (
     <Shell>
       <Topbar
-        title={demanda.numero || demanda.id?.slice(0,8)}
-        actions={<span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span>}
+        title={demanda.numero || demanda.id?.slice(0, 8)}
+        subtitle={`${demanda.svc_nome || demanda.svc_codigo} · ${demanda.area_m2}m² · ${demanda.cidade || '—'}`}
+        actions={<Badge variant={s.variant === 'glass' ? 'glass' : s.variant as any}>{s.text}</Badge>}
       />
 
-      <main className="p-6 max-w-2xl space-y-4">
-        <div>
-          <h2 className="text-lg font-bold text-navy">{demanda.svc_nome || demanda.svc_codigo}</h2>
-          <p className="text-sm text-ink-muted">{demanda.area_m2}m² · {demanda.cidade}</p>
-        </div>
+      <main className="p-6 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Coluna principal */}
+          <div className="lg:col-span-2 space-y-4">
 
-        {/* FSM */}
-        <div className="card p-4">
-          <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-3">Fluxo da demanda</p>
-          <div className="space-y-2">
-            {[
-              { idx: 0, label: 'Aguardando pagamento' },
-              { idx: 1, label: 'Visível para profissionais' },
-              { idx: 2, label: 'Profissional aceitou' },
-              { idx: 3, label: 'Em execução' },
-              { idx: 4, label: 'Em revisão SUE' },
-              { idx: 5, label: 'Aguardando sua confirmação' },
-              { idx: 6, label: 'Concluída' },
-            ].map(step => {
-              const isDone = step.idx < currentIdx
-              const isCurrent = step.idx === currentIdx
-              return (
-                <div key={step.idx} className="flex items-center gap-3">
-                  <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border ${
-                      isDone ? 'bg-green-50 text-green-700 border-green-200'
-                        : isCurrent ? 'bg-orange text-white border-orange animate-pulse'
-                        : 'bg-surface text-ink-light border-surface-border'
-                    }`}
+            {/* Progresso da demanda */}
+            <div className="card-solid">
+              <p className="section-label mb-3">Progresso da demanda</p>
+              <div className="flex flex-wrap gap-2">
+                {FSM_STEPS.map((step, idx) => {
+                  const isDone = currentIdx >= 0 && idx < currentIdx
+                  const isCurrent = idx === currentIdx
+                  return (
+                    <div key={step.status} className="flex items-center gap-2">
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                        style={{
+                          background: isDone ? 'var(--green)' : isCurrent ? 'var(--orange)' : 'var(--navy3)',
+                          color: isDone || isCurrent ? '#fff' : 'var(--text3)',
+                        }}
+                      >
+                        {isDone ? '✓' : idx + 1}
+                      </div>
+                      <span className="text-xs" style={{ color: isCurrent ? 'var(--text)' : 'var(--text3)', fontWeight: isCurrent ? 600 : 400 }}>
+                        {step.label}
+                      </span>
+                      {idx < FSM_STEPS.length - 1 && <span style={{ color: 'var(--text3)' }}>›</span>}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Linha do tempo */}
+            <div className="card-solid">
+              <p className="section-label mb-3">Linha do tempo</p>
+              {historico.length === 0 ? (
+                <p className="text-sm" style={{ color: 'var(--text3)' }}>Nenhum evento registrado ainda.</p>
+              ) : (
+                <ul className="space-y-0">
+                  {historico.map((h: any, i: number) => (
+                    <li key={h.id || i} className="flex gap-3">
+                      <div className="flex flex-col items-center">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0 mt-1"
+                          style={{ background: i === historico.length - 1 ? 'var(--orange)' : 'var(--text3)' }}
+                        />
+                        {i < historico.length - 1 && (
+                          <span className="w-px flex-1" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                        )}
+                      </div>
+                      <div className="pb-4">
+                        <p className="text-sm" style={{ color: 'var(--text)' }}>{formatEvento(h)}</p>
+                        <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                          {h.created_at ? new Date(h.created_at).toLocaleString('pt-BR') : ''}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Em disputa */}
+            {demanda.status === 'EM_DISPUTA' && (
+              <div className="card-solid" style={{ borderColor: 'var(--red)' }}>
+                <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>⚠ Demanda em disputa</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--text2)' }}>
+                  Um curador irá analisar o caso e responder em até 5 dias úteis.
+                </p>
+              </div>
+            )}
+
+            {/* Entrega do profissional + avaliação */}
+            {demanda.status === 'AGUARDANDO_CONFIRMACAO' && (
+              <div className="card-solid space-y-3">
+                <p className="section-label">Entrega do profissional</p>
+
+                {demanda.url_entregavel && (
+                  <a
+                    href={demanda.url_entregavel}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary btn-sm inline-block"
                   >
-                    {isDone ? '✓' : step.idx + 1}
+                    📄 Ver entregável (PDF)
+                  </a>
+                )}
+
+                {!avaliando ? (
+                  <Button onClick={() => setAvaliando(true)} variant="green" className="w-full btn-lg">
+                    ✓ Avaliar e confirmar entrega
+                  </Button>
+                ) : (
+                  <div className="space-y-3 pt-2">
+                    <StarRating label="Nota geral" value={notas.nota_geral} onChange={v => setNotas(n => ({ ...n, nota_geral: v }))} />
+                    <StarRating label="Qualidade técnica" value={notas.qualidade_tecnica} onChange={v => setNotas(n => ({ ...n, qualidade_tecnica: v }))} />
+                    <StarRating label="Pontualidade" value={notas.pontualidade} onChange={v => setNotas(n => ({ ...n, pontualidade: v }))} />
+                    <StarRating label="Comunicação" value={notas.comunicacao} onChange={v => setNotas(n => ({ ...n, comunicacao: v }))} />
+                    <StarRating label="Completude" value={notas.completude} onChange={v => setNotas(n => ({ ...n, completude: v }))} />
+                    <textarea
+                      className="input"
+                      rows={3}
+                      placeholder="Comentário (opcional)"
+                      value={comentario}
+                      onChange={e => setComentario(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <Button variant="green" className="flex-1" onClick={confirmarComAvaliacao} loading={enviandoAvaliacao}>
+                        Enviar avaliação e confirmar
+                      </Button>
+                      <Button variant="ghost" onClick={() => setAvaliando(false)}>Cancelar</Button>
+                    </div>
                   </div>
-                  <span className={`text-sm ${isCurrent ? 'font-semibold text-navy' : isDone ? 'text-ink-secondary' : 'text-ink-light'}`}>
-                    {step.label}
+                )}
+              </div>
+            )}
+
+            {/* Ações conforme status */}
+            <div className="flex flex-wrap gap-2">
+              {demanda.status === 'AGUARDANDO_PAGAMENTO' && (
+                <Button onClick={pagar} className="btn-lg">💳 Pagar com PIX</Button>
+              )}
+              {!['CONCLUIDA', 'CANCELADA'].includes(demanda.status) && (
+                <Button variant="ghost" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬 Chat com profissional</Button>
+              )}
+            </div>
+
+            {/* Disputa */}
+            {!['CONCLUIDA', 'CANCELADA', 'EM_DISPUTA', 'AGUARDANDO_PAGAMENTO'].includes(demanda.status) && (
+              <div className="card-solid space-y-2">
+                {!disputaAberta ? (
+                  <Button variant="ghost" onClick={() => setDisputaAberta(true)}>⚠ Abrir disputa</Button>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="section-label">Motivo da disputa</p>
+                    <textarea
+                      className="input"
+                      rows={3}
+                      placeholder="Descreva o problema (mínimo 10 caracteres)"
+                      value={motivoDisputa}
+                      onChange={e => setMotivoDisputa(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <Button variant="orange" className="flex-1" onClick={enviarDisputa} loading={enviandoDisputa}>Enviar disputa</Button>
+                      <Button variant="ghost" onClick={() => setDisputaAberta(false)}>Cancelar</Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Coluna lateral */}
+          <div className="space-y-4">
+
+            {/* Pagamento */}
+            <div className="card-solid">
+              <p className="section-label mb-3">Pagamento</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span style={{ color: 'var(--text3)' }}>Total</span>
+                  <span className="font-bold text-lg font-mono" style={{ color: 'var(--orange)' }}>
+                    {formatBRL(demanda.valor_total || demanda.preco_final || demanda.preco_servico || 0)}
                   </span>
                 </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Resumo financeiro */}
-        <div className="card p-4">
-          <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-3">Pagamento</p>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-ink-muted">Total</span><span className="font-bold text-orange text-lg font-mono">{formatBRL(demanda.preco_cliente || demanda.preco_servico || 0)}</span></div>
-            <div className="flex justify-between"><span className="text-ink-muted">Status</span><Badge variant={demanda.pago_em ? 'green' : 'gold'}>{demanda.pago_em ? '🔒 Em escrow' : 'Aguardando pagamento'}</Badge></div>
-            {demanda.pago_em && <div className="flex justify-between"><span className="text-ink-muted">Pago em</span><span className="text-navy">{formatDate(demanda.pago_em)}</span></div>}
-          </div>
-        </div>
-
-        {/* Profissional designado */}
-        {demanda.profissional && (
-          <div className="card p-4">
-            <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-3">Profissional</p>
-            <div className="flex gap-3 items-center">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg bg-orange-50 text-orange">
-                {(demanda.profissional?.nome || 'P').charAt(0)}
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-navy">{demanda.profissional?.nome || 'Profissional'}</p>
-                <p className="text-2xs text-ink-muted font-mono">{demanda.profissional?.conselho || 'CREA'}-{demanda.profissional?.uf_conselho || 'PB'} {demanda.profissional?.numero_conselho?.replace(/(\d{3})\d+/, '$1XXX-X')}</p>
-                <div className="flex gap-1 mt-1">
-                  <Badge variant="orange">{demanda.profissional?.nivel || 'PLENO'}</Badge>
-                  <Badge variant="green">✓ CREA verificado</Badge>
+                <div className="flex justify-between">
+                  <span style={{ color: 'var(--text3)' }}>Status</span>
+                  <Badge variant={demanda.pago_em ? 'green' : 'gold'}>
+                    {demanda.pago_em ? '🔒 Em escrow' : 'Aguardando pagamento'}
+                  </Badge>
                 </div>
+                {demanda.pago_em && (
+                  <div className="flex justify-between">
+                    <span style={{ color: 'var(--text3)' }}>Pago em</span>
+                    <span style={{ color: 'var(--text)' }}>{formatDate(demanda.pago_em)}</span>
+                  </div>
+                )}
               </div>
-              <Button variant="ghost" size="sm" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬</Button>
             </div>
-          </div>
-        )}
 
-        {/* Em disputa */}
-        {demanda.status === 'EM_DISPUTA' && (
-          <div className="card p-4" style={{ borderColor: 'var(--red)' }}>
-            <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>⚠ Demanda em disputa</p>
-            <p className="text-sm mt-1" style={{ color: 'var(--text2)' }}>
-              Um curador irá analisar o caso e responder em até 5 dias úteis.
-            </p>
-          </div>
-        )}
+            {/* ART/RRT */}
+            <div className="card-solid">
+              <p className="section-label mb-3">ART/RRT</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span style={{ color: 'var(--text3)' }}>Situação</span>
+                  <Badge variant={marcoArt ? 'green' : 'glass'}>
+                    {marcoArt ? '✓ Ativa' : 'Pendente'}
+                  </Badge>
+                </div>
+                {marcoArt && (
+                  <>
+                    <div className="flex justify-between">
+                      <span style={{ color: 'var(--text3)' }}>Número/protocolo</span>
+                      <span className="font-mono" style={{ color: 'var(--text)' }}>{marcoArt.obs || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: 'var(--text3)' }}>Registrada em</span>
+                      <span style={{ color: 'var(--text)' }}>{formatDate(marcoArt.created_at)}</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex justify-between">
+                  <span style={{ color: 'var(--text3)' }}>Taxa ART</span>
+                  <span className="font-mono" style={{ color: 'var(--text)' }}>{formatBRL(demanda.art_fee || 0)}</span>
+                </div>
+              </div>
+            </div>
 
-        {/* Entrega do profissional + avaliação */}
-        {demanda.status === 'AGUARDANDO_CONFIRMACAO' && (
-          <div className="card p-4 space-y-3">
-            <p className="text-2xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text3)' }}>
-              Entrega do profissional
-            </p>
-
-            {demanda.url_entregavel && (
-              <a
-                href={demanda.url_entregavel}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-secondary btn-sm inline-block"
-              >
-                📄 Ver entregável (PDF)
-              </a>
-            )}
-
-            {!avaliando ? (
-              <Button onClick={() => setAvaliando(true)} variant="green" className="w-full btn-lg">
-                ✓ Avaliar e confirmar entrega
-              </Button>
-            ) : (
-              <div className="space-y-3 pt-2">
-                <StarRating label="Nota geral" value={notas.nota_geral} onChange={v => setNotas(n => ({ ...n, nota_geral: v }))} />
-                <StarRating label="Qualidade técnica" value={notas.qualidade_tecnica} onChange={v => setNotas(n => ({ ...n, qualidade_tecnica: v }))} />
-                <StarRating label="Pontualidade" value={notas.pontualidade} onChange={v => setNotas(n => ({ ...n, pontualidade: v }))} />
-                <StarRating label="Comunicação" value={notas.comunicacao} onChange={v => setNotas(n => ({ ...n, comunicacao: v }))} />
-                <StarRating label="Completude" value={notas.completude} onChange={v => setNotas(n => ({ ...n, completude: v }))} />
-                <textarea
-                  className="input"
-                  rows={3}
-                  placeholder="Comentário (opcional)"
-                  value={comentario}
-                  onChange={e => setComentario(e.target.value)}
-                />
-                <div className="flex gap-2">
-                  <Button variant="green" className="flex-1" onClick={confirmarComAvaliacao} loading={enviandoAvaliacao}>
-                    Enviar avaliação e confirmar
-                  </Button>
-                  <Button variant="ghost" onClick={() => setAvaliando(false)}>Cancelar</Button>
+            {/* Profissional designado */}
+            {demanda.profissional && (
+              <div className="card-solid">
+                <p className="section-label mb-3">Profissional</p>
+                <div className="flex gap-3 items-center">
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0"
+                    style={{ background: 'rgba(232,103,26,0.15)', color: 'var(--orange)' }}
+                  >
+                    {(demanda.profissional?.usuario?.nome || demanda.profissional?.nome || 'P').charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold truncate" style={{ color: 'var(--text)' }}>
+                      {demanda.profissional?.usuario?.nome || demanda.profissional?.nome || 'Profissional'}
+                    </p>
+                    <p className="text-2xs font-mono" style={{ color: 'var(--text3)' }}>
+                      {demanda.profissional?.conselho || 'CREA'}-{demanda.profissional?.uf_conselho || 'PB'} {demanda.profissional?.numero_conselho?.replace(/(\d{3})\d+/, '$1XXX-X')}
+                    </p>
+                    <div className="flex gap-1 mt-1">
+                      <Badge variant="orange">{demanda.profissional?.nivel || 'PLENO'}</Badge>
+                      <Badge variant="green">✓ CREA verificado</Badge>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬</Button>
                 </div>
               </div>
             )}
           </div>
-        )}
-
-        {/* Ações conforme status */}
-        <div className="space-y-2">
-          {demanda.status === 'AGUARDANDO_PAGAMENTO' && (
-            <Button onClick={pagar} className="w-full btn-lg">💳 Pagar com PIX</Button>
-          )}
-          {!['CONCLUIDA', 'CANCELADA'].includes(demanda.status) && (
-            <Button variant="ghost" className="w-full" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬 Chat com profissional</Button>
-          )}
         </div>
-
-        {/* Disputa */}
-        {!['CONCLUIDA', 'CANCELADA', 'EM_DISPUTA', 'AGUARDANDO_PAGAMENTO'].includes(demanda.status) && (
-          <div className="card p-4 space-y-2">
-            {!disputaAberta ? (
-              <Button variant="ghost" className="w-full" onClick={() => setDisputaAberta(true)}>⚠ Abrir disputa</Button>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-2xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text3)' }}>
-                  Motivo da disputa
-                </p>
-                <textarea
-                  className="input"
-                  rows={3}
-                  placeholder="Descreva o problema (mínimo 10 caracteres)"
-                  value={motivoDisputa}
-                  onChange={e => setMotivoDisputa(e.target.value)}
-                />
-                <div className="flex gap-2">
-                  <Button variant="orange" className="flex-1" onClick={enviarDisputa} loading={enviandoDisputa}>Enviar disputa</Button>
-                  <Button variant="ghost" onClick={() => setDisputaAberta(false)}>Cancelar</Button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </main>
     </Shell>
   )
