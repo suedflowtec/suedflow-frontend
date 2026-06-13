@@ -134,6 +134,18 @@ export const selo = {
   publico: (imovelId: string) => request<any>(`/api/selo/${imovelId}`, { auth: false }),
 }
 
+export const curador = {
+  fila: () => request<{ casos: any[] }>('/api/curador/fila'),
+  caso: (id: string) => request<{ caso: any; checklist: any[]; analise_sue: any }>(`/api/curador/caso/${id}`),
+  aprovarQa: (id: string, feedback?: string) =>
+    request<{ ok: boolean }>(`/api/curador/qa/${id}/aprovar`, { method: 'POST', body: { feedback } }),
+  reprovarQa: (id: string, feedback: string) =>
+    request<{ ok: boolean }>(`/api/curador/qa/${id}/reprovar`, { method: 'POST', body: { feedback } }),
+  especiais: () => request<{ demandas: any[] }>('/api/curador/especiais'),
+  precificarEspecial: (demandaId: string, dados: { preco: number; sla: number; obs?: string }) =>
+    request<{ ok: boolean }>(`/api/curador/especial/${demandaId}`, { method: 'POST', body: dados }),
+}
+
 export const chat = {
   listar: (demandaId: string) => request<{ mensagens: any[] }>(`/api/chat/${demandaId}`),
   enviar: (demandaId: string, conteudo: string) =>
