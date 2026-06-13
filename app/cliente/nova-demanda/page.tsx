@@ -138,6 +138,7 @@ export default function NovaDemandaPage() {
               </p>
               <div className="flex gap-2">
                 <Input
+                  className="text-navy placeholder:text-navy/50"
                   placeholder="Descreva sua necessidade..."
                   value={descricaoSue}
                   onChange={e => setDescricaoSue(e.target.value)}
