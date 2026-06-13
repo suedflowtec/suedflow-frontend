@@ -102,6 +102,12 @@ export const notificacoes = {
   listar: () => request<any>('/api/notificacoes'),
 }
 
+export const chat = {
+  listar: (demandaId: string) => request<{ mensagens: any[] }>(`/api/chat/${demandaId}`),
+  enviar: (demandaId: string, conteudo: string) =>
+    request<any>(`/api/chat/${demandaId}`, { method: 'POST', body: { conteudo } }),
+}
+
 export const health = () => request<{ status: string; version: string; ts: string }>('/health', { auth: false })
 
 export const tokenStorage = {

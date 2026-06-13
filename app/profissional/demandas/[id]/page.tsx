@@ -135,6 +135,10 @@ export default function ProfissionalDemandaDetalhePage() {
           </div>
         </div>
 
+        <button className="btn btn-secondary" onClick={() => router.push(`/profissional/demandas/${id}/chat`)}>
+          💬 Chat com cliente
+        </button>
+
         {/* Marcos de execução */}
         <div className="card-solid space-y-4">
           <p className="section-label">Marcos de execução</p>

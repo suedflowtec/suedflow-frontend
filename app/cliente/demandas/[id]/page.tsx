@@ -1,7 +1,7 @@
 // app/cliente/demandas/[id]/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/useToast'
 
 export default function DemandaDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const { toast } = useToast()
   const [demanda, setDemanda] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -132,7 +133,7 @@ export default function DemandaDetailPage() {
                   <Badge variant="green">✓ CREA verificado</Badge>
                 </div>
               </div>
-              <Button variant="ghost" size="sm">💬</Button>
+              <Button variant="ghost" size="sm" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬</Button>
             </div>
           </div>
         )}
@@ -146,7 +147,7 @@ export default function DemandaDetailPage() {
             <Button onClick={confirmar} variant="green" className="w-full btn-lg">✓ Confirmar entrega</Button>
           )}
           {!['CONCLUIDA', 'CANCELADA'].includes(demanda.status) && (
-            <Button variant="ghost" className="w-full" onClick={() => toast('Em desenvolvimento', 'info')}>💬 Chat com profissional</Button>
+            <Button variant="ghost" className="w-full" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬 Chat com profissional</Button>
           )}
         </div>
       </main>
