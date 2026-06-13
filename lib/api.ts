@@ -58,8 +58,14 @@ export const orders = {
   aceitar: (id: string, preco_negociado: number) =>
     request(`/api/orders/${id}/aceitar`, { method: 'POST', body: { preco_negociado } }),
   pagarPix: (id: string) => request<any>(`/api/orders/${id}/pagar/pix`, { method: 'POST' }),
-  confirmarEntrega: (id: string, estrelas: number, comentario?: string) =>
-    request(`/api/orders/${id}/confirmar-entrega`, { method: 'POST', body: { avaliacao_estrelas: estrelas, avaliacao_comentario: comentario } }),
+  confirmarEntrega: (id: string) =>
+    request(`/api/orders/${id}/confirmar-entrega`, { method: 'POST' }),
+  avaliar: (id: string, dados: {
+    nota_geral: number; qualidade_tecnica: number; pontualidade: number
+    comunicacao: number; completude: number; comentario?: string
+  }) => request(`/api/orders/${id}/avaliar`, { method: 'POST', body: dados }),
+  abrirDisputa: (id: string, motivo: string) =>
+    request(`/api/orders/${id}/disputa`, { method: 'POST', body: { motivo } }),
   cancelar: (id: string, motivo: string) =>
     request(`/api/orders/${id}/cancelar`, { method: 'POST', body: { motivo } }),
   registrarMarco: (id: string, tipo: string, obs?: string) => {

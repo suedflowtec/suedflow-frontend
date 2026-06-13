@@ -5,9 +5,18 @@ import { useParams, useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { StarRating } from '@/components/ui/StarRating'
 import { orders } from '@/lib/api'
 import { formatBRL, statusLabel, formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
+
+const NOTAS_INICIAIS = {
+  nota_geral: 0,
+  qualidade_tecnica: 0,
+  pontualidade: 0,
+  comunicacao: 0,
+  completude: 0,
+}
 
 export default function DemandaDetailPage() {
   const params = useParams()
@@ -15,6 +24,13 @@ export default function DemandaDetailPage() {
   const { toast } = useToast()
   const [demanda, setDemanda] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [avaliando, setAvaliando] = useState(false)
+  const [notas, setNotas] = useState(NOTAS_INICIAIS)
+  const [comentario, setComentario] = useState('')
+  const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
+  const [disputaAberta, setDisputaAberta] = useState(false)
+  const [motivoDisputa, setMotivoDisputa] = useState('')
+  const [enviandoDisputa, setEnviandoDisputa] = useState(false)
 
   const id = params?.id as string
 
@@ -37,14 +53,43 @@ export default function DemandaDetailPage() {
     }
   }
 
-  const confirmar = async () => {
+  const confirmarComAvaliacao = async () => {
+    if (Object.values(notas).some(n => n === 0)) {
+      toast('Avalie todos os critérios antes de confirmar', 'error')
+      return
+    }
+    setEnviandoAvaliacao(true)
     try {
-      await orders.confirmarEntrega(id, 5, 'Excelente trabalho')
-      toast('Entrega confirmada · obrigado!', 'success')
+      await orders.avaliar(id, { ...notas, comentario: comentario.trim() || undefined })
+      await orders.confirmarEntrega(id)
+      toast('Entrega confirmada · obrigado pela avaliação!', 'success')
       const updated = await orders.buscar(id)
       setDemanda(updated)
+      setAvaliando(false)
     } catch {
-      toast('Erro ao confirmar', 'error')
+      toast('Erro ao confirmar entrega', 'error')
+    } finally {
+      setEnviandoAvaliacao(false)
+    }
+  }
+
+  const enviarDisputa = async () => {
+    if (motivoDisputa.trim().length < 10) {
+      toast('Descreva o motivo com pelo menos 10 caracteres', 'error')
+      return
+    }
+    setEnviandoDisputa(true)
+    try {
+      await orders.abrirDisputa(id, motivoDisputa.trim())
+      toast('Disputa aberta · um curador irá analisar', 'success')
+      const updated = await orders.buscar(id)
+      setDemanda(updated)
+      setDisputaAberta(false)
+      setMotivoDisputa('')
+    } catch (err: any) {
+      toast(err.message || 'Erro ao abrir disputa', 'error')
+    } finally {
+      setEnviandoDisputa(false)
     }
   }
 
@@ -138,18 +183,98 @@ export default function DemandaDetailPage() {
           </div>
         )}
 
+        {/* Em disputa */}
+        {demanda.status === 'EM_DISPUTA' && (
+          <div className="card p-4" style={{ borderColor: 'var(--red)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>⚠ Demanda em disputa</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text2)' }}>
+              Um curador irá analisar o caso e responder em até 5 dias úteis.
+            </p>
+          </div>
+        )}
+
+        {/* Entrega do profissional + avaliação */}
+        {demanda.status === 'AGUARDANDO_CONFIRMACAO' && (
+          <div className="card p-4 space-y-3">
+            <p className="text-2xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text3)' }}>
+              Entrega do profissional
+            </p>
+
+            {demanda.url_entregavel && (
+              <a
+                href={demanda.url_entregavel}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary btn-sm inline-block"
+              >
+                📄 Ver entregável (PDF)
+              </a>
+            )}
+
+            {!avaliando ? (
+              <Button onClick={() => setAvaliando(true)} variant="green" className="w-full btn-lg">
+                ✓ Avaliar e confirmar entrega
+              </Button>
+            ) : (
+              <div className="space-y-3 pt-2">
+                <StarRating label="Nota geral" value={notas.nota_geral} onChange={v => setNotas(n => ({ ...n, nota_geral: v }))} />
+                <StarRating label="Qualidade técnica" value={notas.qualidade_tecnica} onChange={v => setNotas(n => ({ ...n, qualidade_tecnica: v }))} />
+                <StarRating label="Pontualidade" value={notas.pontualidade} onChange={v => setNotas(n => ({ ...n, pontualidade: v }))} />
+                <StarRating label="Comunicação" value={notas.comunicacao} onChange={v => setNotas(n => ({ ...n, comunicacao: v }))} />
+                <StarRating label="Completude" value={notas.completude} onChange={v => setNotas(n => ({ ...n, completude: v }))} />
+                <textarea
+                  className="input"
+                  rows={3}
+                  placeholder="Comentário (opcional)"
+                  value={comentario}
+                  onChange={e => setComentario(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button variant="green" className="flex-1" onClick={confirmarComAvaliacao} loading={enviandoAvaliacao}>
+                    Enviar avaliação e confirmar
+                  </Button>
+                  <Button variant="ghost" onClick={() => setAvaliando(false)}>Cancelar</Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Ações conforme status */}
         <div className="space-y-2">
           {demanda.status === 'AGUARDANDO_PAGAMENTO' && (
             <Button onClick={pagar} className="w-full btn-lg">💳 Pagar com PIX</Button>
           )}
-          {demanda.status === 'AGUARDANDO_CONFIRMACAO' && (
-            <Button onClick={confirmar} variant="green" className="w-full btn-lg">✓ Confirmar entrega</Button>
-          )}
           {!['CONCLUIDA', 'CANCELADA'].includes(demanda.status) && (
             <Button variant="ghost" className="w-full" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬 Chat com profissional</Button>
           )}
         </div>
+
+        {/* Disputa */}
+        {!['CONCLUIDA', 'CANCELADA', 'EM_DISPUTA', 'AGUARDANDO_PAGAMENTO'].includes(demanda.status) && (
+          <div className="card p-4 space-y-2">
+            {!disputaAberta ? (
+              <Button variant="ghost" className="w-full" onClick={() => setDisputaAberta(true)}>⚠ Abrir disputa</Button>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-2xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text3)' }}>
+                  Motivo da disputa
+                </p>
+                <textarea
+                  className="input"
+                  rows={3}
+                  placeholder="Descreva o problema (mínimo 10 caracteres)"
+                  value={motivoDisputa}
+                  onChange={e => setMotivoDisputa(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button variant="orange" className="flex-1" onClick={enviarDisputa} loading={enviandoDisputa}>Enviar disputa</Button>
+                  <Button variant="ghost" onClick={() => setDisputaAberta(false)}>Cancelar</Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </Shell>
   )

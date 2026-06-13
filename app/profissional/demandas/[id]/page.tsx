@@ -35,6 +35,9 @@ export default function ProfissionalDemandaDetalhePage() {
   const [enviando, setEnviando] = useState(false)
   const [avc, setAvc] = useState<any>(null)
   const [carregandoAvc, setCarregandoAvc] = useState(false)
+  const [disputaAberta, setDisputaAberta] = useState(false)
+  const [motivoDisputa, setMotivoDisputa] = useState('')
+  const [enviandoDisputa, setEnviandoDisputa] = useState(false)
 
   const carregar = () => {
     if (!id) return
@@ -89,6 +92,25 @@ export default function ProfissionalDemandaDetalhePage() {
     } finally {
       setEnviando(false)
       if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
+  const enviarDisputa = async () => {
+    if (motivoDisputa.trim().length < 10) {
+      toast('Descreva o motivo com pelo menos 10 caracteres', 'error')
+      return
+    }
+    setEnviandoDisputa(true)
+    try {
+      await orders.abrirDisputa(id, motivoDisputa.trim())
+      toast('Disputa aberta · um curador irá analisar', 'success')
+      setDisputaAberta(false)
+      setMotivoDisputa('')
+      carregar()
+    } catch (err: any) {
+      toast(err.message || 'Erro ao abrir disputa', 'error')
+    } finally {
+      setEnviandoDisputa(false)
     }
   }
 
@@ -227,6 +249,41 @@ export default function ProfissionalDemandaDetalhePage() {
                 <p className="text-sm" style={{ color: 'var(--text3)' }}>{avc.msg || 'A SUE ainda não concluiu a verificação.'}</p>
               )
             )}
+          </div>
+        )}
+
+        {/* Disputa */}
+        {!['CONCLUIDA', 'CANCELADA', 'EM_DISPUTA'].includes(demanda.status) && (
+          <div className="card space-y-2">
+            {!disputaAberta ? (
+              <button className="btn btn-secondary w-full" onClick={() => setDisputaAberta(true)}>⚠ Abrir disputa</button>
+            ) : (
+              <div className="space-y-2">
+                <p className="section-label">Motivo da disputa</p>
+                <textarea
+                  className="input"
+                  rows={3}
+                  placeholder="Descreva o problema (mínimo 10 caracteres)"
+                  value={motivoDisputa}
+                  onChange={e => setMotivoDisputa(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <button className="btn btn-primary flex-1" disabled={enviandoDisputa} onClick={enviarDisputa}>
+                    {enviandoDisputa ? 'Enviando...' : 'Enviar disputa'}
+                  </button>
+                  <button className="btn btn-secondary" onClick={() => setDisputaAberta(false)}>Cancelar</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {demanda.status === 'EM_DISPUTA' && (
+          <div className="card" style={{ borderColor: 'var(--red)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>⚠ Demanda em disputa</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text2)' }}>
+              Um curador irá analisar o caso e responder em até 5 dias úteis.
+            </p>
           </div>
         )}
       </main>
