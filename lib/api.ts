@@ -95,6 +95,12 @@ export const admin = {
     request(`/api/admin/profissionais/${id}/kyc`, { method: 'PATCH', body: { aprovado } }),
   intervirDemanda: (id: string, acao: string, motivo?: string) =>
     request(`/api/admin/demandas/${id}/intervir`, { method: 'PATCH', body: { acao, motivo } }),
+  svcsConfig: () => request<{ svcs: any[] }>('/api/admin/svcs/config'),
+  atualizarSvc: (codigo: string, data: any) =>
+    request<{ ok: boolean; svc: any }>(`/api/admin/svcs/${codigo}`, { method: 'PATCH', body: data }),
+  paramsGlobais: () => request<{ pnr: number; fe: number; params: Record<string, string> }>('/api/admin/params-globais'),
+  atualizarParamsGlobais: (data: { pnr?: number; fe?: number }) =>
+    request<{ ok: boolean }>('/api/admin/params-globais', { method: 'PATCH', body: data }),
   teste: {
     criarProfissionalCompleto: (data: any) =>
       request<any>('/api/admin/teste/criar-profissional-completo', { method: 'POST', body: data }),
