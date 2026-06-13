@@ -38,6 +38,8 @@ export default function ProfissionalDemandaDetalhePage() {
   const [disputaAberta, setDisputaAberta] = useState(false)
   const [motivoDisputa, setMotivoDisputa] = useState('')
   const [enviandoDisputa, setEnviandoDisputa] = useState(false)
+  const [confirmandoCancelamento, setConfirmandoCancelamento] = useState(false)
+  const [cancelando, setCancelando] = useState(false)
 
   const carregar = () => {
     if (!id) return
@@ -114,6 +116,19 @@ export default function ProfissionalDemandaDetalhePage() {
     }
   }
 
+  const cancelarAceite = async () => {
+    setCancelando(true)
+    try {
+      await orders.cancelar(id, 'Cancelamento por conveniência')
+      toast('Aceite cancelado · a demanda voltou para o feed', 'success')
+      router.push('/profissional/feed')
+    } catch (err: any) {
+      toast(err.message || 'Erro ao cancelar aceite', 'error')
+    } finally {
+      setCancelando(false)
+    }
+  }
+
   const verResultadoQa = async () => {
     setCarregandoAvc(true)
     try {
@@ -160,6 +175,35 @@ export default function ProfissionalDemandaDetalhePage() {
         <button className="btn btn-secondary" onClick={() => router.push(`/profissional/demandas/${id}/chat`)}>
           💬 Chat com cliente
         </button>
+
+        {/* Aguardando pagamento do cliente */}
+        {demanda.status === 'ACEITA' && (
+          <div className="card-accent space-y-3">
+            <p className="section-label">Aguardando pagamento do cliente</p>
+            <p className="text-sm" style={{ color: 'var(--text2)' }}>
+              Você aceitou esta demanda{demanda.aceito_em ? ` em ${new Date(demanda.aceito_em).toLocaleString('pt-BR')}` : ''}.
+              O cliente precisa confirmar o pagamento (PIX/Boleto) para liberar a execução.
+              Você será notificado automaticamente quando o pagamento for confirmado.
+            </p>
+            {!confirmandoCancelamento ? (
+              <button className="btn btn-secondary btn-sm" onClick={() => setConfirmandoCancelamento(true)}>
+                Cancelar aceite
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm" style={{ color: 'var(--red)' }}>
+                  ⚠ Cancelar o aceite após confirmar a demanda gera penalidade no seu Score SQP. Tem certeza?
+                </p>
+                <div className="flex gap-2">
+                  <button className="btn btn-primary flex-1" disabled={cancelando} onClick={cancelarAceite}>
+                    {cancelando ? 'Cancelando...' : 'Sim, cancelar aceite'}
+                  </button>
+                  <button className="btn btn-secondary" onClick={() => setConfirmandoCancelamento(false)}>Voltar</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Marcos de execução */}
         <div className="card-solid space-y-4">

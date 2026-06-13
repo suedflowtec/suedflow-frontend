@@ -251,7 +251,7 @@ export default function DemandaDetailPage() {
             </div>
 
             {/* Disputa */}
-            {!['CONCLUIDA', 'CANCELADA', 'EM_DISPUTA', 'AGUARDANDO_PAGAMENTO'].includes(demanda.status) && (
+            {!['CONCLUIDA', 'CANCELADA', 'EM_DISPUTA'].includes(demanda.status) && (
               <div className="card-solid space-y-2">
                 {!disputaAberta ? (
                   <Button variant="ghost" onClick={() => setDisputaAberta(true)}>⚠ Abrir disputa</Button>
