@@ -113,6 +113,21 @@ export const notificacoes = {
   listar: () => request<any>('/api/notificacoes'),
 }
 
+export const imovel = {
+  listar: (params?: { cidade?: string; estado?: string; tipo?: string }) => {
+    const qs = params ? new URLSearchParams(params as Record<string, string>).toString() : ''
+    return request<{ imoveis: any[]; total: number; page: number; pages: number }>(`/api/imovel${qs ? `?${qs}` : ''}`)
+  },
+  buscar: (id: string) => request<any>(`/api/imovel/${id}`),
+  historico: (id: string) => request<{ imovel_id: string; demandas: any[]; achados: any[] }>(`/api/imovel/historico/${id}`),
+}
+
+export const selo = {
+  meu: (imovelId: string) => request<{ selo: any; proximoNivel: any; nivel_config: any }>(`/api/selo/imovel/${imovelId}`),
+  progresso: (imovelId: string) => request<{ progresso: any }>(`/api/selo/${imovelId}/progresso`),
+  publico: (imovelId: string) => request<any>(`/api/selo/${imovelId}`, { auth: false }),
+}
+
 export const chat = {
   listar: (demandaId: string) => request<{ mensagens: any[] }>(`/api/chat/${demandaId}`),
   enviar: (demandaId: string, conteudo: string) =>
