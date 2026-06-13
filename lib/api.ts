@@ -57,7 +57,12 @@ export const orders = {
   feed: () => request<{ demandas: any[] }>('/api/orders/feed'),
   aceitar: (id: string, preco_negociado: number) =>
     request(`/api/orders/${id}/aceitar`, { method: 'POST', body: { preco_negociado } }),
-  pagarPix: (id: string) => request<any>(`/api/orders/${id}/pagar/pix`, { method: 'POST' }),
+  pagarPix: (id: string) => request<{
+    pix_code: string; pix_qr: string | null; valor: number
+    expira_em: string; mock?: boolean; msg?: string
+  }>(`/api/orders/${id}/pagar/pix`, { method: 'POST' }),
+  mockConfirmarPagamento: (id: string) =>
+    request<any>(`/api/orders/${id}/mock-confirmar-pagamento`, { method: 'POST' }),
   confirmarEntrega: (id: string) =>
     request(`/api/orders/${id}/confirmar-entrega`, { method: 'POST' }),
   avaliar: (id: string, dados: {

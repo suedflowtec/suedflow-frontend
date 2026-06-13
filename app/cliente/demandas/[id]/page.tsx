@@ -19,9 +19,9 @@ const NOTAS_INICIAIS = {
 }
 
 const FSM_STEPS = [
-  { status: 'AGUARDANDO_PAGAMENTO', label: 'Aguardando pagamento' },
   { status: 'AGUARDANDO',           label: 'Visível para profissionais' },
-  { status: 'ACEITA',               label: 'Profissional aceitou' },
+  { status: 'ACEITA',               label: 'Aceita · aguardando pagamento' },
+  { status: 'PAGA',                 label: 'Pagamento confirmado' },
   { status: 'EM_EXECUCAO',          label: 'Em execução' },
   { status: 'AGUARDANDO_QA',        label: 'Em revisão SUE' },
   { status: 'AGUARDANDO_CONFIRMACAO', label: 'Aguardando sua confirmação' },
@@ -59,17 +59,6 @@ export default function DemandaDetailPage() {
       .catch(() => toast('Erro ao carregar demanda', 'error'))
       .finally(() => setLoading(false))
   }, [id, toast])
-
-  const pagar = async () => {
-    try {
-      const r = await orders.pagarPix(id)
-      if (r.qr_code || r.pix_code) {
-        toast('PIX gerado · veja o QR', 'success')
-      }
-    } catch {
-      toast('Erro ao gerar PIX', 'error')
-    }
-  }
 
   const confirmarComAvaliacao = async () => {
     if (Object.values(notas).some(n => n === 0)) {
@@ -251,8 +240,10 @@ export default function DemandaDetailPage() {
 
             {/* Ações conforme status */}
             <div className="flex flex-wrap gap-2">
-              {demanda.status === 'AGUARDANDO_PAGAMENTO' && (
-                <Button onClick={pagar} className="btn-lg">💳 Pagar com PIX</Button>
+              {demanda.status === 'ACEITA' && (
+                <Button onClick={() => router.push(`/cliente/demandas/${id}/pagamento`)} className="btn-lg">
+                  💳 Pagar com PIX
+                </Button>
               )}
               {!['CONCLUIDA', 'CANCELADA'].includes(demanda.status) && (
                 <Button variant="ghost" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬 Chat com profissional</Button>
