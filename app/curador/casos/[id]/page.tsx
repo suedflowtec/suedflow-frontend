@@ -87,6 +87,23 @@ export default function CuradorCasoDetalhePage() {
     }
   }
 
+  const resolverDisputa = async (acao: 'REEMBOLSAR_CLIENTE' | 'LIBERAR_PROFISSIONAL' | 'RETOMAR_EXECUCAO') => {
+    if (acao === 'REEMBOLSAR_CLIENTE' && feedback.trim().length < 10) {
+      toast('Descreva o motivo da decisão (mínimo 10 caracteres)', 'error')
+      return
+    }
+    setEnviando(true)
+    try {
+      await curadorApi.resolverDisputa(caso.id, { acao, obs: feedback.trim() || undefined })
+      toast('Disputa resolvida', 'success')
+      router.push('/curador/fila')
+    } catch (err: any) {
+      toast(err.message || 'Erro ao resolver disputa', 'error')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
   const precificar = async () => {
     if (!preco || !sla) {
       toast('Informe preço e prazo (SLA em dias)', 'error')
@@ -197,11 +214,31 @@ export default function CuradorCasoDetalhePage() {
             )}
 
             {caso.tipo === 'DISPUTA' && (
-              <div className="card-solid">
-                <p className="text-sm" style={{ color: 'var(--text2)' }}>
-                  A resolução formal de disputas (decisão de reembolso/liberação de escrow) ainda
-                  não tem endpoint dedicado no backend — registrado como pendência técnica.
-                  Use o chat da demanda para mediar diretamente com cliente e profissional.
+              <div className="card-solid space-y-3">
+                <p className="section-label">Resolução da disputa</p>
+                <textarea
+                  className="input"
+                  rows={3}
+                  placeholder="Justificativa da decisão (obrigatória para reembolsar o cliente)"
+                  value={feedback}
+                  onChange={e => setFeedback(e.target.value)}
+                />
+                <div className="grid grid-cols-1 gap-2">
+                  <Button variant="green" disabled={enviando} onClick={() => resolverDisputa('LIBERAR_PROFISSIONAL')}>
+                    Liberar pagamento ao profissional
+                  </Button>
+                  <Button variant="orange" disabled={enviando} onClick={() => resolverDisputa('RETOMAR_EXECUCAO')}>
+                    Retomar execução (manter custódia)
+                  </Button>
+                  <Button variant="ghost" disabled={enviando} onClick={() => resolverDisputa('REEMBOLSAR_CLIENTE')}>
+                    Cancelar e reembolsar o cliente
+                  </Button>
+                </div>
+                <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                  "Liberar pagamento" conclui a demanda e libera o escrow ao profissional. "Retomar execução"
+                  devolve a demanda para EM_EXECUCAO mantendo o valor em custódia. "Cancelar e reembolsar"
+                  cancela a demanda e marca o escrow para reembolso (processamento real do reembolso depende
+                  da integração Pagar.me — pendência técnica #1).
                 </p>
               </div>
             )}

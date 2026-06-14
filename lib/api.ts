@@ -160,6 +160,8 @@ export const curador = {
   especiais: () => request<{ demandas: any[] }>('/api/curador/especiais'),
   precificarEspecial: (demandaId: string, dados: { preco: number; sla: number; obs?: string }) =>
     request<{ ok: boolean }>(`/api/curador/especial/${demandaId}`, { method: 'POST', body: dados }),
+  resolverDisputa: (casoId: string, dados: { acao: 'REEMBOLSAR_CLIENTE' | 'LIBERAR_PROFISSIONAL' | 'RETOMAR_EXECUCAO'; obs?: string }) =>
+    request<{ ok: boolean }>(`/api/curador/disputa/${casoId}/resolver`, { method: 'POST', body: dados }),
 }
 
 export const chat = {
