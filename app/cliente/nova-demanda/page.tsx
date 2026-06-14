@@ -32,14 +32,14 @@ export default function NovaDemandaPage() {
     cidade: 'João Pessoa',
     endereco: '',
     descricao: '',
-    urgencia: 'NORMAL' as 'NORMAL' | 'PRIORITARIA' | 'URGENTE',
+    urgencia: 'NORMAL' as 'NORMAL' | 'PRIORITARIO' | 'URGENTE',
   })
   const [precoCalc, setPrecoCalc] = useState<any>(null)
   const [criando, setCriando] = useState(false)
 
   useEffect(() => {
     svcApi.listar()
-      .then(d => setSvcs(Array.isArray(d) ? d : []))
+      .then((d: any) => setSvcs(Array.isArray(d) ? d : (d?.servicos || [])))
       .catch(() => toast('Erro ao carregar serviços', 'error'))
   }, [toast])
 
@@ -48,17 +48,23 @@ export default function NovaDemandaPage() {
     if (etapa !== 2 || !svcSelecionado || !imovel.area_m2) { setPrecoCalc(null); return }
     const t = setTimeout(() => {
       orders.calcularPreco({
-        svc_codigo: svcSelecionado.codigo,
-        tipo_imovel: imovel.tipo_imovel,
-        area_m2: Number(imovel.area_m2),
+        codigoSvc: svcSelecionado.codigo,
+        tipoImovel: imovel.tipo_imovel,
+        areaM2: Number(imovel.area_m2),
         urgencia: imovel.urgencia,
-        estado: imovel.estado,
       })
-        .then(setPrecoCalc)
+        .then((r: any) => setPrecoCalc({
+          preco_servico: r.precoServico,
+          art_fee: r.artRrtFee,
+          taxa_plataforma: 0,
+          preco_cliente: r.totalCliente,
+          prazo_dias: r.sla_dias,
+          area_especial: r.area_especial,
+        }))
         .catch(() => {
           // fallback: cálculo local simples
           const mult = { RESIDENCIAL: 1.0, COMERCIAL: 1.3, INDUSTRIAL: 1.7 }[imovel.tipo_imovel]
-          const urg = { NORMAL: 1.0, PRIORITARIA: 1.3, URGENTE: 1.6 }[imovel.urgencia]
+          const urg = { NORMAL: 1.0, PRIORITARIO: 1.3, URGENTE: 1.6 }[imovel.urgencia]
           const base = svcSelecionado.uts_res * 100
           const servico = Math.round(base * mult * urg * Math.max(1, Number(imovel.area_m2) / 100))
           const art = 108.39, taxa = 11.61
@@ -108,17 +114,22 @@ export default function NovaDemandaPage() {
     setCriando(true)
     try {
       const d = await orders.criar({
-        svc_codigo: svcSelecionado.codigo,
-        tipo_imovel: imovel.tipo_imovel,
-        area_m2: Number(imovel.area_m2),
+        codigoSvc: svcSelecionado.codigo,
+        tipoImovel: imovel.tipo_imovel,
+        areaM2: Number(imovel.area_m2),
         estado: imovel.estado,
         cidade: imovel.cidade,
         endereco: imovel.endereco,
         descricao: imovel.descricao,
         urgencia: imovel.urgencia,
+        meioPagamento: 'PIX',
       })
-      toast('Demanda criada com sucesso!', 'success')
-      router.push(`/cliente/demandas/${d.id}`)
+      if (d.demanda?.status === 'DEMANDA_ESPECIAL') {
+        toast('Demanda registrada! Por se tratar de uma área especial, um curador irá precificar manualmente antes do pagamento.', 'success')
+      } else {
+        toast('Demanda criada com sucesso!', 'success')
+      }
+      router.push(`/cliente/demandas/${d.demanda.id}`)
     } catch (err: any) {
       toast(err.message || 'Erro ao criar demanda', 'error')
     } finally {
@@ -271,7 +282,7 @@ export default function NovaDemandaPage() {
               </Field>
               <Field label="Urgência">
                 <div className="grid grid-cols-3 gap-2">
-                  {(['NORMAL', 'PRIORITARIA', 'URGENTE'] as const).map(u => (
+                  {(['NORMAL', 'PRIORITARIO', 'URGENTE'] as const).map(u => (
                     <button
                       key={u}
                       type="button"
@@ -280,7 +291,7 @@ export default function NovaDemandaPage() {
                         imovel.urgencia === u ? 'bg-orange text-white border-orange' : 'bg-white text-ink-secondary border-surface-border hover:bg-surface-hover'
                       }`}
                     >
-                      {u === 'NORMAL' ? 'Normal' : u === 'PRIORITARIA' ? '+30%' : '+60%'}
+                      {u === 'NORMAL' ? 'Normal' : u === 'PRIORITARIO' ? '+30%' : '+60%'}
                     </button>
                   ))}
                 </div>
@@ -297,7 +308,6 @@ export default function NovaDemandaPage() {
                 <div className="space-y-1.5 text-sm">
                   <div className="flex justify-between text-ink-secondary"><span>Serviço</span><span>{formatBRL(precoCalc.preco_servico || 0)}</span></div>
                   <div className="flex justify-between text-ink-secondary"><span>ART/RRT</span><span>{formatBRL(precoCalc.art_fee || 0)}</span></div>
-                  <div className="flex justify-between text-ink-secondary"><span>Taxa plataforma</span><span>{formatBRL(precoCalc.taxa_plataforma || 0)}</span></div>
                   <div className="border-t border-surface-border my-2" />
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-navy">Total</span>
@@ -306,6 +316,18 @@ export default function NovaDemandaPage() {
                 </div>
                 <p className="text-2xs text-ink-muted mt-2">
                   Profissional pode ajustar ±15% (autonomia técnica · STF Tema 1291)
+                </p>
+              </div>
+            )}
+
+            {/* Aviso de Demanda Especial */}
+            {precoCalc?.area_especial && (
+              <div className="card p-4" style={{ borderColor: 'var(--gold)' }}>
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>⚠ Demanda especial</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text2)' }}>
+                  A área informada está acima do padrão para este serviço. O preço acima é uma
+                  estimativa — após confirmar, um curador sênior fará a precificação final
+                  antes da liberação do pagamento.
                 </p>
               </div>
             )}
@@ -332,7 +354,7 @@ export default function NovaDemandaPage() {
                 <Row label="Serviço" value={`${svcSelecionado.codigo} · ${svcSelecionado.nome}`} />
                 <Row label="Tipo" value={`${imovel.tipo_imovel} · ${imovel.area_m2}m²`} />
                 <Row label="Local" value={`${imovel.cidade}, ${imovel.estado}`} />
-                <Row label="Urgência" value={imovel.urgencia === 'NORMAL' ? 'Normal' : imovel.urgencia === 'PRIORITARIA' ? 'Prioritária' : 'Urgente'} />
+                <Row label="Urgência" value={imovel.urgencia === 'NORMAL' ? 'Normal' : imovel.urgencia === 'PRIORITARIO' ? 'Prioritária' : 'Urgente'} />
                 <Row label="Prazo" value={`${precoCalc.prazo_dias || svcSelecionado.sla_dias || 5} dias úteis`} />
               </div>
             </div>
