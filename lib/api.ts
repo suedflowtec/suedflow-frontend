@@ -134,6 +134,21 @@ export const selo = {
   publico: (imovelId: string) => request<any>(`/api/selo/${imovelId}`, { auth: false }),
 }
 
+export const profissional = {
+  perfil: () => request<any>('/api/profissional/perfil'),
+  atualizarPerfil: (data: { cidade?: string; estado?: string; raio_km?: number }) =>
+    request<{ ok: boolean }>('/api/profissional/perfil', { method: 'PUT', body: data }),
+  kycStatus: () => request<{ kyc_aprovado: boolean; kyc_status: string; crea_ativo: boolean; documentos: any[] }>('/api/profissional/kyc-status'),
+  enviarDocumentoKyc: (tipo: string, arquivo: File) => {
+    const fd = new FormData()
+    fd.append('tipo', tipo)
+    fd.append('arquivo', arquivo)
+    return request<{ ok: boolean; tipo: string; url: string }>('/api/profissional/kyc/documento', { method: 'POST', formData: fd })
+  },
+  onboarding: (data: { conselho: string; numero_conselho: string; uf_conselho: string; svcs_habilitados: string[]; aceita_termos: boolean }) =>
+    request<{ ok: boolean; msg: string }>('/api/profissional/onboarding', { method: 'POST', body: data }),
+}
+
 export const curador = {
   fila: () => request<{ casos: any[] }>('/api/curador/fila'),
   caso: (id: string) => request<{ caso: any; checklist: any[]; analise_sue: any }>(`/api/curador/caso/${id}`),
