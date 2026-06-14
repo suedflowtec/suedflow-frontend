@@ -458,6 +458,17 @@ export default function DemandaDetailPage() {
                       <Badge variant="orange">{demanda.profissional?.nivel || 'PLENO'}</Badge>
                       <Badge variant="green">✓ CREA verificado</Badge>
                     </div>
+                    {demanda.profissional?.id && (
+                      <a
+                        href={`/profissionais/${demanda.profissional.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-2xs"
+                        style={{ color: 'var(--text3)' }}
+                      >
+                        Ver perfil público →
+                      </a>
+                    )}
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬</Button>
                 </div>

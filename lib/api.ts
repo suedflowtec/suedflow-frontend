@@ -138,6 +138,7 @@ export const selo = {
 
 export const profissional = {
   perfil: () => request<any>('/api/profissional/perfil'),
+  perfilPublico: (id: string) => request<any>(`/api/profissional/publico/${id}`, { auth: false }),
   atualizarPerfil: (data: { cidade?: string; estado?: string; raio_km?: number }) =>
     request<{ ok: boolean }>('/api/profissional/perfil', { method: 'PUT', body: data }),
   kycStatus: () => request<{ kyc_aprovado: boolean; kyc_status: string; crea_ativo: boolean; documentos: any[] }>('/api/profissional/kyc-status'),

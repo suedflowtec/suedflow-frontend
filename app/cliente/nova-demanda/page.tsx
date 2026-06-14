@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/useToast'
 
 type Etapa = 1 | 2 | 3
 type SVC = { codigo: string; nome: string; descricao?: string; uts_res: number; uts_com: number; uts_ind: number; piso: number; teto: number; sla_dias: number }
+type MensagemSue = { autor: 'sue' | 'usuario'; texto: string; svc?: SVC }
 
 export default function NovaDemandaPage() {
   const router = useRouter()
@@ -21,6 +22,9 @@ export default function NovaDemandaPage() {
   const [svcSelecionado, setSvcSelecionado] = useState<SVC | null>(null)
   const [descricaoSue, setDescricaoSue] = useState('')
   const [loadingSue, setLoadingSue] = useState(false)
+  const [mensagensSue, setMensagensSue] = useState<MensagemSue[]>([
+    { autor: 'sue', texto: 'Olá! Descreva o que você precisa e eu te ajudo a encontrar o serviço certo. Ex: "tenho trincas no teto" ou "vou comprar um apartamento".' },
+  ])
   const [imovel, setImovel] = useState({
     tipo_imovel: 'RESIDENCIAL' as 'RESIDENCIAL' | 'COMERCIAL' | 'INDUSTRIAL',
     area_m2: '',
@@ -65,24 +69,38 @@ export default function NovaDemandaPage() {
   }, [etapa, svcSelecionado, imovel])
 
   const buscarSue = async () => {
-    if (!descricaoSue.trim()) return
+    const texto = descricaoSue.trim()
+    if (!texto) return
+    setMensagensSue(m => [...m, { autor: 'usuario', texto }])
+    setDescricaoSue('')
     setLoadingSue(true)
     try {
-      const r = await sue.buscarSvc(descricaoSue)
+      const r = await sue.buscarSvc(texto)
       const cod = r.svc_codigo || r.codigo
       const found = svcs.find(s => s.codigo === cod)
       if (found) {
-        setSvcSelecionado(found)
-        toast(`SUE identificou: ${found.nome}`, 'success')
-        setEtapa(2)
+        setMensagensSue(m => [...m, {
+          autor: 'sue',
+          texto: r.justificativa || `Pelo que você descreveu, recomendo o serviço "${found.nome}".`,
+          svc: found,
+        }])
       } else {
-        toast('SUE não encontrou serviço · escolha manualmente', 'info')
+        setMensagensSue(m => [...m, {
+          autor: 'sue',
+          texto: 'Não consegui identificar um serviço específico para essa descrição. Você pode escolher manualmente na lista abaixo, ou descrever de outra forma.',
+        }])
       }
     } catch {
+      setMensagensSue(m => [...m, { autor: 'sue', texto: 'Não consegui consultar o serviço agora. Escolha manualmente na lista abaixo.' }])
       toast('Erro ao consultar SUE', 'error')
     } finally {
       setLoadingSue(false)
     }
+  }
+
+  const usarSvcSugerido = (s: SVC) => {
+    setSvcSelecionado(s)
+    setEtapa(2)
   }
 
   const criarDemanda = async () => {
@@ -129,13 +147,43 @@ export default function NovaDemandaPage() {
         {etapa === 1 && (
           <>
             <div className="card p-4 border-orange-200 bg-orange-50">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded flex items-center justify-center text-sm font-bold text-white bg-teal">S</div>
-                <p className="text-sm font-semibold text-navy">SUE · Pergunte para a IA</p>
+                <p className="text-sm font-semibold text-navy">SUE · Assistente de serviços</p>
               </div>
-              <p className="text-xs text-ink-muted mb-3">
-                Descreva o que precisa em linguagem natural. Ex: "trincas no teto" ou "vou comprar um apartamento".
-              </p>
+
+              {/* Conversa */}
+              <div className="space-y-2 mb-3 max-h-80 overflow-y-auto pr-1">
+                {mensagensSue.map((m, i) => (
+                  <div key={i} className={`flex ${m.autor === 'usuario' ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${
+                        m.autor === 'usuario'
+                          ? 'bg-orange text-white rounded-br-none'
+                          : 'bg-white text-navy border border-surface-border rounded-bl-none'
+                      }`}
+                    >
+                      <p>{m.texto}</p>
+                      {m.svc && (
+                        <button
+                          onClick={() => usarSvcSugerido(m.svc!)}
+                          className="mt-2 text-2xs font-semibold text-white bg-orange rounded px-2 py-1 hover:opacity-90"
+                        >
+                          {m.svc.codigo} · {m.svc.nome} — usar este serviço →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {loadingSue && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] rounded-lg px-3 py-2 text-xs bg-white text-ink-muted border border-surface-border rounded-bl-none">
+                      SUE está digitando...
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-2">
                 <Input
                   className="text-navy placeholder:text-navy/50"
@@ -145,7 +193,7 @@ export default function NovaDemandaPage() {
                   onKeyDown={e => { if (e.key === 'Enter') buscarSue() }}
                 />
                 <Button onClick={buscarSue} loading={loadingSue} size="sm" className="!px-4">
-                  Identificar
+                  Enviar
                 </Button>
               </div>
             </div>

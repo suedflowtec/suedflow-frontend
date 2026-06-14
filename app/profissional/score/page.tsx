@@ -44,7 +44,20 @@ export default function ProfissionalScore() {
 
   return (
     <Shell>
-      <Topbar title="Score SQP" subtitle="Score de Qualificação Profissional · 0–1000 pts" />
+      <Topbar
+        title="Score SQP"
+        subtitle="Score de Qualificação Profissional · 0–1000 pts"
+        actions={prof.id && (
+          <a
+            href={`/profissionais/${prof.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-secondary btn-sm"
+          >
+            Ver perfil público →
+          </a>
+        )}
+      />
       <main className="p-6 max-w-2xl space-y-5">
 
         {/* Score principal */}
