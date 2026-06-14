@@ -90,9 +90,10 @@ export const orders = {
 export const admin = {
   dashboard: () => request<any>('/api/admin/dashboard'),
   demandas: () => request<any>('/api/admin/demandas'),
-  profissionais: () => request<any>('/api/admin/profissionais'),
-  aprovarKyc: (id: string, aprovado: boolean) =>
-    request(`/api/admin/profissionais/${id}/kyc`, { method: 'PATCH', body: { aprovado } }),
+  profissionais: () => request<{ profissionais: any[] }>('/api/admin/profissionais'),
+  profissional: (id: string) => request<{ profissional: any }>(`/api/admin/profissionais/${id}`),
+  aprovarKyc: (id: string, aprovado: boolean, motivo?: string) =>
+    request(`/api/admin/profissionais/${id}/kyc`, { method: 'PATCH', body: { aprovado, motivo } }),
   intervirDemanda: (id: string, acao: string, motivo?: string) =>
     request(`/api/admin/demandas/${id}/intervir`, { method: 'PATCH', body: { acao, motivo } }),
   svcsConfig: () => request<{ svcs: any[] }>('/api/admin/svcs/config'),

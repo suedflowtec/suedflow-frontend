@@ -1,6 +1,7 @@
 // app/admin/profissionais/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -8,6 +9,7 @@ import { admin } from '@/lib/api'
 import { useToast } from '@/hooks/useToast'
 
 export default function AdminProfissionais() {
+  const router = useRouter()
   const { toast } = useToast()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -68,8 +70,8 @@ export default function AdminProfissionais() {
               </thead>
               <tbody>
                 {lista.map(p => (
-                  <tr key={p.id}>
-                    <td className="font-medium text-navy">{p.nome || p.email}</td>
+                  <tr key={p.id} className="cursor-pointer" onClick={() => router.push(`/admin/profissionais/${p.id}`)}>
+                    <td className="font-medium text-navy">{p.usuario?.nome || p.nome || p.usuario?.email || p.email}</td>
                     <td className="mono">{p.conselho || 'CREA'}-{p.uf_conselho || 'PB'} {p.numero_conselho}</td>
                     <td>
                       <span className={`badge ${p.nivel === 'ELITE' ? 'badge-gold' : p.nivel === 'SENIOR' ? 'badge-purple' : 'badge-orange'}`}>
@@ -83,8 +85,11 @@ export default function AdminProfissionais() {
                     </td>
                     <td className="text-right" onClick={e => e.stopPropagation()}>
                       {!p.kyc_aprovado && (
-                        <Button onClick={() => aprovar(p.id)} size="sm">Aprovar KYC</Button>
+                        <Button onClick={() => aprovar(p.id)} size="sm">Aprovar rápido</Button>
                       )}
+                      <Button variant="ghost" size="sm" className="ml-2" onClick={() => router.push(`/admin/profissionais/${p.id}`)}>
+                        Ver detalhes
+                      </Button>
                     </td>
                   </tr>
                 ))}

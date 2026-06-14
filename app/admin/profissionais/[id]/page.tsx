@@ -1,0 +1,186 @@
+// app/admin/profissionais/[id]/page.tsx
+'use client'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { Shell, Topbar } from '@/components/layout/Shell'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { admin } from '@/lib/api'
+import { formatDate } from '@/lib/utils'
+import { useToast } from '@/hooks/useToast'
+
+const DOC_LABELS: Record<string, string> = {
+  RG_FRENTE: 'RG / CNH — frente',
+  RG_VERSO: 'RG / CNH — verso',
+  SELFIE: 'Selfie segurando o documento',
+  COMP_RESIDENCIA: 'Comprovante de residência',
+}
+
+const STATUS_BADGE: Record<string, { text: string; variant: any }> = {
+  PENDENTE: { text: 'Pendente', variant: 'gold' },
+  APROVADO: { text: 'Aprovado', variant: 'green' },
+  REPROVADO: { text: 'Reprovado', variant: 'red' },
+}
+
+function isImagem(url: string) {
+  return /\.(jpe?g|png|gif|webp)(\?|$)/i.test(url)
+}
+
+export default function AdminProfissionalDetalhePage() {
+  const params = useParams()
+  const router = useRouter()
+  const { toast } = useToast()
+  const id = params?.id as string
+
+  const [profissional, setProfissional] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [motivo, setMotivo] = useState('')
+  const [enviando, setEnviando] = useState(false)
+
+  const carregar = () => {
+    admin.profissional(id)
+      .then(({ profissional }) => setProfissional(profissional))
+      .catch((err: any) => toast(err.message || 'Erro ao carregar profissional', 'error'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    if (!id) return
+    carregar()
+  }, [id])
+
+  if (loading) return (
+    <Shell><Topbar title="Profissional" /><main className="p-6"><p style={{ color: 'var(--text3)' }}>Carregando...</p></main></Shell>
+  )
+  if (!profissional) return (
+    <Shell><Topbar title="Profissional" /><main className="p-6"><p style={{ color: 'var(--text3)' }}>Profissional não encontrado.</p></main></Shell>
+  )
+
+  const decidir = async (aprovado: boolean) => {
+    if (!aprovado && motivo.trim().length < 5) {
+      toast('Informe o motivo da reprovação (mínimo 5 caracteres)', 'error')
+      return
+    }
+    setEnviando(true)
+    try {
+      await admin.aprovarKyc(id, aprovado, motivo.trim() || undefined)
+      toast(aprovado ? 'KYC aprovado' : 'KYC reprovado', 'success')
+      carregar()
+      setMotivo('')
+    } catch (err: any) {
+      toast(err.message || 'Erro ao registrar decisão', 'error')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  const kycBadge = STATUS_BADGE[profissional.kyc_status] || STATUS_BADGE.PENDENTE
+
+  return (
+    <Shell>
+      <Topbar
+        title={profissional.usuario?.nome || profissional.usuario?.email}
+        subtitle={profissional.usuario?.email}
+        actions={<Badge variant={kycBadge.variant}>KYC {kycBadge.text}</Badge>}
+      />
+
+      <main className="p-6 max-w-4xl space-y-4">
+        <Button variant="ghost" onClick={() => router.push('/admin/profissionais')}>← Voltar para a lista</Button>
+
+        {/* Dados profissionais */}
+        <div className="card-solid">
+          <p className="section-label mb-3">Dados profissionais</p>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="block text-xs" style={{ color: 'var(--text3)' }}>Conselho</span>
+              <span className="font-mono" style={{ color: 'var(--text)' }}>
+                {profissional.conselho || 'CREA'}-{profissional.uf_conselho || '—'} {profissional.numero_conselho || '—'}
+              </span>
+            </div>
+            <div>
+              <span className="block text-xs" style={{ color: 'var(--text3)' }}>Nível SQP</span>
+              <Badge variant="orange">{profissional.nivel || 'CANDIDATO'}</Badge>
+            </div>
+            <div>
+              <span className="block text-xs" style={{ color: 'var(--text3)' }}>Cidade/UF</span>
+              <span style={{ color: 'var(--text)' }}>{profissional.cidade || '—'}{profissional.estado ? `/${profissional.estado}` : ''}</span>
+            </div>
+            <div>
+              <span className="block text-xs" style={{ color: 'var(--text3)' }}>Raio de atuação</span>
+              <span style={{ color: 'var(--text)' }}>{profissional.raio_km} km</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SVCs habilitados */}
+        <div className="card-solid">
+          <p className="section-label mb-3">Serviços habilitados</p>
+          {(profissional.svcs_habilitados || []).length === 0 ? (
+            <p className="text-sm" style={{ color: 'var(--text3)' }}>Nenhum serviço habilitado.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {profissional.svcs_habilitados.map((s: any) => (
+                <Badge key={s.codigo_svc} variant="glass">{s.codigo_svc}</Badge>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Documentos KYC */}
+        <div className="card-solid space-y-3">
+          <p className="section-label">Documentos KYC</p>
+          {(profissional.documentos_kyc || []).length === 0 ? (
+            <p className="text-sm" style={{ color: 'var(--text3)' }}>Nenhum documento enviado ainda.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {profissional.documentos_kyc.map((doc: any) => {
+                const status = STATUS_BADGE[doc.status] || STATUS_BADGE.PENDENTE
+                return (
+                  <div key={doc.id} className="p-3 rounded-xl" style={{ background: 'var(--glass)' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm" style={{ color: 'var(--text)' }}>{DOC_LABELS[doc.tipo] || doc.tipo}</span>
+                      <Badge variant={status.variant}>{status.text}</Badge>
+                    </div>
+                    {isImagem(doc.url_arquivo) ? (
+                      <a href={doc.url_arquivo} target="_blank" rel="noreferrer">
+                        <img src={doc.url_arquivo} alt={doc.tipo} className="w-full rounded-lg" style={{ maxHeight: 180, objectFit: 'cover' }} />
+                      </a>
+                    ) : (
+                      <a href={doc.url_arquivo} target="_blank" rel="noreferrer" className="text-sm" style={{ color: 'var(--orange)' }}>
+                        Abrir documento ↗
+                      </a>
+                    )}
+                    <p className="text-2xs mt-2" style={{ color: 'var(--text3)' }}>Enviado em {formatDate(doc.created_at)}</p>
+                    {doc.motivo && <p className="text-2xs mt-1" style={{ color: 'var(--red)' }}>{doc.motivo}</p>}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Decisão de KYC */}
+        {profissional.kyc_status !== 'APROVADO' && (
+          <div className="card-solid space-y-3">
+            <p className="section-label">Decisão de KYC</p>
+            <textarea
+              className="input"
+              rows={2}
+              placeholder="Motivo (obrigatório apenas para reprovar)"
+              value={motivo}
+              onChange={e => setMotivo(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <Button variant="green" className="flex-1" disabled={enviando} onClick={() => decidir(true)}>
+                ✓ Aprovar KYC
+              </Button>
+              <Button variant="orange" className="flex-1" disabled={enviando} onClick={() => decidir(false)}>
+                ✗ Reprovar KYC
+              </Button>
+            </div>
+          </div>
+        )}
+      </main>
+    </Shell>
+  )
+}
