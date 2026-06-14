@@ -286,9 +286,12 @@ export default function ProfissionalDemandaDetalhePage() {
 
             {avc && (
               avc.avc ? (
-                <pre className="text-xs p-3 rounded-xl overflow-auto" style={{ background: 'var(--navy3)', color: 'var(--text2)' }}>
-                  {JSON.stringify(avc.avc, null, 2)}
-                </pre>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => router.push(`/profissional/demandas/${id}/qa`)}
+                >
+                  Ver resultado completo e impacto no Score SQP →
+                </button>
               ) : (
                 <p className="text-sm" style={{ color: 'var(--text3)' }}>{avc.msg || 'A SUE ainda não concluiu a verificação.'}</p>
               )

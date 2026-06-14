@@ -86,6 +86,7 @@ export const orders = {
     return request<any>(`/api/orders/${id}/submeter-qa`, { method: 'POST', formData: fd })
   },
   avc: (id: string) => request<any>(`/api/orders/${id}/avc`),
+  qaResultado: (id: string) => request<any>(`/api/orders/${id}/qa-resultado`),
 }
 
 export const admin = {
