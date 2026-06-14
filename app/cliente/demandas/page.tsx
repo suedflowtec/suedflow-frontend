@@ -16,7 +16,7 @@ export default function DemandasPage() {
   const [filtro, setFiltro] = useState<'TODAS' | 'ATIVAS' | 'CONCLUIDAS'>('TODAS')
 
   useEffect(() => {
-    orders.listarMinhas()
+    orders.listarMinhas('cliente')
       .then(d => setDemandas(Array.isArray(d) ? d : []))
       .catch(() => toast('Erro ao carregar', 'error'))
       .finally(() => setLoading(false))

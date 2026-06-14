@@ -34,7 +34,7 @@ export default function ProfissionalDemandasPage() {
   useEffect(() => {
     if (authLoading) return
     if (!user) { router.push('/auth/login'); return }
-    orders.listarMinhas()
+    orders.listarMinhas('profissional')
       .then((d: any) => setDemandas(Array.isArray(d) ? d : (d?.demandas || [])))
       .catch(() => toast('Erro ao carregar demandas', 'error'))
       .finally(() => setLoading(false))

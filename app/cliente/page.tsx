@@ -33,7 +33,7 @@ export default function ClienteHome() {
   useEffect(() => {
     if (authLoading) return
     if (!user) { router.push('/auth/login'); return }
-    orders.listarMinhas()
+    orders.listarMinhas('cliente')
       .then(d => setDemandas(Array.isArray(d) ? d : []))
       .catch(() => toast('Erro ao carregar demandas', 'error'))
       .finally(() => setLoading(false))

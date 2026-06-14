@@ -96,6 +96,12 @@ export default function CadastroClient() {
             ))}
           </div>
 
+          <p className="text-xs text-ink-muted mb-4">
+            Já tem uma conta como {tipo === 'CLIENTE' ? 'profissional' : 'cliente'}? Use o mesmo e-mail e a
+            mesma senha abaixo para adicionar o perfil de {tipo === 'CLIENTE' ? 'cliente' : 'profissional'}{' '}
+            à sua conta.
+          </p>
+
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="label">Nome completo</label>

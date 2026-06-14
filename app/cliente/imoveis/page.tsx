@@ -26,7 +26,7 @@ export default function ImoveisPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    imovel.listar()
+    imovel.listar({ contexto: 'cliente' })
       .then(r => setImoveis(r.imoveis || []))
       .catch(() => toast('Erro ao carregar imóveis', 'error'))
       .finally(() => setLoading(false))

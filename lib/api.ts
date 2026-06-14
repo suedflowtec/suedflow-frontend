@@ -52,7 +52,8 @@ export const sue = {
 export const orders = {
   calcularPreco: (data: any) => request<any>('/api/orders/calcular-preco', { method: 'POST', body: data, auth: false }),
   criar: (data: any) => request<any>('/api/orders', { method: 'POST', body: data }),
-  listarMinhas: () => request<any[]>('/api/orders'),
+  listarMinhas: (contexto?: 'cliente' | 'profissional') =>
+    request<any[]>(`/api/orders${contexto ? `?contexto=${contexto}` : ''}`),
   buscar: (id: string) => request<any>(`/api/orders/${id}`),
   feed: () => request<{ demandas: any[] }>('/api/orders/feed'),
   aceitar: (id: string, preco_negociado: number) =>
@@ -121,7 +122,7 @@ export const notificacoes = {
 }
 
 export const imovel = {
-  listar: (params?: { cidade?: string; estado?: string; tipo?: string }) => {
+  listar: (params?: { cidade?: string; estado?: string; tipo?: string; contexto?: string }) => {
     const qs = params ? new URLSearchParams(params as Record<string, string>).toString() : ''
     return request<{ imoveis: any[]; total: number; page: number; pages: number }>(`/api/imovel${qs ? `?${qs}` : ''}`)
   },

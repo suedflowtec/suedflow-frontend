@@ -26,8 +26,8 @@ export default function ProfissionalHome() {
   useEffect(() => {
     if (authLoading) return
     if (!user) { router.push('/auth/login'); return }
-    if (user.tipo !== 'PROFISSIONAL') { router.push('/cliente'); return }
-    orders.listarMinhas()
+    if (!user.profissional) { router.push('/cliente'); return }
+    orders.listarMinhas('profissional')
       .then((d: any) => setDemandas(Array.isArray(d) ? d : (d?.demandas || [])))
       .catch(() => toast('Erro ao carregar demandas', 'error'))
       .finally(() => setLoading(false))

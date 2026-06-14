@@ -34,10 +34,18 @@ const NAV = {
   ],
 }
 
-function getNav(tipo?: string) {
+// v4.4.5.8 · item 8.12 — contas com perfil de Cliente e Profissional ao mesmo
+// tempo decidem o menu pelo prefixo da rota atual, não mais por um `tipo`
+// único da conta.
+function getNav(user: any, pathname: string) {
+  const tipo = user?.tipo
   if (tipo === 'ADMIN' || tipo === 'MODERADOR') return NAV.ADMIN
-  if (tipo === 'PROFISSIONAL') return NAV.PROFISSIONAL
   if (tipo === 'CURADOR_SUPORTE' || tipo === 'CURADOR_SENIOR') return NAV.CURADOR
+
+  if (user?.cliente && user?.profissional) {
+    return pathname.startsWith('/profissional') ? NAV.PROFISSIONAL : NAV.CLIENTE
+  }
+  if (user?.profissional) return NAV.PROFISSIONAL
   return NAV.CLIENTE
 }
 
@@ -48,7 +56,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { setUser(userStorage.get()) }, [])
 
-  const nav = getNav(user?.tipo)
+  const nav = getNav(user, pathname)
+  const temAmbosPerfis = !!(user?.cliente && user?.profissional)
+  const emModoProfissional = pathname.startsWith('/profissional')
 
   const handleLogout = () => {
     tokenStorage.clear()
@@ -110,6 +120,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
         {/* Footer */}
         <div className="p-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          {temAmbosPerfis && (
+            <Link
+              href={emModoProfissional ? '/cliente' : '/profissional'}
+              className="w-full flex items-center justify-center gap-2 px-2 py-2 mb-2 rounded-xl text-xs font-semibold transition-colors"
+              style={{ background: 'var(--glass)', color: 'var(--orange)', border: '1px solid var(--border)' }}
+            >
+              <span>⇄</span>
+              {emModoProfissional ? 'Mudar para modo Cliente' : 'Mudar para modo Profissional'}
+            </Link>
+          )}
           <div
             className="flex items-center gap-2.5 px-2 py-2 mb-1 rounded-xl"
             style={{ background: 'rgba(255,255,255,0.05)' }}
