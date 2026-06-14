@@ -84,9 +84,9 @@ export default function CatalogoPage() {
                   )}
                   <button
                     className="btn btn-primary btn-sm mt-3"
-                    onClick={() => router.push(`/cliente/nova-demanda?svc=${sugestao.svc_sugerido}`)}
+                    onClick={() => router.push(`/cliente/catalogo/${sugestao.svc_sugerido}`)}
                   >
-                    Solicitar este serviço →
+                    Ver detalhes →
                   </button>
                 </div>
               ) : (
@@ -106,7 +106,7 @@ export default function CatalogoPage() {
             {servicos.map(s => (
               <button
                 key={s.codigo}
-                onClick={() => router.push(`/cliente/nova-demanda?svc=${s.codigo}`)}
+                onClick={() => router.push(`/cliente/catalogo/${s.codigo}`)}
                 className="card text-left hover:border-orange transition-colors"
                 style={{ borderColor: 'var(--border)' }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(232,103,26,0.4)')}

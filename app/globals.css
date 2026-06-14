@@ -23,6 +23,11 @@
   --purple:  #9B6DFF;
 }
 
+@keyframes sue-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.1); }
+}
+
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
   html { font-size: 14px; -webkit-font-smoothing: antialiased; }

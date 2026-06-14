@@ -28,6 +28,14 @@ const FSM_STEPS = [
   { status: 'CONCLUIDA',            label: 'Concluída' },
 ]
 
+function formatHMS(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000))
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = total % 60
+  return [h, m, s].map(n => String(n).padStart(2, '0')).join(':')
+}
+
 function formatEvento(h: any): string {
   if (h.evento === 'STATUS_CHANGED' && h.para) {
     return `Status alterado para "${statusLabel(h.para).text}"`
@@ -49,6 +57,10 @@ export default function DemandaDetailPage() {
   const [disputaAberta, setDisputaAberta] = useState(false)
   const [motivoDisputa, setMotivoDisputa] = useState('')
   const [enviandoDisputa, setEnviandoDisputa] = useState(false)
+  const [agora, setAgora] = useState(() => Date.now())
+  const [cancelando, setCancelando] = useState(false)
+  const [motivoCancelamento, setMotivoCancelamento] = useState('')
+  const [enviandoCancelamento, setEnviandoCancelamento] = useState(false)
 
   const id = params?.id as string
 
@@ -59,6 +71,32 @@ export default function DemandaDetailPage() {
       .catch(() => toast('Erro ao carregar demanda', 'error'))
       .finally(() => setLoading(false))
   }, [id, toast])
+
+  useEffect(() => {
+    if (!demanda || demanda.status !== 'AGUARDANDO') return
+    const t = setInterval(() => setAgora(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [demanda])
+
+  const cancelarDemanda = async () => {
+    if (motivoCancelamento.trim().length < 5) {
+      toast('Descreva o motivo com pelo menos 5 caracteres', 'error')
+      return
+    }
+    setEnviandoCancelamento(true)
+    try {
+      await orders.cancelar(id, motivoCancelamento.trim())
+      toast('Demanda cancelada', 'success')
+      const updated = await orders.buscar(id)
+      setDemanda(updated)
+      setCancelando(false)
+      setMotivoCancelamento('')
+    } catch (err: any) {
+      toast(err.message || 'Erro ao cancelar demanda', 'error')
+    } finally {
+      setEnviandoCancelamento(false)
+    }
+  }
 
   const confirmarComAvaliacao = async () => {
     if (Object.values(notas).some(n => n === 0)) {
@@ -124,6 +162,72 @@ export default function DemandaDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Coluna principal */}
           <div className="lg:col-span-2 space-y-4">
+
+            {/* Aguardando profissional — countdown */}
+            {demanda.status === 'AGUARDANDO' && (
+              <div className="card-accent text-center py-8">
+                <div className="text-4xl mb-2" style={{ animation: 'sue-pulse 2s ease-in-out infinite' }}>⏳</div>
+                <p className="font-semibold" style={{ color: 'var(--text)' }}>Buscando profissional disponível</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--text3)' }}>
+                  Sua demanda de {demanda.svc_codigo} em {demanda.cidade || 'sua região'} está visível
+                  para profissionais qualificados.
+                </p>
+
+                <div className="mt-5 inline-block card-solid px-6 py-3">
+                  <p className="text-2xs section-label mb-1">Tempo restante para aceite</p>
+                  <p className="text-2xl font-mono font-bold" style={{ color: 'var(--orange)' }}>
+                    {formatHMS(new Date(demanda.created_at).getTime() + 24 * 60 * 60 * 1000 - agora)}
+                  </p>
+                  <p className="text-2xs mt-1" style={{ color: 'var(--text3)' }}>
+                    Se não aceito em 24h, a demanda vai para outros profissionais
+                  </p>
+                </div>
+
+                <div className="flex justify-center gap-2 mt-4">
+                  {[
+                    { status: 'AGUARDANDO', label: 'Aguardando' },
+                    { status: 'ACEITA', label: 'Aceita' },
+                    { status: 'PAGA', label: 'Paga' },
+                    { status: 'EM_EXECUCAO', label: 'Execução' },
+                  ].map((etapa, idx) => (
+                    <div key={etapa.status} className="flex items-center gap-2">
+                      <span
+                        className="badge"
+                        style={idx === 0
+                          ? { background: 'var(--green)', color: '#fff' }
+                          : { background: 'var(--navy3)', color: 'var(--text3)' }}
+                      >
+                        {idx === 0 ? '✓ ' : ''}{etapa.label}
+                      </span>
+                      {idx < 3 && <span style={{ color: 'var(--text3)' }}>›</span>}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5">
+                  {!cancelando ? (
+                    <Button variant="ghost" size="sm" onClick={() => setCancelando(true)}>Cancelar demanda</Button>
+                  ) : (
+                    <div className="max-w-md mx-auto text-left space-y-2">
+                      <p className="section-label">Motivo do cancelamento</p>
+                      <textarea
+                        className="input"
+                        rows={2}
+                        placeholder="Descreva o motivo (mínimo 5 caracteres)"
+                        value={motivoCancelamento}
+                        onChange={e => setMotivoCancelamento(e.target.value)}
+                      />
+                      <div className="flex gap-2">
+                        <Button variant="orange" className="flex-1" onClick={cancelarDemanda} loading={enviandoCancelamento}>
+                          Confirmar cancelamento
+                        </Button>
+                        <Button variant="ghost" onClick={() => setCancelando(false)}>Voltar</Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Progresso da demanda */}
             <div className="card-solid">
