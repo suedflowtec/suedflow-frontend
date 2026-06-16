@@ -142,14 +142,15 @@ export default function NovaDemandaPage() {
       <Topbar title="Nova demanda" />
 
       <main className="p-6 max-w-2xl space-y-5">
-        <p className="text-sm text-ink-muted -mt-2">Etapa {etapa} de 3</p>
+        <p className="text-sm -mt-2" style={{ color: 'var(--text3)' }}>Etapa {etapa} de 3</p>
 
         {/* Stepper */}
         <div className="flex gap-1.5">
           {[1, 2, 3].map(n => (
             <div
               key={n}
-              className={`flex-1 h-1 rounded-full transition-colors ${n <= etapa ? 'bg-orange' : 'bg-surface-border'}`}
+              className="flex-1 h-1 rounded-full transition-colors"
+              style={{ background: n <= etapa ? 'var(--orange)' : 'var(--navy3)' }}
             />
           ))}
         </div>
@@ -157,10 +158,10 @@ export default function NovaDemandaPage() {
         {/* ───────── ETAPA 1 · Escolher serviço ───────── */}
         {etapa === 1 && (
           <>
-            <div className="card p-4 border-orange-200 bg-orange-50">
+            <div className="card-accent">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded flex items-center justify-center text-sm font-bold text-white bg-teal">S</div>
-                <p className="text-sm font-semibold text-navy">SUE · Assistente de serviços</p>
+                <div className="w-8 h-8 rounded flex items-center justify-center text-sm font-bold text-white" style={{ background: 'var(--orange)' }}>S</div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>SUE · Assistente de serviços</p>
               </div>
 
               {/* Conversa */}
@@ -169,10 +170,9 @@ export default function NovaDemandaPage() {
                   <div key={i} className={`flex ${m.autor === 'usuario' ? 'justify-end' : 'justify-start'}`}>
                     <div
                       className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${
-                        m.autor === 'usuario'
-                          ? 'bg-orange text-white rounded-br-none'
-                          : 'bg-white text-navy border border-surface-border rounded-bl-none'
+                        m.autor === 'usuario' ? 'bg-orange text-white rounded-br-none' : 'rounded-bl-none'
                       }`}
+                      style={m.autor === 'usuario' ? undefined : { background: 'var(--navy3)', color: 'var(--text)', border: '1px solid var(--border)' }}
                     >
                       <p>{m.texto}</p>
                       {m.svc && (
@@ -188,7 +188,7 @@ export default function NovaDemandaPage() {
                 ))}
                 {loadingSue && (
                   <div className="flex justify-start">
-                    <div className="max-w-[85%] rounded-lg px-3 py-2 text-xs bg-white text-ink-muted border border-surface-border rounded-bl-none">
+                    <div className="max-w-[85%] rounded-lg px-3 py-2 text-xs rounded-bl-none" style={{ background: 'var(--navy3)', color: 'var(--text3)', border: '1px solid var(--border)' }}>
                       SUE está digitando...
                     </div>
                   </div>
@@ -197,7 +197,6 @@ export default function NovaDemandaPage() {
 
               <div className="flex gap-2">
                 <Input
-                  className="text-navy placeholder:text-navy/50"
                   placeholder="Descreva sua necessidade..."
                   value={descricaoSue}
                   onChange={e => setDescricaoSue(e.target.value)}
@@ -210,27 +209,27 @@ export default function NovaDemandaPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-surface-border" />
-              <span className="text-2xs text-ink-muted uppercase tracking-wider">ou escolha</span>
-              <div className="flex-1 h-px bg-surface-border" />
+              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+              <span className="text-2xs uppercase tracking-wider" style={{ color: 'var(--text3)' }}>ou escolha</span>
+              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
             </div>
 
             <div className="space-y-2">
               {svcs.length === 0 ? (
-                <p className="text-center text-sm text-ink-muted py-6">Carregando serviços...</p>
+                <p className="text-center text-sm py-6" style={{ color: 'var(--text3)' }}>Carregando serviços...</p>
               ) : svcs.filter(s => s.codigo !== 'SVC000').map(s => (
                 <button
                   key={s.codigo}
                   onClick={() => { setSvcSelecionado(s); setEtapa(2) }}
-                  className={`card w-full text-left p-4 transition-colors ${svcSelecionado?.codigo === s.codigo ? 'border-orange ring-1 ring-orange' : 'hover:bg-surface-hover'}`}
+                  className={`card w-full text-left transition-colors ${svcSelecionado?.codigo === s.codigo ? 'border-orange ring-1 ring-orange' : 'hover:bg-white/5'}`}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <span className="text-2xs font-mono text-ink-muted">{s.codigo}</span>
+                    <span className="text-2xs font-mono" style={{ color: 'var(--text3)' }}>{s.codigo}</span>
                     <Badge variant="orange">a partir de {formatBRL(s.piso || 680)}</Badge>
                   </div>
-                  <p className="text-sm font-semibold text-navy mb-1">{s.nome}</p>
-                  <p className="text-xs text-ink-muted line-clamp-2">{s.descricao || 'Serviço técnico SUEDFLOW'}</p>
-                  <div className="flex gap-3 mt-2 text-2xs text-ink-muted">
+                  <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text)' }}>{s.nome}</p>
+                  <p className="text-xs line-clamp-2" style={{ color: 'var(--text3)' }}>{s.descricao || 'Serviço técnico SUEDFLOW'}</p>
+                  <div className="flex gap-3 mt-2 text-2xs" style={{ color: 'var(--text3)' }}>
                     <span>⏱ {s.sla_dias || 5} dias</span>
                     <span>📐 até 1.000m²</span>
                   </div>
@@ -243,10 +242,10 @@ export default function NovaDemandaPage() {
         {/* ───────── ETAPA 2 · Dados do imóvel ───────── */}
         {etapa === 2 && svcSelecionado && (
           <>
-            <div className="card p-4 flex justify-between items-center">
+            <div className="card flex justify-between items-center">
               <div>
-                <p className="text-2xs text-ink-muted font-mono">{svcSelecionado.codigo}</p>
-                <p className="text-sm font-semibold text-navy">{svcSelecionado.nome}</p>
+                <p className="text-2xs font-mono" style={{ color: 'var(--text3)' }}>{svcSelecionado.codigo}</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{svcSelecionado.nome}</p>
               </div>
               <button onClick={() => setEtapa(1)} className="text-xs text-orange font-semibold hover:underline">Trocar</button>
             </div>
@@ -288,8 +287,9 @@ export default function NovaDemandaPage() {
                       type="button"
                       onClick={() => setImovel(i => ({ ...i, urgencia: u }))}
                       className={`py-2.5 px-2 rounded text-xs font-semibold border transition-colors ${
-                        imovel.urgencia === u ? 'bg-orange text-white border-orange' : 'bg-white text-ink-secondary border-surface-border hover:bg-surface-hover'
+                        imovel.urgencia === u ? 'bg-orange text-white border-orange' : 'hover:bg-white/5'
                       }`}
+                      style={imovel.urgencia === u ? undefined : { background: 'var(--navy3)', color: 'var(--text2)', borderColor: 'var(--border)' }}
                     >
                       {u === 'NORMAL' ? 'Normal' : u === 'PRIORITARIO' ? '+30%' : '+60%'}
                     </button>
@@ -300,21 +300,21 @@ export default function NovaDemandaPage() {
 
             {/* Motor UTS · preview de preço */}
             {precoCalc && (
-              <div className="card p-4 border-orange-200 bg-orange-50">
+              <div className="card-accent">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-orange">⚡</span>
                   <p className="text-2xs uppercase tracking-wider font-semibold text-orange">Motor UTS · Preço estimado</p>
                 </div>
                 <div className="space-y-1.5 text-sm">
-                  <div className="flex justify-between text-ink-secondary"><span>Serviço</span><span>{formatBRL(precoCalc.preco_servico || 0)}</span></div>
-                  <div className="flex justify-between text-ink-secondary"><span>ART/RRT</span><span>{formatBRL(precoCalc.art_fee || 0)}</span></div>
-                  <div className="border-t border-surface-border my-2" />
+                  <div className="flex justify-between" style={{ color: 'var(--text2)' }}><span>Serviço</span><span>{formatBRL(precoCalc.preco_servico || 0)}</span></div>
+                  <div className="flex justify-between" style={{ color: 'var(--text2)' }}><span>ART/RRT</span><span>{formatBRL(precoCalc.art_fee || 0)}</span></div>
+                  <div className="my-2" style={{ borderTop: '1px solid var(--border)' }} />
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-navy">Total</span>
+                    <span className="font-semibold" style={{ color: 'var(--text)' }}>Total</span>
                     <span className="text-2xl font-bold text-orange font-mono">{formatBRL(precoCalc.preco_cliente || 0)}</span>
                   </div>
                 </div>
-                <p className="text-2xs text-ink-muted mt-2">
+                <p className="text-2xs mt-2" style={{ color: 'var(--text3)' }}>
                   Profissional pode ajustar ±15% (autonomia técnica · STF Tema 1291)
                 </p>
               </div>
@@ -322,7 +322,7 @@ export default function NovaDemandaPage() {
 
             {/* Aviso de Demanda Especial */}
             {precoCalc?.area_especial && (
-              <div className="card p-4" style={{ borderColor: 'var(--gold)' }}>
+              <div className="card" style={{ borderColor: 'var(--gold)' }}>
                 <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>⚠ Demanda especial</p>
                 <p className="text-xs mt-1" style={{ color: 'var(--text2)' }}>
                   A área informada está acima do padrão para este serviço. O preço acima é uma
@@ -348,8 +348,8 @@ export default function NovaDemandaPage() {
         {/* ───────── ETAPA 3 · Confirmação ───────── */}
         {etapa === 3 && svcSelecionado && precoCalc && (
           <>
-            <div className="card p-4">
-              <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-2">Resumo</p>
+            <div className="card">
+              <p className="section-label mb-2">Resumo</p>
               <div className="space-y-1.5 text-sm">
                 <Row label="Serviço" value={`${svcSelecionado.codigo} · ${svcSelecionado.nome}`} />
                 <Row label="Tipo" value={`${imovel.tipo_imovel} · ${imovel.area_m2}m²`} />
@@ -359,24 +359,24 @@ export default function NovaDemandaPage() {
               </div>
             </div>
 
-            <div className="card p-4 border-orange-200 bg-orange-50 text-center">
+            <div className="card-accent text-center">
               <p className="text-2xs uppercase tracking-wider font-semibold text-orange mb-1">Total a pagar</p>
               <p className="text-4xl font-bold text-orange font-mono mb-1">{formatBRL(precoCalc.preco_cliente)}</p>
-              <p className="text-xs text-ink-muted">PIX via Pagar.me · Escrow protegido</p>
+              <p className="text-xs" style={{ color: 'var(--text3)' }}>PIX via Pagar.me · Escrow protegido</p>
             </div>
 
             {/* FSM */}
-            <div className="card p-4">
-              <p className="text-2xs uppercase tracking-wider font-semibold text-ink-muted mb-3">Fluxo</p>
+            <div className="card">
+              <p className="section-label mb-3">Fluxo</p>
               <div className="flex gap-1 items-center text-2xs font-semibold uppercase">
                 <FsmStep label="Aguard." current />
-                <span className="text-ink-light">→</span>
+                <span style={{ color: 'var(--text3)' }}>→</span>
                 <FsmStep label="Aceita" />
-                <span className="text-ink-light">→</span>
+                <span style={{ color: 'var(--text3)' }}>→</span>
                 <FsmStep label="Paga" />
-                <span className="text-ink-light">→</span>
+                <span style={{ color: 'var(--text3)' }}>→</span>
                 <FsmStep label="Exec." />
-                <span className="text-ink-light">→</span>
+                <span style={{ color: 'var(--text3)' }}>→</span>
                 <FsmStep label="Concl." />
               </div>
             </div>
@@ -397,8 +397,8 @@ export default function NovaDemandaPage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-3">
-      <span className="text-ink-muted">{label}</span>
-      <span className="font-semibold text-navy text-right">{value}</span>
+      <span style={{ color: 'var(--text3)' }}>{label}</span>
+      <span className="font-semibold text-right" style={{ color: 'var(--text)' }}>{value}</span>
     </div>
   )
 }
@@ -406,9 +406,8 @@ function Row({ label, value }: { label: string; value: string }) {
 function FsmStep({ label, current }: { label: string; current?: boolean }) {
   return (
     <div
-      className={`flex-1 px-1 py-1.5 rounded text-center border ${
-        current ? 'bg-orange text-white border-orange animate-pulse' : 'bg-surface text-ink-muted border-surface-border'
-      }`}
+      className={`flex-1 px-1 py-1.5 rounded text-center border ${current ? 'bg-orange text-white border-orange animate-pulse' : ''}`}
+      style={current ? undefined : { background: 'var(--navy3)', color: 'var(--text3)', borderColor: 'var(--border)' }}
     >
       {label}
     </div>

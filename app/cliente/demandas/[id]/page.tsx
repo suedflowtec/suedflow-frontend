@@ -9,6 +9,7 @@ import { StarRating } from '@/components/ui/StarRating'
 import { orders } from '@/lib/api'
 import { formatBRL, statusLabel, formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
+import { CheckCircle2, AlertTriangle, FileText, CreditCard, MessageCircle, Lock } from 'lucide-react'
 
 const NOTAS_INICIAIS = {
   nota_geral: 0,
@@ -290,7 +291,7 @@ export default function DemandaDetailPage() {
             {/* Em disputa */}
             {demanda.status === 'EM_DISPUTA' && (
               <div className="card-solid" style={{ borderColor: 'var(--red)' }}>
-                <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>⚠ Demanda em disputa</p>
+                <p className="text-sm font-semibold flex items-center gap-1" style={{ color: 'var(--red)' }}><AlertTriangle size={14} />Demanda em disputa</p>
                 <p className="text-sm mt-1" style={{ color: 'var(--text2)' }}>
                   Um curador irá analisar o caso e responder em até 5 dias úteis.
                 </p>
@@ -307,15 +308,15 @@ export default function DemandaDetailPage() {
                     href={demanda.url_entregavel}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn btn-secondary btn-sm inline-block"
+                    className="btn btn-secondary btn-sm inline-flex items-center gap-1"
                   >
-                    📄 Ver entregável (PDF)
+                    <FileText size={13} />Ver entregável (PDF)
                   </a>
                 )}
 
                 {!avaliando ? (
                   <Button onClick={() => setAvaliando(true)} variant="green" className="w-full btn-lg">
-                    ✓ Avaliar e confirmar entrega
+                    <CheckCircle2 size={15} />Avaliar e confirmar entrega
                   </Button>
                 ) : (
                   <div className="space-y-3 pt-2">
@@ -346,11 +347,11 @@ export default function DemandaDetailPage() {
             <div className="flex flex-wrap gap-2">
               {demanda.status === 'ACEITA' && (
                 <Button onClick={() => router.push(`/cliente/demandas/${id}/pagamento`)} className="btn-lg">
-                  💳 Pagar com PIX
+                  <CreditCard size={15} />Pagar com PIX
                 </Button>
               )}
               {!['CONCLUIDA', 'CANCELADA'].includes(demanda.status) && (
-                <Button variant="ghost" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬 Chat com profissional</Button>
+                <Button variant="ghost" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}><MessageCircle size={14} />Chat com profissional</Button>
               )}
             </div>
 
@@ -358,7 +359,7 @@ export default function DemandaDetailPage() {
             {!['CONCLUIDA', 'CANCELADA', 'EM_DISPUTA'].includes(demanda.status) && (
               <div className="card-solid space-y-2">
                 {!disputaAberta ? (
-                  <Button variant="ghost" onClick={() => setDisputaAberta(true)}>⚠ Abrir disputa</Button>
+                  <Button variant="ghost" onClick={() => setDisputaAberta(true)}><AlertTriangle size={14} />Abrir disputa</Button>
                 ) : (
                   <div className="space-y-2">
                     <p className="section-label">Motivo da disputa</p>
@@ -395,7 +396,7 @@ export default function DemandaDetailPage() {
                 <div className="flex justify-between">
                   <span style={{ color: 'var(--text3)' }}>Status</span>
                   <Badge variant={demanda.pago_em ? 'green' : 'gold'}>
-                    {demanda.pago_em ? '🔒 Em escrow' : 'Aguardando pagamento'}
+                    {demanda.pago_em ? <><Lock size={11} className="inline mr-0.5" />Em escrow</> : 'Aguardando pagamento'}
                   </Badge>
                 </div>
                 {demanda.pago_em && (
@@ -470,7 +471,7 @@ export default function DemandaDetailPage() {
                       </a>
                     )}
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}>💬</Button>
+                  <Button variant="ghost" size="sm" onClick={() => router.push(`/cliente/demandas/${id}/chat`)}><MessageCircle size={14} /></Button>
                 </div>
               </div>
             )}

@@ -27,7 +27,16 @@ async function request<T = any>(path: string, opts: Opts = {}): Promise<T> {
     body: formData ?? (body ? JSON.stringify(body) : undefined),
   })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new ApiError(data.error || `HTTP ${res.status}`, res.status, data)
+  if (!res.ok) {
+    if (res.status === 401 && auth && typeof window !== 'undefined') {
+      tokenStorage.clear()
+      userStorage.clear()
+      if (!window.location.pathname.startsWith('/auth/')) {
+        window.location.href = '/auth/login'
+      }
+    }
+    throw new ApiError(data.error || `HTTP ${res.status}`, res.status, data)
+  }
   return data as T
 }
 
@@ -74,6 +83,8 @@ export const orders = {
     request(`/api/orders/${id}/disputa`, { method: 'POST', body: { motivo } }),
   cancelar: (id: string, motivo: string) =>
     request(`/api/orders/${id}/cancelar`, { method: 'POST', body: { motivo } }),
+  checkin: (id: string, lat: number, lng: number) =>
+    request<any>(`/api/orders/${id}/checkin`, { method: 'POST', body: { lat, lng } }),
   registrarMarco: (id: string, tipo: string, obs?: string) => {
     const fd = new FormData()
     fd.append('tipo', tipo)
@@ -151,6 +162,29 @@ export const profissional = {
   },
   onboarding: (data: { conselho: string; numero_conselho: string; uf_conselho: string; svcs_habilitados: string[]; aceita_termos: boolean }) =>
     request<{ ok: boolean; msg: string }>('/api/profissional/onboarding', { method: 'POST', body: data }),
+  meuScore: () => request<{
+    score: number; nivel: string
+    metricas: Record<string, number>
+    penalidades_acumuladas: number
+    total_demandas: number; total_concluidas: number
+    penalidades_recentes: any[]
+    saude: { status: 'SAUDAVEL' | 'ATENCAO' | 'CRITICO'; score: number; nivel: string }
+  }>('/api/profissional/meu-score'),
+  financeiro: () => request<{
+    disponivel: number; em_custodia: number
+    faturado_mes: number; comissao_mes: number; liquido_mes: number
+    total_demandas_mes: number
+  }>('/api/profissional/financeiro'),
+}
+
+export const saques = {
+  criar: (data: { valor: number; pix_key: string }) =>
+    request<{
+      ok: boolean; saque_id: string; valor_bruto: number
+      irrf: number; taxa_saque: number; valor_liquido: number
+      status: string; msg: string
+    }>('/api/saques', { method: 'POST', body: data }),
+  listar: () => request<{ saques: any[] }>('/api/saques'),
 }
 
 export const curador = {

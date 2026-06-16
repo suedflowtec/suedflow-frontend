@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { Logo } from '@/components/ui/Logo'
 
 const REDIRECT: Record<string, string> = {
   ADMIN: '/admin', MODERADOR: '/admin',
@@ -41,8 +42,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-surface flex">
       {/* Painel esquerdo */}
       <div className="hidden lg:flex w-[420px] shrink-0 bg-navy flex-col justify-between p-10">
-        <Link href="/" className="font-black text-white text-xl tracking-tight">
-          SUED<span className="text-orange">FLOW</span>
+        <Link href="/">
+          <Logo height={36} />
         </Link>
         <div>
           <p className="text-white/50 text-sm mb-3 uppercase tracking-widest font-semibold">Plataforma técnica</p>

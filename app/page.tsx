@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { tokenStorage, userStorage } from '@/lib/api'
 import { useRouter } from 'next/navigation'
+import { Logo } from '@/components/ui/Logo'
 
 export default function LandingPage() {
   const router = useRouter()
@@ -26,12 +27,7 @@ export default function LandingPage() {
       {/* Header */}
       <header className="h-16 flex items-center justify-between px-8 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-orange flex items-center justify-center">
-            <span className="text-white font-black text-lg leading-none">S</span>
-          </div>
-          <span className="font-black text-white text-xl tracking-tight">
-            SUED<span className="text-orange">FLOW</span>
-          </span>
+          <Logo height={36} />
         </div>
         <div className="flex items-center gap-4">
           <Link href="/auth/login"

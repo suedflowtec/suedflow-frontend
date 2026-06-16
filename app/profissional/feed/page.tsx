@@ -1,11 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { orders } from '@/lib/api'
 import { formatBRL } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { Home, Building2, Factory, Radar, MapPin, Ruler, Clock } from 'lucide-react'
 
 export default function ProfissionalFeed() {
   const router = useRouter()
@@ -50,8 +51,10 @@ export default function ProfissionalFeed() {
   const URGENCIA_LABEL: Record<string, string> = {
     NORMAL: 'Normal', PRIORITARIO: '+30%', URGENTE: '+60%'
   }
-  const TIPO_LABEL: Record<string, string> = {
-    RESIDENCIAL: '🏠 Residencial', COMERCIAL: '🏢 Comercial', INDUSTRIAL: '🏭 Industrial'
+  const TIPO_LABEL: Record<string, React.ReactNode> = {
+    RESIDENCIAL: <span className="flex items-center gap-1"><Home size={12} />Residencial</span>,
+    COMERCIAL:   <span className="flex items-center gap-1"><Building2 size={12} />Comercial</span>,
+    INDUSTRIAL:  <span className="flex items-center gap-1"><Factory size={12} />Industrial</span>,
   }
 
   return (
@@ -70,7 +73,7 @@ export default function ProfissionalFeed() {
           <div className="text-center py-16" style={{ color: 'var(--text3)' }}>Carregando feed...</div>
         ) : demandas.length === 0 ? (
           <div className="card text-center py-12">
-            <div className="text-4xl mb-3 opacity-50">◉</div>
+            <div className="flex justify-center mb-3 opacity-50"><Radar size={40} strokeWidth={1.2} /></div>
             <p className="font-semibold text-white mb-1">Nenhuma demanda disponível agora</p>
             <p className="text-sm" style={{ color: 'var(--text3)' }}>
               Novas demandas aparecem assim que clientes as criam.
@@ -89,11 +92,11 @@ export default function ProfissionalFeed() {
                         <span className="badge badge-orange">{URGENCIA_LABEL[d.urgencia]}</span>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-3 text-xs" style={{ color: 'var(--text3)' }}>
-                      <span>{TIPO_LABEL[d.tipo_imovel] || d.tipo_imovel}</span>
-                      <span>📐 {d.area_m2}m²</span>
-                      <span>📍 {d.cidade}/{d.estado}</span>
-                      <span>⏱ SLA {d.sla_dias || 5} dias</span>
+                    <div className="flex flex-wrap gap-3 text-xs items-center" style={{ color: 'var(--text3)' }}>
+                      <span className="flex items-center gap-1">{TIPO_LABEL[d.tipo_imovel] || d.tipo_imovel}</span>
+                      <span className="flex items-center gap-1"><Ruler size={12} />{d.area_m2}m²</span>
+                      <span className="flex items-center gap-1"><MapPin size={12} />{d.cidade}/{d.estado}</span>
+                      <span className="flex items-center gap-1"><Clock size={12} />SLA {d.sla_dias || 5} dias</span>
                     </div>
                     {d.descricao && (
                       <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text2)' }}>{d.descricao}</p>

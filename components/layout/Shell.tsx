@@ -3,45 +3,48 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import {
+  LayoutGrid, List, Plus, Home, Radar, Wallet, Star,
+  User, Settings, FlaskConical, HeartPulse, ArrowLeftRight,
+  LogOut, Sun, Moon,
+} from 'lucide-react'
 import { tokenStorage, userStorage } from '@/lib/api'
+import { Logo } from '@/components/ui/Logo'
+import { useTheme } from '@/hooks/useTheme'
 
 const NAV = {
   CLIENTE: [
-    { href: '/cliente',              icon: '⊞', label: 'Painel' },
-    { href: '/cliente/demandas',     icon: '≡', label: 'Demandas' },
-    { href: '/cliente/nova-demanda', icon: '+', label: 'Nova demanda' },
-    { href: '/cliente/imoveis',      icon: '🏠', label: 'Meus imóveis' },
+    { href: '/cliente',              Icon: LayoutGrid, label: 'Painel' },
+    { href: '/cliente/demandas',     Icon: List,        label: 'Demandas' },
+    { href: '/cliente/nova-demanda', Icon: Plus,        label: 'Nova demanda' },
+    { href: '/cliente/imoveis',      Icon: Home,        label: 'Meus imóveis' },
   ],
   PROFISSIONAL: [
-    { href: '/profissional',            icon: '⊞', label: 'Painel' },
-    { href: '/profissional/feed',       icon: '◉', label: 'Feed de demandas' },
-    { href: '/profissional/demandas',   icon: '≡', label: 'Em andamento' },
-    { href: '/profissional/financeiro', icon: '₿', label: 'Financeiro' },
-    { href: '/profissional/score',      icon: '★', label: 'Score SQP' },
-    { href: '/profissional/perfil',     icon: '👤', label: 'Meu perfil' },
+    { href: '/profissional',            Icon: LayoutGrid, label: 'Painel' },
+    { href: '/profissional/feed',       Icon: Radar,      label: 'Feed de demandas' },
+    { href: '/profissional/demandas',   Icon: List,       label: 'Em andamento' },
+    { href: '/profissional/financeiro', Icon: Wallet,     label: 'Financeiro' },
+    { href: '/profissional/score',      Icon: Star,       label: 'Score SQP' },
+    { href: '/profissional/perfil',     Icon: User,       label: 'Meu perfil' },
   ],
   ADMIN: [
-    { href: '/admin',                 icon: '⊞', label: 'Dashboard' },
-    { href: '/admin/demandas',        icon: '≡', label: 'Demandas' },
-    { href: '/admin/profissionais',   icon: '★', label: 'Profissionais' },
-    { href: '/admin/precos',          icon: '⚙', label: 'Motor UTS' },
-    { href: '/admin/teste',           icon: '⚗', label: 'Ferramentas' },
-    { href: '/admin/health',          icon: '❤', label: 'Saúde do sistema' },
+    { href: '/admin',               Icon: LayoutGrid,  label: 'Dashboard' },
+    { href: '/admin/demandas',      Icon: List,        label: 'Demandas' },
+    { href: '/admin/profissionais', Icon: Star,        label: 'Profissionais' },
+    { href: '/admin/precos',        Icon: Settings,    label: 'Motor UTS' },
+    { href: '/admin/teste',         Icon: FlaskConical, label: 'Ferramentas' },
+    { href: '/admin/health',        Icon: HeartPulse,  label: 'Saúde do sistema' },
   ],
   CURADOR: [
-    { href: '/curador',      icon: '⊞', label: 'Painel' },
-    { href: '/curador/fila', icon: '≡', label: 'Fila de casos' },
+    { href: '/curador',      Icon: LayoutGrid, label: 'Painel' },
+    { href: '/curador/fila', Icon: List,       label: 'Fila de casos' },
   ],
 }
 
-// v4.4.5.8 · item 8.12 — contas com perfil de Cliente e Profissional ao mesmo
-// tempo decidem o menu pelo prefixo da rota atual, não mais por um `tipo`
-// único da conta.
 function getNav(user: any, pathname: string) {
   const tipo = user?.tipo
   if (tipo === 'ADMIN' || tipo === 'MODERADOR') return NAV.ADMIN
   if (tipo === 'CURADOR_SUPORTE' || tipo === 'CURADOR_SENIOR') return NAV.CURADOR
-
   if (user?.cliente && user?.profissional) {
     return pathname.startsWith('/profissional') ? NAV.PROFISSIONAL : NAV.CLIENTE
   }
@@ -53,6 +56,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
   const [user, setUser] = useState<any>(null)
+  const { theme, toggle } = useTheme()
 
   useEffect(() => { setUser(userStorage.get()) }, [])
 
@@ -67,7 +71,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   }
 
   const initials = user?.nome
-    ? user.nome.split(' ').map((n: string) => n[0]).slice(0,2).join('').toUpperCase()
+    ? user.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
     : '?'
 
   const TIPO_LABEL: Record<string, string> = {
@@ -85,17 +89,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <div className="h-14 flex items-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #E8671A, #FF8A3D)' }}
-            >
-              <span className="text-white font-black text-sm">S</span>
-            </div>
-            <span className="font-black text-white text-base tracking-tight">
-              SUED<span style={{ color: '#E8671A' }}>FLOW</span>
-            </span>
-          </div>
+          <Logo height={32} />
         </div>
 
         {/* Nav */}
@@ -104,7 +98,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             const active = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link key={item.href} href={item.href} className={`nav-item ${active ? 'active' : ''}`}>
-                <span className="w-5 text-center text-sm leading-none">{item.icon}</span>
+                <item.Icon size={16} strokeWidth={1.8} className="shrink-0" />
                 <span>{item.label}</span>
               </Link>
             )
@@ -112,9 +106,22 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
           <div className="pt-3 mt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <Link href="/configuracoes" className={`nav-item ${pathname === '/configuracoes' ? 'active' : ''}`}>
-              <span className="w-5 text-center text-sm">⚙</span>
+              <Settings size={16} strokeWidth={1.8} className="shrink-0" />
               <span>Configurações</span>
             </Link>
+
+            {/* Toggle tema claro/escuro */}
+            <button
+              onClick={toggle}
+              className="nav-item w-full text-left mt-0.5"
+              title={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+            >
+              {theme === 'dark'
+                ? <Sun size={16} strokeWidth={1.8} className="shrink-0" />
+                : <Moon size={16} strokeWidth={1.8} className="shrink-0" />
+              }
+              <span>{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</span>
+            </button>
           </div>
         </nav>
 
@@ -126,7 +133,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               className="w-full flex items-center justify-center gap-2 px-2 py-2 mb-2 rounded-xl text-xs font-semibold transition-colors"
               style={{ background: 'var(--glass)', color: 'var(--orange)', border: '1px solid var(--border)' }}
             >
-              <span>⇄</span>
+              <ArrowLeftRight size={13} strokeWidth={2} />
               {emModoProfissional ? 'Mudar para modo Cliente' : 'Mudar para modo Profissional'}
             </Link>
           )}
@@ -154,7 +161,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
             onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,103,26,0.1)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
-            <span>↩</span> Sair da conta
+            <LogOut size={13} strokeWidth={2} />
+            Sair da conta
           </button>
         </div>
       </aside>

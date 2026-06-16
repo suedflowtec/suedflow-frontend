@@ -6,6 +6,7 @@ import { orders } from '@/lib/api'
 import { formatBRL, statusLabel } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { CheckCircle2, AlertTriangle, MapPin, MessageCircle } from 'lucide-react'
 
 const MARCOS_VALIDOS = [
   { tipo: 'CHECK_IN_GPS',       label: 'Check-in GPS' },
@@ -40,6 +41,7 @@ export default function ProfissionalDemandaDetalhePage() {
   const [enviandoDisputa, setEnviandoDisputa] = useState(false)
   const [confirmandoCancelamento, setConfirmandoCancelamento] = useState(false)
   const [cancelando, setCancelando] = useState(false)
+  const [fazendoCheckin, setFazendoCheckin] = useState(false)
 
   const carregar = () => {
     if (!id) return
@@ -129,6 +131,31 @@ export default function ProfissionalDemandaDetalhePage() {
     }
   }
 
+  const fazerCheckin = () => {
+    if (!navigator.geolocation) {
+      toast('Geolocalização não suportada neste navegador', 'error')
+      return
+    }
+    setFazendoCheckin(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          await orders.checkin(id, pos.coords.latitude, pos.coords.longitude)
+          toast('Check-in realizado! Execução iniciada.', 'success')
+          carregar()
+        } catch (err: any) {
+          toast(err.message || 'Erro ao fazer check-in', 'error')
+        } finally {
+          setFazendoCheckin(false)
+        }
+      },
+      () => {
+        toast('Não foi possível obter sua localização. Permita o acesso à localização no navegador.', 'error')
+        setFazendoCheckin(false)
+      }
+    )
+  }
+
   const verResultadoQa = async () => {
     setCarregandoAvc(true)
     try {
@@ -215,7 +242,7 @@ export default function ProfissionalDemandaDetalhePage() {
             <ul className="space-y-2">
               {marcos.map((m: any) => (
                 <li key={m.tipo} className="flex items-center justify-between text-sm">
-                  <span className="text-white">✓ {MARCO_LABEL[m.tipo] || m.tipo}</span>
+                  <span className="text-white flex items-center gap-1"><CheckCircle2 size={13} />{MARCO_LABEL[m.tipo] || m.tipo}</span>
                   <span style={{ color: 'var(--text3)' }}>
                     {m.created_at ? new Date(m.created_at).toLocaleString('pt-BR') : ''}
                   </span>
@@ -245,12 +272,33 @@ export default function ProfissionalDemandaDetalhePage() {
           </div>
         </div>
 
+        {/* Check-in (inicia execução) */}
+        {demanda.status === 'PAGA' && (
+          <div className="card-accent space-y-3">
+            <p className="section-label">Fazer check-in</p>
+            {temArtAtiva ? (
+              <div>
+                <p className="text-sm mb-3" style={{ color: 'var(--text2)' }}>
+                  Pagamento confirmado e ART/RRT registrada. Faça o check-in no local para iniciar a execução.
+                </p>
+                <button className="btn btn-primary" disabled={fazendoCheckin} onClick={fazerCheckin}>
+                  {fazendoCheckin ? 'Obtendo localização...' : <><MapPin size={14} className="inline" /> Fazer check-in</>}
+                </button>
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: 'var(--text2)' }}>
+                Registre o marco "ART/RRT ativa" acima (com o número/protocolo da ART) antes de fazer o check-in.
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Submissão do entregável */}
         {temArtAtiva && (
           <div className="card-accent space-y-3">
             <p className="section-label">Entregável</p>
             {jaEnviouEntregavel ? (
-              <p className="text-sm" style={{ color: 'var(--green)' }}>✓ Entregável enviado para confirmação do cliente.</p>
+              <p className="text-sm flex items-center gap-1" style={{ color: 'var(--green)' }}><CheckCircle2 size={14} />Entregável enviado para confirmação do cliente.</p>
             ) : (
               <div>
                 <p className="text-sm mb-3" style={{ color: 'var(--text2)' }}>
@@ -303,7 +351,7 @@ export default function ProfissionalDemandaDetalhePage() {
         {!['CONCLUIDA', 'CANCELADA', 'EM_DISPUTA'].includes(demanda.status) && (
           <div className="card space-y-2">
             {!disputaAberta ? (
-              <button className="btn btn-secondary w-full" onClick={() => setDisputaAberta(true)}>⚠ Abrir disputa</button>
+              <button className="btn btn-secondary w-full flex items-center justify-center gap-1" onClick={() => setDisputaAberta(true)}><AlertTriangle size={14} />Abrir disputa</button>
             ) : (
               <div className="space-y-2">
                 <p className="section-label">Motivo da disputa</p>
@@ -327,7 +375,7 @@ export default function ProfissionalDemandaDetalhePage() {
 
         {demanda.status === 'EM_DISPUTA' && (
           <div className="card" style={{ borderColor: 'var(--red)' }}>
-            <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>⚠ Demanda em disputa</p>
+            <p className="text-sm font-semibold flex items-center gap-1" style={{ color: 'var(--red)' }}><AlertTriangle size={14} />Demanda em disputa</p>
             <p className="text-sm mt-1" style={{ color: 'var(--text2)' }}>
               Um curador irá analisar o caso e responder em até 5 dias úteis.
             </p>

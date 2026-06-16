@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { auth as authApi, tokenStorage, userStorage } from '@/lib/api'
 import { useToast } from '@/hooks/useToast'
+import { Logo } from '@/components/ui/Logo'
 
 export default function CadastroClient() {
   const router = useRouter()
@@ -48,8 +49,8 @@ export default function CadastroClient() {
     <div className="min-h-screen bg-surface flex">
       {/* Painel esquerdo */}
       <div className="hidden lg:flex w-[420px] shrink-0 bg-navy flex-col justify-between p-10">
-        <Link href="/" className="font-black text-white text-xl tracking-tight">
-          SUED<span className="text-orange">FLOW</span>
+        <Link href="/">
+          <Logo height={36} />
         </Link>
         <div>
           <p className="text-white/50 text-sm mb-3 uppercase tracking-widest font-semibold">Cadastro gratuito</p>

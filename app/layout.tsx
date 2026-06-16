@@ -9,7 +9,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        {/* Anti-FOUC: aplica o tema salvo antes do React hidratar */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            try {
+              var t = localStorage.getItem('suedflow_theme');
+              if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+            } catch(e){}
+          })();
+        `}} />
+      </head>
       <body>
         <ToastProvider>
           {children}

@@ -5,13 +5,16 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { notificacoes } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { ClipboardList, Wallet, CheckCircle2, Settings, AlertTriangle, Bell } from 'lucide-react'
 
-const TIPO_ICON: Record<string, string> = {
-  DEMANDA:   '📋',
-  PAGAMENTO: '₿',
-  QA:        '✓',
-  SISTEMA:   '⚙',
-  ALERTA:    '⚠',
+function TipoIcon({ tipo }: { tipo: string }) {
+  const props = { size: 18, strokeWidth: 1.6 }
+  if (tipo === 'DEMANDA')   return <ClipboardList {...props} />
+  if (tipo === 'PAGAMENTO') return <Wallet {...props} />
+  if (tipo === 'QA')        return <CheckCircle2 {...props} />
+  if (tipo === 'SISTEMA')   return <Settings {...props} />
+  if (tipo === 'ALERTA')    return <AlertTriangle {...props} />
+  return <Bell {...props} />
 }
 
 export default function NotificacoesPage() {
@@ -73,7 +76,7 @@ export default function NotificacoesPage() {
                   background: lida ? 'var(--glass)' : 'rgba(232,103,26,0.06)',
                 }}
               >
-                <div className="text-xl shrink-0">{TIPO_ICON[n.tipo] || '🔔'}</div>
+                <div className="shrink-0" style={{ color: 'var(--text3)' }}><TipoIcon tipo={n.tipo} /></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-semibold text-white text-sm">{n.titulo || n.tipo}</p>

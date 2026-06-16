@@ -9,6 +9,7 @@ import { curador as curadorApi } from '@/lib/api'
 import { formatBRL, formatDate } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { CheckCircle2, XCircle } from 'lucide-react'
 
 const TIPO_BADGE: Record<string, { text: string; variant: any }> = {
   QA_REPROVADO:     { text: 'QA reprovado', variant: 'gold' },
@@ -204,10 +205,10 @@ export default function CuradorCasoDetalhePage() {
                 />
                 <div className="flex gap-2">
                   <Button variant="green" className="flex-1" disabled={enviando} onClick={aprovar}>
-                    ✓ Aprovar entrega
+                    <CheckCircle2 size={15} />Aprovar entrega
                   </Button>
                   <Button variant="orange" className="flex-1" disabled={enviando} onClick={reprovar}>
-                    ✗ Reprovar (retrabalho)
+                    <XCircle size={15} />Reprovar (retrabalho)
                   </Button>
                 </div>
               </div>

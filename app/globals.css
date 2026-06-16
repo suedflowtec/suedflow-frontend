@@ -23,6 +23,25 @@
   --purple:  #9B6DFF;
 }
 
+/* ── Tema claro (ativo via [data-theme="light"] no <html>) ── */
+[data-theme="light"] {
+  --navy:    #F4F6F8;
+  --navy2:   #FFFFFF;
+  --navy3:   #EAF0F5;
+  --glass:   rgba(0,0,0,0.04);
+  --glass2:  rgba(0,0,0,0.07);
+  --border:  rgba(0,0,0,0.09);
+  --border2: rgba(0,0,0,0.14);
+  --text:    #0E2A3D;
+  --text2:   #4A6478;
+  --text3:   #8DA3B4;
+}
+[data-theme="light"] body {
+  background: var(--navy);
+  color: var(--text);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); }
+
 @keyframes sue-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.1); }
