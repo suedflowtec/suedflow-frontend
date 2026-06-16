@@ -89,7 +89,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <div className="h-14 flex items-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <Logo height={32} />
+          <Logo height={40} />
         </div>
 
         {/* Nav */}

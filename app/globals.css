@@ -33,8 +33,8 @@
   --border:  rgba(0,0,0,0.09);
   --border2: rgba(0,0,0,0.14);
   --text:    #0E2A3D;
-  --text2:   #4A6478;
-  --text3:   #8DA3B4;
+  --text2:   #2E4A5C;
+  --text3:   #4A6878;
 }
 [data-theme="light"] body {
   background: var(--navy);

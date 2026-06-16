@@ -161,11 +161,11 @@ export default function ProfissionalScore() {
               </div>
             )}
 
-            {/* Tabela de tiers */}
+            {/* Tabela de níveis */}
             <div className="card-solid">
-              <p className="section-label">Tiers e comissões (Grátis/PRO/Elite)</p>
+              <p className="section-label">Níveis e comissões (Grátis/PRO/Elite)</p>
               <table className="data-table">
-                <thead><tr><th>Tier</th><th>Pontos</th><th>Comissão</th><th>Status</th></tr></thead>
+                <thead><tr><th>Nível</th><th>Pontos</th><th>Comissão</th><th>Status</th></tr></thead>
                 <tbody>
                   {TIERS.map(t => (
                     <tr key={t.nome} style={t.nome === nivel ? { background: 'rgba(232,103,26,0.08)' } : {}}>

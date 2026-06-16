@@ -153,7 +153,7 @@ export default function ProfissionalFinanceiro() {
             <div>
               <p className="font-semibold text-white">{prof.plano || 'GRATIS'} · {prof.nivel || 'CANDIDATO'}</p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>
-                Comissão atual da plataforma · baseada em tier × plano
+                Comissão atual da plataforma · baseada em nível × plano
               </p>
             </div>
             <span className="badge badge-orange">{prof.nivel || 'CANDIDATO'}</span>

@@ -245,8 +245,8 @@
   margin-bottom: 22px;
   max-width: 16ch;
 }
-.landing-page .lp-hero-title .underline { position: relative; white-space: nowrap; }
-.landing-page .lp-hero-title .underline::after {
+.landing-page .lp-hero-title .lp-highlight { position: relative; white-space: nowrap; }
+.landing-page .lp-hero-title .lp-highlight::after {
   content: '';
   position: absolute;
   left: 2px;
@@ -308,8 +308,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 28%;
+  object-position: center center;
   display: block;
+  opacity: 0.85;
 }
 .landing-page .lp-hero-img-frame::after {
   content: '';

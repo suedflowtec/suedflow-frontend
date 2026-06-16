@@ -77,28 +77,35 @@ export default function NovaDemandaPage() {
   const buscarSue = async () => {
     const texto = descricaoSue.trim()
     if (!texto) return
+    if (texto.length < 10) {
+      setMensagensSue(m => [...m, {
+        autor: 'sue',
+        texto: 'Descreva um pouco mais — preciso de pelo menos 10 caracteres para entender a necessidade.',
+      }])
+      return
+    }
     setMensagensSue(m => [...m, { autor: 'usuario', texto }])
     setDescricaoSue('')
     setLoadingSue(true)
     try {
       const r = await sue.buscarSvc(texto)
-      const cod = r.svc_codigo || r.codigo
+      const cod = r.svc_sugerido
       const found = svcs.find(s => s.codigo === cod)
       if (found) {
+        const confianca = r.confianca ? ` (${Math.round(r.confianca * 100)}% de confiança)` : ''
         setMensagensSue(m => [...m, {
           autor: 'sue',
-          texto: r.justificativa || `Pelo que você descreveu, recomendo o serviço "${found.nome}".`,
+          texto: (r.justificativa || `Pelo que você descreveu, recomendo o serviço "${found.nome}".`) + confianca,
           svc: found,
         }])
       } else {
         setMensagensSue(m => [...m, {
           autor: 'sue',
-          texto: 'Não consegui identificar um serviço específico para essa descrição. Você pode escolher manualmente na lista abaixo, ou descrever de outra forma.',
+          texto: 'Não consegui identificar um serviço específico para essa descrição. Tente detalhar mais — por exemplo: "tenho trincas no teto do apartamento" — ou escolha manualmente abaixo.',
         }])
       }
     } catch {
-      setMensagensSue(m => [...m, { autor: 'sue', texto: 'Não consegui consultar o serviço agora. Escolha manualmente na lista abaixo.' }])
-      toast('Erro ao consultar SUE', 'error')
+      setMensagensSue(m => [...m, { autor: 'sue', texto: 'Não foi possível consultar agora. Escolha o serviço manualmente na lista abaixo.' }])
     } finally {
       setLoadingSue(false)
     }

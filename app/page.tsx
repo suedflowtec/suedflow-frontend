@@ -12,7 +12,7 @@ type SvcFilter = 'all' | 'res' | 'com' | 'ind'
 const COPY = {
   cliente: {
     navCta: 'Solicitar serviço',
-    heroTitle: <>Encontre o profissional certo para o seu <span className="underline">imóvel</span>, sem complicação.</>,
+    heroTitle: <>Encontre o profissional certo para o seu <span className="lp-highlight">imóvel</span>, sem complicação.</>,
     heroLede: 'Laudos, vistorias, projetos e regularizações com profissionais verificados, orçamento automático e pagamento protegido até a entrega.',
     heroCtaPrimary: 'Solicitar diagnóstico grátis',
     heroCtaSecondary: 'Ver serviços disponíveis',
@@ -31,7 +31,7 @@ const COPY = {
   },
   profissional: {
     navCta: 'Cadastrar como profissional',
-    heroTitle: <>Receba demandas qualificadas e <span className="underline">cresça de tier</span> a cada entrega.</>,
+    heroTitle: <>Receba demandas qualificadas e <span className="lp-highlight">suba de nível</span> a cada entrega.</>,
     heroLede: 'Trabalhe com escopo, checklist de QA e ART/RRT já definidos — e veja sua comissão cair conforme seu SQP sobe.',
     heroCtaPrimary: 'Cadastrar como profissional',
     heroCtaSecondary: 'Entender o Score SQP',
@@ -42,7 +42,7 @@ const COPY = {
     trustTitle: 'Por que profissionais confiam na SUEDFLOW',
     trustLede: 'Você entrega o serviço, nós garantimos o pagamento, a credibilidade e o crescimento.',
     testiTitle: 'O que dizem os profissionais',
-    ctaTitle: 'Pronto para receber demandas e subir de tier?',
+    ctaTitle: 'Pronto para receber demandas e subir de nível?',
     ctaLede: 'Cadastre seu CREA/CAU e comece a receber demandas compatíveis com sua especialidade.',
     ctaPrimary: 'Criar cadastro profissional',
     ctaSecondary: 'Entender o Score SQP',
@@ -66,11 +66,11 @@ const SVCS = [
 ]
 
 const TIERS = [
-  { rank: 'Tier 1', name: 'Candidato', comm: 22, pts: '0–199 pontos',   bar: 20 },
-  { rank: 'Tier 2', name: 'Júnior',    comm: 21, pts: '200–399 pontos', bar: 40 },
-  { rank: 'Tier 3', name: 'Pleno',     comm: 19, pts: '400–699 pontos', bar: 60 },
-  { rank: 'Tier 4', name: 'Sênior',    comm: 17, pts: '700–899 pontos', bar: 80 },
-  { rank: 'Tier 5', name: 'Elite',     comm: 15, pts: '900+ pontos',    bar: 100, elite: true },
+  { rank: 'Nível 1', name: 'Candidato', comm: 22, pts: '0–199 pontos',   bar: 20 },
+  { rank: 'Nível 2', name: 'Júnior',    comm: 21, pts: '200–399 pontos', bar: 40 },
+  { rank: 'Nível 3', name: 'Pleno',     comm: 19, pts: '400–699 pontos', bar: 60 },
+  { rank: 'Nível 4', name: 'Sênior',    comm: 17, pts: '700–899 pontos', bar: 80 },
+  { rank: 'Nível 5', name: 'Elite',     comm: 15, pts: '900+ pontos',    bar: 100, elite: true },
 ]
 
 function CheckIcon() {
@@ -138,7 +138,7 @@ export default function LandingPage() {
       <div className="lp-nav">
         <div className="lp-nav-inner">
           <Link href="/" aria-label="SUEDFLOW">
-            <Logo height={28} />
+            <Logo height={36} />
           </Link>
 
           <nav className="lp-nav-links">
@@ -240,7 +240,7 @@ export default function LandingPage() {
       <div className="lp-stats">
         <div className="lp-wrap lp-stats-grid reveal-stagger">
           <div><div className="num"><span>12</span></div><div className="lbl">Serviços técnicos no catálogo</div></div>
-          <div><div className="num">5</div><div className="lbl">Tiers de qualificação SQP</div></div>
+          <div><div className="num">5</div><div className="lbl">Níveis de qualificação SQP</div></div>
           <div><div className="num">100%</div><div className="lbl">Demandas com ART/RRT</div></div>
           <div><div className="num">João Pessoa/PB</div><div className="lbl">Fase de validação 2026</div></div>
         </div>
@@ -337,7 +337,7 @@ export default function LandingPage() {
               <div className="lp-tiers-head">
                 <div className="lp-kicker">Score de Qualificação Profissional</div>
                 <h2>Quanto mais você entrega, menor a comissão.</h2>
-                <p>O SQP avalia seus últimos 90 dias — prazo, qualidade e satisfação do cliente — e ajusta sua comissão automaticamente. Suba de tier entregando consistência.</p>
+                <p>O SQP avalia seus últimos 90 dias — prazo, qualidade e satisfação do cliente — e ajusta sua comissão automaticamente. Suba de nível entregando consistência.</p>
               </div>
               <div className="lp-tiers-grid">
                 {TIERS.map(t => (
@@ -460,7 +460,7 @@ export default function LandingPage() {
             <div className="lp-testi-grid reveal-stagger">
               <div className="lp-testi-card">
                 <div className="lp-testi-stars">★★★★★</div>
-                <p>"Como engenheiro recém-formado, comecei no tier Candidato. Em 4 meses cheguei ao Pleno e a comissão caiu de 22% para 19%. Cada laudo entregue no prazo conta no Score."</p>
+                <p>"Como engenheiro recém-formado, comecei no nível Candidato. Em 4 meses cheguei ao Pleno e a comissão caiu de 22% para 19%. Cada laudo entregue no prazo conta no Score."</p>
                 <div className="lp-testi-who">
                   <div className="lp-avatar" style={{ background: 'linear-gradient(135deg,#1C4663,#0E2A3D)' }}>RC</div>
                   <div><div className="name">Rafael Castro</div><div className="role">Eng. Civil · CREA-PB 28471</div></div>
@@ -508,7 +508,7 @@ export default function LandingPage() {
         <div className="lp-wrap">
           <div className="lp-footer-grid">
             <div className="lp-footer-brand">
-              <Link href="/"><Logo height={26} /></Link>
+              <Link href="/"><Logo height={32} /></Link>
               <p>Marketplace de engenharia e arquitetura com responsabilidade técnica, escrow e qualificação de profissionais por desempenho.</p>
               <div className="lp-footer-social">
                 <a href="#" aria-label="Instagram">
@@ -535,7 +535,7 @@ export default function LandingPage() {
               <h4>Para profissionais</h4>
               <Link href="/auth/cadastro?tipo=PROFISSIONAL">Cadastro profissional</Link>
               <a href="#tiers" onClick={() => setAudience('profissional')}>Score SQP</a>
-              <a href="#confianca" onClick={() => setAudience('profissional')}>Tiers e comissões</a>
+              <a href="#confianca" onClick={() => setAudience('profissional')}>Níveis e comissões</a>
             </div>
             <div className="lp-footer-col">
               <h4>Legal</h4>
