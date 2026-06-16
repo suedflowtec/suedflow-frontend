@@ -11,7 +11,7 @@ import { formatBRL } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 
 type Etapa = 1 | 2 | 3
-type SVC = { codigo: string; nome: string; descricao?: string; uts_res: number; uts_com: number; uts_ind: number; piso: number; teto: number; sla_dias: number }
+type SVC = { codigo: string; nome: string; descricao?: string; uts_res: number; uts_com: number; uts_ind: number; piso: number; teto: number; sla_dias: number; area_max_res?: number | null; area_max_com?: number | null; area_max_ind?: number | null }
 type MensagemSue = { autor: 'sue' | 'usuario'; texto: string; svc?: SVC }
 
 export default function NovaDemandaPage() {
@@ -45,6 +45,8 @@ export default function NovaDemandaPage() {
 
   // Calcular preço quando dados do imóvel mudarem
   useEffect(() => {
+    // Na etapa 3 preserva o preço calculado na etapa 2 — não limpa
+    if (etapa === 3) return
     if (etapa !== 2 || !svcSelecionado || !imovel.area_m2) { setPrecoCalc(null); return }
     const t = setTimeout(() => {
       orders.calcularPreco({
@@ -238,7 +240,7 @@ export default function NovaDemandaPage() {
                   <p className="text-xs line-clamp-2" style={{ color: 'var(--text3)' }}>{s.descricao || 'Serviço técnico SUEDFLOW'}</p>
                   <div className="flex gap-3 mt-2 text-2xs" style={{ color: 'var(--text3)' }}>
                     <span>⏱ {s.sla_dias || 5} dias</span>
-                    <span>📐 até 1.000m²</span>
+                    <span>📐 {s.area_max_res ? `até ${s.area_max_res.toLocaleString('pt-BR')}m² res.` : 'Área livre'}</span>
                   </div>
                 </button>
               ))}
