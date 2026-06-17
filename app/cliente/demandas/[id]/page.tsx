@@ -6,7 +6,7 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { StarRating } from '@/components/ui/StarRating'
-import { orders } from '@/lib/api'
+import { orders, admin } from '@/lib/api'
 import { formatBRL, statusLabel, formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 import { CheckCircle2, AlertTriangle, FileText, CreditCard, MessageCircle, Lock } from 'lucide-react'
@@ -62,6 +62,7 @@ export default function DemandaDetailPage() {
   const [cancelando, setCancelando] = useState(false)
   const [motivoCancelamento, setMotivoCancelamento] = useState('')
   const [enviandoCancelamento, setEnviandoCancelamento] = useState(false)
+  const [simulandoAceite, setSimulandoAceite] = useState(false)
 
   const id = params?.id as string
 
@@ -78,6 +79,20 @@ export default function DemandaDetailPage() {
     const t = setInterval(() => setAgora(Date.now()), 1000)
     return () => clearInterval(t)
   }, [demanda])
+
+  const simularAceiteProfissional = async () => {
+    setSimulandoAceite(true)
+    try {
+      await admin.teste.forcarStatus(id, 'ACEITA', 'Simulação de aceite para teste')
+      toast('Aceite simulado — agora pague com PIX para continuar o fluxo.', 'success')
+      const updated = await orders.buscar(id)
+      setDemanda(updated)
+    } catch (err: any) {
+      toast(err.message || 'Erro ao simular aceite', 'error')
+    } finally {
+      setSimulandoAceite(false)
+    }
+  }
 
   const cancelarDemanda = async () => {
     if (motivoCancelamento.trim().length < 5) {
@@ -159,7 +174,7 @@ export default function DemandaDetailPage() {
         actions={<Badge variant={s.variant === 'glass' ? 'glass' : s.variant as any}>{s.text}</Badge>}
       />
 
-      <main className="p-6 max-w-6xl">
+      <main className="p-6 lg:p-8 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Coluna principal */}
           <div className="lg:col-span-2 space-y-4">
@@ -203,6 +218,24 @@ export default function DemandaDetailPage() {
                       {idx < 3 && <span style={{ color: 'var(--text3)' }}>›</span>}
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-4 inline-block text-2xs px-3 py-2 rounded-lg" style={{ background: 'rgba(255,193,7,0.1)', color: 'var(--gold)' }}>
+                  🎭 <strong>Modo demonstração</strong> — sem profissionais reais cadastrados ainda.
+                  Use o botão abaixo para simular o aceite e testar o fluxo completo de pagamento.
+                </div>
+
+                <div className="mt-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={simularAceiteProfissional}
+                    loading={simulandoAceite}
+                    className="border"
+                    style={{ borderColor: 'var(--gold)', color: 'var(--gold)' }}
+                  >
+                    🎭 Simular aceite de profissional (teste)
+                  </Button>
                 </div>
 
                 <div className="mt-5">
@@ -381,7 +414,7 @@ export default function DemandaDetailPage() {
           </div>
 
           {/* Coluna lateral */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:sticky lg:top-[72px] lg:self-start">
 
             {/* Pagamento */}
             <div className="card-solid">
