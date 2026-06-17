@@ -66,20 +66,20 @@ export default function ClienteHome() {
           {/* KPIs */}
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <div className="kpi-card">
-              <p className="kpi-value" style={{ color: 'var(--orange)' }}>{ativas.length}</p>
               <p className="kpi-label">Demandas ativas</p>
+              <p className="kpi-value" style={{ color: 'var(--orange)' }}>{ativas.length}</p>
             </div>
             <div className="kpi-card">
-              <p className="kpi-value">{concluidas.length}</p>
               <p className="kpi-label">Concluídas</p>
+              <p className="kpi-value">{concluidas.length}</p>
             </div>
             <div className="kpi-card">
-              <p className="kpi-value">{demandas.length}</p>
               <p className="kpi-label">Total de demandas</p>
+              <p className="kpi-value">{demandas.length}</p>
             </div>
             <div className="kpi-card">
-              <p className="kpi-value">{formatBRL(valorTotal)}</p>
               <p className="kpi-label">Valor investido</p>
+              <p className="kpi-value">{formatBRL(valorTotal)}</p>
             </div>
           </div>
 

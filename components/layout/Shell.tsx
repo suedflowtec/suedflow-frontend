@@ -85,7 +85,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside
         className="w-64 shrink-0 flex flex-col fixed h-full z-30"
-        style={{ background: 'rgba(6,18,32,0.98)', borderRight: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ background: 'rgba(5,14,26,0.99)', borderRight: '1px solid rgba(255,255,255,0.07)', borderTop: '3px solid var(--orange)' }}
       >
         {/* Logo */}
         <div className="h-14 flex items-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
