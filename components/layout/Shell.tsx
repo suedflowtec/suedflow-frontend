@@ -84,12 +84,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen" style={{ background: 'var(--navy)' }}>
       {/* Sidebar */}
       <aside
+        data-sidebar
         className="w-64 shrink-0 flex flex-col fixed h-full z-30"
         style={{ background: 'rgba(5,14,26,0.99)', borderRight: '1px solid rgba(255,255,255,0.07)', borderTop: '3px solid var(--orange)' }}
       >
         {/* Logo */}
-        <div className="h-14 flex items-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <Logo height={40} />
+        <div className="h-16 flex items-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <Logo height={46} />
         </div>
 
         {/* Nav */}

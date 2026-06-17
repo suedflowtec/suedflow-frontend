@@ -44,6 +44,17 @@
 }
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); }
 
+/* Sidebar sempre usa paleta escura independente do tema da página */
+[data-theme="light"] [data-sidebar] {
+  --text3: #6B8499;
+  --text2: #A8BDCC;
+  --text:  #F0F4F8;
+  --glass: rgba(255,255,255,0.06);
+  --glass2: rgba(255,255,255,0.10);
+  --border: rgba(255,255,255,0.10);
+  --border2: rgba(255,255,255,0.16);
+}
+
 @keyframes sue-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.1); }
@@ -124,15 +135,15 @@
   /* ── Inputs ── */
   .input {
     @apply w-full px-3 py-2.5 text-sm rounded-xl transition-colors duration-150;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: var(--glass2);
+    border: 1px solid var(--border);
     color: var(--text);
   }
-  .input::placeholder { color: rgba(168,189,204,0.7); }
+  .input::placeholder { color: var(--text3); }
   .input:focus {
     outline: none;
     border-color: var(--orange);
-    background: rgba(255,255,255,0.09);
+    background: var(--glass2);
     box-shadow: 0 0 0 3px rgba(232,103,26,0.15);
   }
   .input-error {

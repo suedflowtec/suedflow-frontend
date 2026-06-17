@@ -138,7 +138,7 @@ export default function LandingPage() {
       <div className="lp-nav">
         <div className="lp-nav-inner">
           <Link href="/" aria-label="SUEDFLOW">
-            <Logo height={36} />
+            <Logo height={46} />
           </Link>
 
           <nav className="lp-nav-links">
@@ -289,7 +289,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ COMO FUNCIONA ═══ */}
-      <section className="lp-section-pad" id="como-funciona" style={{ background: '#fff', borderTop: '1px solid #EBEDEF', borderBottom: '1px solid #EBEDEF' }}>
+      <section className="lp-section-pad lp-section-alt" id="como-funciona">
         <div className="lp-wrap">
           <div className="lp-section-head reveal">
             <div className="lp-kicker">Como funciona</div>
@@ -422,7 +422,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ DEPOIMENTOS ═══ */}
-      <section className="lp-section-pad" style={{ background: '#fff', borderTop: '1px solid #EBEDEF', borderBottom: '1px solid #EBEDEF' }}>
+      <section className="lp-section-pad lp-section-alt">
         <div className="lp-wrap">
           <div className="lp-section-head reveal">
             <div className="lp-kicker">Quem já usou</div>
@@ -508,7 +508,7 @@ export default function LandingPage() {
         <div className="lp-wrap">
           <div className="lp-footer-grid">
             <div className="lp-footer-brand">
-              <Link href="/"><Logo height={32} /></Link>
+              <Link href="/"><Logo height={40} /></Link>
               <p>Marketplace de engenharia e arquitetura com responsabilidade técnica, escrow e qualificação de profissionais por desempenho.</p>
               <div className="lp-footer-social">
                 <a href="#" aria-label="Instagram">

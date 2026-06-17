@@ -308,9 +308,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
+  object-position: right center;
   display: block;
-  opacity: 0.85;
+  opacity: 0.88;
 }
 .landing-page .lp-hero-img-frame::after {
   content: '';
@@ -344,19 +344,18 @@
 }
 .landing-page .lp-float-chip svg { width: 16px; height: 16px; color: var(--lp-accent); }
 .landing-page .lp-chip-1 {
-  top: 16px;
-  right: 16px;
+  top: -16px;
+  right: 40px;
   animation: lp-drift1 9s ease-in-out infinite;
 }
 .landing-page .lp-chip-2 {
-  bottom: 20px;
-  left: 32px;
+  bottom: -16px;
+  left: 40px;
   animation: lp-drift2 11s ease-in-out infinite;
 }
 .landing-page .lp-chip-3 {
-  top: 50%;
-  right: 16px;
-  transform: translateY(-50%);
+  bottom: -16px;
+  right: 40px;
   animation: lp-drift1 13s ease-in-out infinite reverse;
 }
 .landing-page .lp-chip-3 svg { color: var(--lp-green); }
@@ -367,6 +366,13 @@
 @keyframes lp-drift2 {
   0%,100% { transform: translateY(0); }
   50% { transform: translateY(9px); }
+}
+
+/* ── Seção com fundo alternado (contraste entre seções adjacentes) ── */
+.landing-page .lp-section-alt {
+  background: var(--lp-navy-soft);
+  border-top: 1px solid var(--lp-line);
+  border-bottom: 1px solid var(--lp-line);
 }
 
 /* ── STATS ── */
@@ -655,8 +661,14 @@
   border-radius: 20px;
   padding: 28px;
   transition: all .25s;
+  box-shadow: var(--lp-shadow-sm);
+  border-left: 3px solid transparent;
 }
-.landing-page .lp-trust-card:hover { box-shadow: var(--lp-shadow-md); transform: translateY(-4px); }
+.landing-page .lp-trust-card:hover {
+  box-shadow: var(--lp-shadow-md);
+  transform: translateY(-4px);
+  border-left-color: var(--lp-accent);
+}
 .landing-page .lp-trust-icon {
   width: 48px;
   height: 48px;
@@ -687,6 +699,12 @@
   border: 1px solid var(--lp-line);
   border-radius: 20px;
   padding: 26px;
+  box-shadow: var(--lp-shadow-sm);
+  transition: box-shadow .25s, transform .25s;
+}
+.landing-page .lp-testi-card:hover {
+  box-shadow: var(--lp-shadow-md);
+  transform: translateY(-3px);
 }
 .landing-page .lp-testi-stars {
   display: flex;
