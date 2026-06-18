@@ -74,20 +74,58 @@ export default function CatalogoPage() {
           {sugestao && (
             <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
               {sugestao.svc_sugerido ? (
-                <div>
-                  <p className="text-sm" style={{ color: 'var(--text2)' }}>
-                    A SUE sugere: <span className="font-bold" style={{ color: 'var(--text)' }}>{sugestao.svc_nome}</span>{' '}
+                <div className="space-y-2">
+                  {/* Cabeçalho: SVC + percentual de exatidão */}
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="badge badge-orange">{sugestao.svc_sugerido}</span>
-                  </p>
+                    <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{sugestao.svc_nome}</span>
+                    {sugestao.confianca != null && (
+                      <span
+                        className="badge"
+                        style={{
+                          background: sugestao.confianca >= 0.80
+                            ? 'rgba(22,163,74,0.15)'
+                            : sugestao.confianca >= 0.60
+                              ? 'rgba(234,179,8,0.15)'
+                              : 'rgba(107,114,128,0.15)',
+                          color: sugestao.confianca >= 0.80
+                            ? 'var(--green)'
+                            : sugestao.confianca >= 0.60
+                              ? '#ca8a04'
+                              : 'var(--text3)',
+                        }}
+                      >
+                        {Math.round(sugestao.confianca * 100)}% de exatidão
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Justificativa */}
                   {sugestao.justificativa && (
-                    <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>{sugestao.justificativa}</p>
+                    <p className="text-xs" style={{ color: 'var(--text3)' }}>{sugestao.justificativa}</p>
                   )}
-                  <button
-                    className="btn btn-primary btn-sm mt-3"
-                    onClick={() => router.push(`/cliente/catalogo/${sugestao.svc_sugerido}`)}
-                  >
-                    Ver detalhes →
-                  </button>
+
+                  {/* Alternativa quando confiança baixa */}
+                  {sugestao.alternativa && sugestao.confianca < 0.75 && (
+                    <p className="text-xs" style={{ color: 'var(--text3)' }}>
+                      Alternativa: <span style={{ color: 'var(--text2)' }}>{sugestao.alternativa}</span>
+                    </p>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => router.push(`/cliente/nova-demanda?svc=${sugestao.svc_sugerido}`)}
+                    >
+                      Criar demanda →
+                    </button>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => router.push(`/cliente/catalogo/${sugestao.svc_sugerido}`)}
+                    >
+                      Ver detalhes
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <p className="text-sm" style={{ color: 'var(--text3)' }}>
