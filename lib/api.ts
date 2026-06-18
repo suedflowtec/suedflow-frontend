@@ -47,6 +47,19 @@ export const auth = {
   me: () => request<any>('/api/auth/me'),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
   recuperarSenha: (email: string) => request('/api/auth/recuperar-senha', { method: 'POST', body: { email }, auth: false }),
+  alterarSenha: (senha_atual: string, nova_senha: string) =>
+    request<{ ok: boolean; msg: string }>('/api/auth/alterar-senha', { method: 'PUT', body: { senha_atual, nova_senha } }),
+  atualizarPerfil: (data: {
+    username?: string | null
+    telefone?: string
+    exibir_selo_publico?: boolean
+    compartilhar_dados_anonimos?: boolean
+  }) => request<{ ok: boolean; usuario: any }>('/api/auth/perfil', { method: 'PUT', body: data }),
+  uploadFotoPerfil: (foto: File) => {
+    const fd = new FormData()
+    fd.append('foto', foto)
+    return request<{ ok: boolean; foto_url: string }>('/api/auth/foto-perfil', { method: 'POST', formData: fd })
+  },
 }
 
 export const svc = {
@@ -205,6 +218,16 @@ export const chat = {
   listar: (demandaId: string) => request<{ mensagens: any[] }>(`/api/chat/${demandaId}`),
   enviar: (demandaId: string, conteudo: string) =>
     request<any>(`/api/chat/${demandaId}`, { method: 'POST', body: { conteudo } }),
+}
+
+export const termos = {
+  listar: (tipo: 'CLIENTE' | 'PROFISSIONAL') =>
+    request<{ termos: { id: string; codigo: string; versao: string; tipo: string; titulo: string; vigencia: string; conteudo: string }[] }>(
+      `/api/termos?tipo=${tipo}`, { auth: false }
+    ),
+  buscar: (codigo: string) => request<any>(`/api/termos/${codigo}`, { auth: false }),
+  aceitar: (termo_ids: string[]) => request<any>('/api/termos/aceitar', { method: 'POST', body: { termo_ids } }),
+  meusAceites: () => request<{ aceites: any[] }>('/api/termos/usuario/meus-aceites'),
 }
 
 export const health = () => request<{ status: string; version: string; ts: string }>('/health', { auth: false })

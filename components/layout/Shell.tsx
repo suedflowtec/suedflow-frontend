@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { tokenStorage, userStorage } from '@/lib/api'
 import { Logo } from '@/components/ui/Logo'
+import { Avatar } from '@/components/ui/Avatar'
 import { useTheme } from '@/hooks/useTheme'
 
 const NAV = {
@@ -69,10 +70,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
     userStorage.clear()
     router.push('/auth/login')
   }
-
-  const initials = user?.nome
-    ? user.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
-    : '?'
 
   const TIPO_LABEL: Record<string, string> = {
     CLIENTE: 'Cliente', PROFISSIONAL: 'Profissional',
@@ -142,14 +139,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-2.5 px-2 py-2 mb-1 rounded-xl"
             style={{ background: 'rgba(255,255,255,0.05)' }}
           >
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-              style={{ background: 'linear-gradient(135deg, #E8671A, #FF8A3D)' }}
-            >
-              {initials}
-            </div>
+            <Avatar nome={user?.nome} fotoUrl={user?.foto_perfil} size={28} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white truncate">{user?.nome?.split(' ')[0] ?? '—'}</p>
+              <p className="text-xs font-semibold text-white truncate">
+                {user?.username ? `@${user.username}` : (user?.nome?.split(' ')[0] ?? '—')}
+              </p>
               <p className="text-xs truncate" style={{ color: 'var(--text3)' }}>
                 {TIPO_LABEL[user?.tipo] ?? user?.tipo ?? ''}
               </p>
