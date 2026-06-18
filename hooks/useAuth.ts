@@ -15,6 +15,14 @@ export function useAuth() {
     setLoading(false)
   }, [])
 
+  const updateUser = useCallback((partial: Record<string, any>) => {
+    setUser((prev: any) => {
+      const next = { ...prev, ...partial }
+      userStorage.set(next)
+      return next
+    })
+  }, [])
+
   const login = useCallback(async (email: string, senha: string) => {
     const data = await authApi.login(email, senha)
     tokenStorage.set(data.token)
@@ -30,5 +38,5 @@ export function useAuth() {
     router.push('/auth/login')
   }, [router])
 
-  return { user, loading, login, logout, isAuthenticated: !!user }
+  return { user, loading, login, logout, updateUser, isAuthenticated: !!user }
 }

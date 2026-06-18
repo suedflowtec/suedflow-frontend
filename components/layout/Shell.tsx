@@ -1,17 +1,16 @@
 // frontend/components/layout/Shell.tsx
 'use client'
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   LayoutGrid, List, Plus, Home, Radar, Wallet, Star,
   User, Settings, FlaskConical, HeartPulse, ArrowLeftRight,
   LogOut, Sun, Moon,
 } from 'lucide-react'
-import { tokenStorage, userStorage } from '@/lib/api'
 import { Logo } from '@/components/ui/Logo'
 import { Avatar } from '@/components/ui/Avatar'
 import { useTheme } from '@/hooks/useTheme'
+import { useAuth } from '@/hooks/useAuth'
 
 const NAV = {
   CLIENTE: [
@@ -55,21 +54,12 @@ function getNav(user: any, pathname: string) {
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const router   = useRouter()
-  const [user, setUser] = useState<any>(null)
+  const { user, logout } = useAuth()
   const { theme, toggle } = useTheme()
-
-  useEffect(() => { setUser(userStorage.get()) }, [])
 
   const nav = getNav(user, pathname)
   const temAmbosPerfis = !!(user?.cliente && user?.profissional)
   const emModoProfissional = pathname.startsWith('/profissional')
-
-  const handleLogout = () => {
-    tokenStorage.clear()
-    userStorage.clear()
-    router.push('/auth/login')
-  }
 
   const TIPO_LABEL: Record<string, string> = {
     CLIENTE: 'Cliente', PROFISSIONAL: 'Profissional',
@@ -150,7 +140,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-xs font-semibold transition-colors"
             style={{ color: 'var(--orange)' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,103,26,0.1)')}

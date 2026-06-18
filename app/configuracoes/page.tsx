@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { Avatar } from '@/components/ui/Avatar'
-import { tokenStorage, userStorage, auth as authApi } from '@/lib/api'
+import { tokenStorage, auth as authApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { Camera, Check, X, Eye, EyeOff } from 'lucide-react'
@@ -12,7 +12,7 @@ type Section = 'conta' | 'senha' | 'privacidade' | 'perigo'
 
 export default function ConfiguracoesPage() {
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, updateUser } = useAuth()
   const { toast } = useToast()
   const [section, setSection] = useState<Section>('conta')
 
@@ -43,14 +43,17 @@ export default function ConfiguracoesPage() {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [confirmText, setConfirmText]         = useState('')
 
+  // Inicializa os campos a partir do user uma única vez (quando user carrega do storage)
+  const [initialized, setInitialized] = useState(false)
   useEffect(() => {
-    if (!user) return
+    if (!user || initialized) return
     setUsername(user.username ?? '')
     setTelefone(user.telefone ?? '')
     setSeloPublico(user.exibir_selo_publico ?? true)
     setDadosAnonimos(user.compartilhar_dados_anonimos ?? false)
     setFotoPreview(user.foto_perfil ?? null)
-  }, [user])
+    setInitialized(true)
+  }, [user, initialized])
 
   if (authLoading || !user) return null
 
@@ -63,7 +66,7 @@ export default function ConfiguracoesPage() {
         username: username.trim() || null,
         telefone: telefone.trim(),
       })
-      userStorage.set({ ...user, ...res.usuario })
+      updateUser(res.usuario)
       toast('Perfil atualizado.', 'success')
     } catch (e: any) {
       toast(e.message || 'Erro ao salvar.', 'error')
@@ -75,17 +78,18 @@ export default function ConfiguracoesPage() {
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const preview = URL.createObjectURL(file)
-    setFotoPreview(preview)
+    // Mostra preview local imediatamente
+    const blobUrl = URL.createObjectURL(file)
+    setFotoPreview(blobUrl)
     setUploadingFoto(true)
     try {
       const res = await authApi.uploadFotoPerfil(file)
-      userStorage.set({ ...user, foto_perfil: res.foto_url })
+      updateUser({ foto_perfil: res.foto_url })
       setFotoPreview(res.foto_url)
       toast('Foto atualizada.', 'success')
     } catch (e: any) {
-      setFotoPreview(user.foto_perfil ?? null)
-      toast(e.message || 'Erro ao enviar foto.', 'error')
+      // Mantém o blob preview e informa o erro; não reseta para null
+      toast(e.message || 'Erro ao enviar foto. Tente novamente.', 'error')
     } finally {
       setUploadingFoto(false)
       if (fileRef.current) fileRef.current.value = ''
@@ -114,7 +118,7 @@ export default function ConfiguracoesPage() {
         exibir_selo_publico: seloPublico,
         compartilhar_dados_anonimos: dadosAnonimos,
       })
-      userStorage.set({ ...user, ...res.usuario })
+      updateUser(res.usuario)
       toast('Preferências salvas.', 'success')
     } catch (e: any) {
       toast(e.message || 'Erro ao salvar.', 'error')
@@ -126,7 +130,6 @@ export default function ConfiguracoesPage() {
   function handleCancelarConta() {
     if (confirmText !== 'CONFIRMAR') return
     tokenStorage.clear()
-    userStorage.clear()
     router.push('/?cancelado=1')
   }
 
