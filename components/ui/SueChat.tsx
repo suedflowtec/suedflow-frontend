@@ -2,7 +2,26 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { sue as sueApi, orders } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import { X, Send, Minimize2, Bot } from 'lucide-react'
+import { X, Send, Minimize2 } from 'lucide-react'
+
+function SueIcon({ size = 22, color = 'white' }: { size?: number; color?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        fontFamily: 'inherit',
+        fontSize: size * 0.95,
+        fontWeight: 900,
+        color,
+        letterSpacing: -0.5,
+        lineHeight: 1,
+        userSelect: 'none',
+      }}
+    >
+      S
+    </span>
+  )
+}
 
 interface Mensagem {
   role: 'user' | 'assistant'
@@ -41,14 +60,25 @@ export function SueChat() {
           ativas = Array.isArray(d) ? d.filter((x: any) => !['CONCLUIDA','CANCELADA'].includes(x.status)).length : 0
         } catch { /* silencioso */ }
 
+        const apelido = user.username
+          ? `@${user.username}`
+          : user.nome?.includes('@')
+            ? (user.email?.split('@')[0] ?? 'você')
+            : (user.nome?.split(' ')[0] ?? 'você')
+
         const saudacao = ativas > 0
-          ? `Olá, ${user.nome.split(' ')[0]}! Você tem ${ativas} demanda${ativas > 1 ? 's' : ''} ativa${ativas > 1 ? 's' : ''}. Posso te ajudar com algo?`
-          : `Olá, ${user.nome.split(' ')[0]}! Sou a SUE, sua assistente de engenharia. Descreva o que você precisa e eu encontro o serviço certo.`
+          ? `Olá, ${apelido}! Você tem ${ativas} demanda${ativas > 1 ? 's' : ''} ativa${ativas > 1 ? 's' : ''}. Posso te ajudar com algo?`
+          : `Olá, ${apelido}! Sou a SUE, sua assistente de engenharia. Descreva o que você precisa e eu encontro o serviço certo.`
 
         setMsgs([{ role: 'assistant', conteudo: saudacao }])
       }
     } catch {
-      setMsgs([{ role: 'assistant', conteudo: `Olá, ${user?.nome?.split(' ')[0] || ''}! Como posso ajudar?` }])
+      const apelido = user?.username
+        ? `@${user.username}`
+        : user?.nome?.includes('@')
+          ? (user?.email?.split('@')[0] ?? 'você')
+          : (user?.nome?.split(' ')[0] ?? 'você')
+      setMsgs([{ role: 'assistant', conteudo: `Olá, ${apelido}! Como posso ajudar?` }])
     }
   }, [inicializado, user])
 
@@ -100,7 +130,7 @@ export function SueChat() {
       >
         {aberto
           ? <Minimize2 size={20} color="var(--text2)" />
-          : <Bot size={22} color="white" />
+          : <SueIcon size={22} />
         }
       </button>
 
@@ -119,7 +149,7 @@ export function SueChat() {
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 shrink-0" style={{ borderBottom: '1px solid var(--border)', background: 'rgba(232,103,26,0.06)' }}>
             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, var(--orange), var(--orange2))' }}>
-              <Bot size={16} color="white" />
+              <SueIcon size={16} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>SUE</p>
@@ -136,7 +166,7 @@ export function SueChat() {
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'assistant' && (
                   <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mr-2 mt-1" style={{ background: 'linear-gradient(135deg, var(--orange), var(--orange2))' }}>
-                    <Bot size={12} color="white" />
+                    <SueIcon size={12} />
                   </div>
                 )}
                 <div
@@ -159,7 +189,7 @@ export function SueChat() {
             {loading && (
               <div className="flex justify-start">
                 <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mr-2 mt-1" style={{ background: 'linear-gradient(135deg, var(--orange), var(--orange2))' }}>
-                  <Bot size={12} color="white" />
+                  <SueIcon size={12} />
                 </div>
                 <div className="px-3 py-2.5 rounded-xl text-sm" style={{ background: 'var(--glass)', border: '1px solid var(--border)', color: 'var(--text3)' }}>
                   <span className="animate-pulse">digitando…</span>

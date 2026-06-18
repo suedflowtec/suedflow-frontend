@@ -60,6 +60,10 @@ export const auth = {
     fd.append('foto', foto)
     return request<{ ok: boolean; foto_url: string }>('/api/auth/foto-perfil', { method: 'POST', formData: fd })
   },
+  verificarCadastro: (userId: string, otp: string) =>
+    request<{ token: string; usuario: any }>('/api/auth/verificar-cadastro', { method: 'POST', body: { userId, otp }, auth: false }),
+  reenviarOtpCadastro: (userId: string) =>
+    request<{ ok: boolean; msg: string }>('/api/auth/reenviar-otp-cadastro', { method: 'POST', body: { userId }, auth: false }),
 }
 
 export const svc = {
