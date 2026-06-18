@@ -30,10 +30,14 @@ export default function NovaDemandaPage() {
     area_m2: '',
     estado: 'PB',
     cidade: 'João Pessoa',
-    endereco: '',
+    logradouro: '',
+    numero: '',
+    bairro: '',
     descricao: '',
     urgencia: 'NORMAL' as 'NORMAL' | 'PRIORITARIO' | 'URGENTE',
   })
+  const [cep, setCep] = useState('')
+  const [buscandoCep, setBuscandoCep] = useState(false)
   const [precoCalc, setPrecoCalc] = useState<any>(null)
   const [criando, setCriando] = useState(false)
 
@@ -73,6 +77,28 @@ export default function NovaDemandaPage() {
     return () => clearTimeout(t)
   }, [etapa, svcSelecionado, imovel])
 
+  const buscarCep = async () => {
+    const c = cep.replace(/\D/g, '')
+    if (c.length !== 8) { toast('CEP deve ter 8 dígitos.', 'error'); return }
+    setBuscandoCep(true)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${c}/json/`)
+      const data = await res.json()
+      if (data.erro) { toast('CEP não encontrado.', 'error'); return }
+      setImovel(i => ({
+        ...i,
+        estado:     data.uf || i.estado,
+        cidade:     data.localidade || i.cidade,
+        logradouro: data.logradouro || i.logradouro,
+        bairro:     data.bairro || i.bairro,
+      }))
+    } catch {
+      toast('Não foi possível buscar o CEP. Preencha manualmente.', 'error')
+    } finally {
+      setBuscandoCep(false)
+    }
+  }
+
   const buscarSue = async () => {
     const texto = descricaoSue.trim()
     if (!texto) return
@@ -111,13 +137,14 @@ export default function NovaDemandaPage() {
     if (!precoCalc) { toast('Aguarde o cálculo de preço finalizar.', 'error'); return }
     setCriando(true)
     try {
+      const enderecoCompleto = [imovel.logradouro, imovel.numero, imovel.bairro].filter(Boolean).join(', ')
       const d = await orders.criar({
         codigoSvc: svcSelecionado.codigo,
         tipoImovel: imovel.tipo_imovel,
         areaM2: Number(imovel.area_m2),
         estado: imovel.estado,
         cidade: imovel.cidade,
-        endereco: imovel.endereco,
+        endereco: enderecoCompleto,
         descricao: imovel.descricao,
         urgencia: imovel.urgencia,
         meioPagamento: 'PIX',
@@ -272,21 +299,47 @@ export default function NovaDemandaPage() {
                   <Field label="Área (m²)" required>
                     <Input type="number" value={imovel.area_m2} onChange={e => setImovel(i => ({ ...i, area_m2: e.target.value }))} placeholder="120" />
                   </Field>
+                  <Field label="CEP" hint="Preencha o CEP para localizar automaticamente">
+                    <div className="flex gap-2">
+                      <input
+                        className="input flex-1"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={9}
+                        value={cep}
+                        onChange={e => setCep(e.target.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2').slice(0, 9))}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); buscarCep() } }}
+                        placeholder="00000-000"
+                      />
+                      <button
+                        type="button"
+                        onClick={buscarCep}
+                        disabled={buscandoCep || cep.replace(/\D/g, '').length !== 8}
+                        className="btn btn-secondary btn-sm shrink-0"
+                      >
+                        {buscandoCep ? 'Buscando...' : 'Buscar CEP'}
+                      </button>
+                    </div>
+                  </Field>
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Estado" required>
-                      <select className="input" value={imovel.estado} onChange={e => setImovel(i => ({ ...i, estado: e.target.value }))}>
-                        <option value="PB">Paraíba</option>
-                        <option value="PE">Pernambuco</option>
-                        <option value="RN">Rio Grande do Norte</option>
-                      </select>
+                      <Input value={imovel.estado} onChange={e => setImovel(i => ({ ...i, estado: e.target.value.toUpperCase().slice(0, 2) }))} placeholder="PB" />
                     </Field>
                     <Field label="Cidade" required>
                       <Input value={imovel.cidade} onChange={e => setImovel(i => ({ ...i, cidade: e.target.value }))} />
                     </Field>
                   </div>
-                  <Field label="Endereço completo" required>
-                    <Input value={imovel.endereco} onChange={e => setImovel(i => ({ ...i, endereco: e.target.value }))} placeholder="Rua, número, bairro" />
+                  <Field label="Logradouro (rua/avenida)" required>
+                    <Input value={imovel.logradouro} onChange={e => setImovel(i => ({ ...i, logradouro: e.target.value }))} placeholder="Rua das Flores" />
                   </Field>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Número" required>
+                      <Input value={imovel.numero} onChange={e => setImovel(i => ({ ...i, numero: e.target.value }))} placeholder="123" />
+                    </Field>
+                    <Field label="Bairro">
+                      <Input value={imovel.bairro} onChange={e => setImovel(i => ({ ...i, bairro: e.target.value }))} placeholder="Centro" />
+                    </Field>
+                  </div>
                   <Field label="Descreva a necessidade" hint="Ajuda o profissional a se preparar">
                     <Textarea value={imovel.descricao} onChange={e => setImovel(i => ({ ...i, descricao: e.target.value }))} placeholder="Ex: trincas no teto da sala desde a obra do vizinho..." />
                   </Field>
@@ -313,11 +366,11 @@ export default function NovaDemandaPage() {
                   <Button variant="ghost" onClick={() => setEtapa(1)} className="flex-1">← Voltar</Button>
                   <Button
                     onClick={() => setEtapa(3)}
-                    disabled={!imovel.area_m2 || !imovel.endereco || !precoCalc}
-                    loading={!!(imovel.area_m2 && imovel.endereco && !precoCalc)}
+                    disabled={!imovel.area_m2 || !imovel.logradouro || !imovel.numero || !precoCalc}
+                    loading={!!(imovel.area_m2 && imovel.logradouro && imovel.numero && !precoCalc)}
                     className="flex-1"
                   >
-                    {imovel.area_m2 && imovel.endereco && !precoCalc ? 'Calculando...' : 'Continuar →'}
+                    {imovel.area_m2 && imovel.logradouro && imovel.numero && !precoCalc ? 'Calculando...' : 'Continuar →'}
                   </Button>
                 </div>
               </div>

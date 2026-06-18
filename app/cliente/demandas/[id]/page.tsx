@@ -9,7 +9,7 @@ import { StarRating } from '@/components/ui/StarRating'
 import { orders, admin } from '@/lib/api'
 import { formatBRL, statusLabel, formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
-import { CheckCircle2, AlertTriangle, FileText, CreditCard, MessageCircle, Lock } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, FileText, CreditCard, MessageCircle, Lock, Paperclip, Upload, ExternalLink } from 'lucide-react'
 
 const NOTAS_INICIAIS = {
   nota_geral: 0,
@@ -63,6 +63,9 @@ export default function DemandaDetailPage() {
   const [motivoCancelamento, setMotivoCancelamento] = useState('')
   const [enviandoCancelamento, setEnviandoCancelamento] = useState(false)
   const [simulandoAceite, setSimulandoAceite] = useState(false)
+  const [documentos, setDocumentos] = useState<any[]>([])
+  const [tipoDoc, setTipoDoc] = useState('OUTRO')
+  const [uploadandoDoc, setUploadandoDoc] = useState(false)
 
   const id = params?.id as string
 
@@ -72,7 +75,27 @@ export default function DemandaDetailPage() {
       .then(setDemanda)
       .catch(() => toast('Erro ao carregar demanda', 'error'))
       .finally(() => setLoading(false))
+    orders.listarDocumentos(id)
+      .then(r => setDocumentos(r.documentos || []))
+      .catch(() => {})
   }, [id, toast])
+
+  const handleUploadDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const arquivo = e.target.files?.[0]
+    if (!arquivo) return
+    if (arquivo.size > 20 * 1024 * 1024) { toast('Arquivo muito grande (máx. 20 MB)', 'error'); return }
+    setUploadandoDoc(true)
+    try {
+      const r = await orders.uploadDocumento(id, arquivo, tipoDoc)
+      setDocumentos(d => [...d, r.documento])
+      toast('Documento anexado com sucesso.', 'success')
+    } catch (err: any) {
+      toast(err.message || 'Erro ao enviar documento', 'error')
+    } finally {
+      setUploadandoDoc(false)
+      e.target.value = ''
+    }
+  }
 
   useEffect(() => {
     if (!demanda || demanda.status !== 'AGUARDANDO') return
@@ -468,6 +491,51 @@ export default function DemandaDetailPage() {
                   <span className="font-mono" style={{ color: 'var(--text)' }}>{formatBRL(demanda.art_fee || 0)}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Documentos de suporte */}
+            <div className="card-solid">
+              <div className="flex items-center justify-between mb-3">
+                <p className="section-label flex items-center gap-2"><Paperclip size={13} />Documentos de suporte</p>
+                <span className="text-2xs" style={{ color: 'var(--text3)' }}>{documentos.length} arquivo{documentos.length !== 1 ? 's' : ''}</span>
+              </div>
+
+              {documentos.length > 0 && (
+                <div className="space-y-1.5 mb-4">
+                  {documentos.map((doc: any) => (
+                    <div key={doc.id} className="flex items-center gap-2 text-xs rounded px-2 py-1.5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <FileText size={12} className="shrink-0" style={{ color: 'var(--orange)' }} />
+                      <span className="flex-1 truncate" style={{ color: 'var(--text2)' }}>{doc.nome}</span>
+                      <span className="shrink-0 px-1.5 py-0.5 rounded text-2xs font-mono" style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text3)' }}>{doc.tipo}</span>
+                      {doc.tamanho_kb && <span className="shrink-0" style={{ color: 'var(--text3)' }}>{doc.tamanho_kb}KB</span>}
+                      <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text3)' }}>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2 items-center">
+                <select
+                  className="input flex-1 text-xs"
+                  value={tipoDoc}
+                  onChange={e => setTipoDoc(e.target.value)}
+                >
+                  <option value="PROJETO">Projeto</option>
+                  <option value="CARTORIO">Cartório</option>
+                  <option value="CHECKLIST">Checklist inicial</option>
+                  <option value="LAUDO">Laudo anterior</option>
+                  <option value="CONSULTORIA">Consulta prévia</option>
+                  <option value="OUTRO">Outro documento</option>
+                </select>
+                <label className={`btn btn-secondary btn-sm shrink-0 cursor-pointer ${uploadandoDoc ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <Upload size={13} className="mr-1" />
+                  {uploadandoDoc ? 'Enviando...' : 'Anexar'}
+                  <input type="file" className="hidden" onChange={handleUploadDoc} disabled={uploadandoDoc} accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.dwg,.zip" />
+                </label>
+              </div>
+              <p className="text-2xs mt-2" style={{ color: 'var(--text3)' }}>Projetos, documentos de cartório, laudos anteriores — max. 20 MB por arquivo</p>
             </div>
 
             {/* Profissional designado */}
