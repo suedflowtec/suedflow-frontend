@@ -27,11 +27,11 @@ const METRICAS_LABEL: Record<string, { label: string; peso: number }> = {
 }
 
 const TIERS = [
-  { nome: 'CANDIDATO', min: 0,   max: 199,  comissao: '22%/19%/16%' },
-  { nome: 'JUNIOR',    min: 200, max: 399,  comissao: '21%/18%/15%' },
-  { nome: 'PLENO',     min: 400, max: 599,  comissao: '19%/16%/13%' },
-  { nome: 'SENIOR',    min: 600, max: 799,  comissao: '17%/14%/11%' },
-  { nome: 'ELITE',     min: 800, max: 1000, comissao: '15%/12%/9%'  },
+  { nome: 'CANDIDATO', min: 0,   max: 199,  comissao: '22%' },
+  { nome: 'JUNIOR',    min: 200, max: 399,  comissao: '21%' },
+  { nome: 'PLENO',     min: 400, max: 599,  comissao: '19%' },
+  { nome: 'SENIOR',    min: 600, max: 799,  comissao: '17%' },
+  { nome: 'ELITE',     min: 800, max: 1000, comissao: '15%' },
 ]
 
 export default function ProfissionalScore() {
@@ -163,9 +163,9 @@ export default function ProfissionalScore() {
 
             {/* Tabela de níveis */}
             <div className="card-solid">
-              <p className="section-label">Níveis e comissões (Grátis/PRO/Elite)</p>
+              <p className="section-label">Níveis e comissões</p>
               <table className="data-table">
-                <thead><tr><th>Nível</th><th>Pontos</th><th>Comissão</th><th>Status</th></tr></thead>
+                <thead><tr><th>Nível</th><th>Pontos</th><th>Comissão plataforma</th><th>Status</th></tr></thead>
                 <tbody>
                   {TIERS.map(t => (
                     <tr key={t.nome} style={t.nome === nivel ? { background: 'rgba(232,103,26,0.08)' } : {}}>

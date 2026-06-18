@@ -64,6 +64,8 @@ export const auth = {
     request<{ token: string; usuario: any }>('/api/auth/verificar-cadastro', { method: 'POST', body: { userId, otp }, auth: false }),
   reenviarOtpCadastro: (userId: string) =>
     request<{ ok: boolean; msg: string }>('/api/auth/reenviar-otp-cadastro', { method: 'POST', body: { userId }, auth: false }),
+  verificarOtp: (email: string, otp: string, nova_senha: string) =>
+    request<{ ok: boolean; msg: string }>('/api/auth/verificar-otp', { method: 'POST', body: { email, otp, nova_senha }, auth: false }),
 }
 
 export const svc = {
