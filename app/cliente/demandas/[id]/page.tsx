@@ -464,6 +464,33 @@ export default function DemandaDetailPage() {
               </div>
             </div>
 
+            {/* Mapa do local */}
+            {(demanda.endereco || demanda.cidade) && (
+              <div className="card-solid overflow-hidden" style={{ padding: 0 }}>
+                <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+                  <p className="section-label">Local da demanda</p>
+                  <a
+                    href={`https://www.google.com/maps/search/${encodeURIComponent([demanda.endereco, demanda.cidade, demanda.estado, 'Brasil'].filter(Boolean).join(', '))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-2xs font-semibold hover:underline"
+                    style={{ color: 'var(--orange)' }}
+                  >
+                    Abrir no Maps →
+                  </a>
+                </div>
+                <iframe
+                  title="Localização da demanda"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent([demanda.endereco, demanda.cidade, demanda.estado, 'Brasil'].filter(Boolean).join(', '))}&output=embed&z=16`}
+                  width="100%"
+                  height="220"
+                  style={{ border: 0, display: 'block' }}
+                  loading="lazy"
+                  allowFullScreen
+                />
+              </div>
+            )}
+
             {/* ART/RRT */}
             <div className="card-solid">
               <p className="section-label mb-3">ART/RRT</p>

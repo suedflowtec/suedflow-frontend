@@ -55,6 +55,37 @@
   --border2: rgba(255,255,255,0.16);
 }
 
+/* Topbar usa fundo escuro fixo — texto precisa ficar claro no tema light */
+[data-theme="light"] .topbar {
+  --text: #F0F4F8;
+  --text2: #A8BDCC;
+  --text3: #6B8499;
+}
+
+/* Cards com mais profundidade no tema claro */
+[data-theme="light"] .card {
+  background: rgba(255,255,255,0.82);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+[data-theme="light"] .card-solid {
+  background: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+/* Bordas de linha da tabela visíveis no tema claro */
+[data-theme="light"] .data-table tbody tr {
+  border-bottom: 1px solid rgba(0,0,0,0.07);
+}
+[data-theme="light"] .data-table tbody tr:hover { background: rgba(0,0,0,0.03); }
+[data-theme="light"] .data-table thead tr { border-bottom: 1px solid rgba(0,0,0,0.10); }
+
+/* Badge-gray legível no tema claro */
+[data-theme="light"] .badge-gray {
+  background: rgba(0,0,0,0.06);
+  color: var(--text3);
+  border-color: rgba(0,0,0,0.12);
+}
+
 @keyframes sue-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.1); }

@@ -38,9 +38,13 @@ export default function DemandasPage() {
             <button
               key={f}
               onClick={() => setFiltro(f)}
-              className={`px-4 py-1.5 rounded text-xs font-semibold border transition-colors ${
-                filtro === f ? 'bg-orange text-white border-orange' : 'bg-white text-ink-secondary border-surface-border hover:bg-surface-hover'
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                filtro === f ? 'border-orange' : ''
               }`}
+              style={filtro === f
+                ? { background: 'var(--orange)', color: '#fff', borderColor: 'var(--orange)' }
+                : { background: 'var(--glass2)', color: 'var(--text2)', borderColor: 'var(--border)' }
+              }
             >
               {f}
             </button>
@@ -49,10 +53,10 @@ export default function DemandasPage() {
 
         <div className="card">
           {loading ? (
-            <div className="px-4 py-10 text-center text-sm text-ink-muted">Carregando...</div>
+            <div className="px-4 py-10 text-center text-sm text-xs">Carregando...</div>
           ) : filtradas.length === 0 ? (
             <div className="px-4 py-12 text-center">
-              <p className="text-sm text-ink-muted mb-4">Nenhuma demanda nesta categoria</p>
+              <p className="text-sm text-xs mb-4">Nenhuma demanda nesta categoria</p>
               <Link href="/cliente/nova-demanda" className="btn btn-primary btn-sm">Criar demanda</Link>
             </div>
           ) : (
@@ -74,12 +78,12 @@ export default function DemandasPage() {
                   return (
                     <tr key={d.id} onClick={() => router.push(`/cliente/demandas/${d.id}`)}>
                       <td className="mono">{d.numero || d.id?.slice(0,8)}</td>
-                      <td className="font-medium text-navy">{d.svc_nome || d.svc_codigo}</td>
+                      <td className="font-medium font-medium">{d.svc_nome || d.svc_codigo}</td>
                       <td><span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span></td>
                       <td>{d.cidade}</td>
                       <td>{d.area_m2}m²</td>
                       <td>{formatDate(d.created_at || d.criado_em)}</td>
-                      <td className="text-right font-mono font-semibold text-navy">{formatBRL(d.preco_cliente || d.preco_servico || 0)}</td>
+                      <td className="text-right font-mono font-semibold font-medium">{formatBRL(d.preco_cliente || d.preco_servico || 0)}</td>
                     </tr>
                   )
                 })}

@@ -76,7 +76,7 @@ export default function CatalogoPage() {
               {sugestao.svc_sugerido ? (
                 <div>
                   <p className="text-sm" style={{ color: 'var(--text2)' }}>
-                    A SUE sugere: <span className="font-bold text-white">{sugestao.svc_nome}</span>{' '}
+                    A SUE sugere: <span className="font-bold" style={{ color: 'var(--text)' }}>{sugestao.svc_nome}</span>{' '}
                     <span className="badge badge-orange">{sugestao.svc_sugerido}</span>
                   </p>
                   {sugestao.justificativa && (
@@ -116,12 +116,12 @@ export default function CatalogoPage() {
                   <span className="badge badge-gray">{s.codigo}</span>
                   <span className="badge badge-teal">SLA {s.sla_dias}d</span>
                 </div>
-                <p className="font-semibold text-white mb-1">{s.nome}</p>
+                <p className="font-semibold mb-1" style={{ color: 'var(--text)' }}>{s.nome}</p>
                 {s.descricao && (
                   <p className="text-xs mb-3 line-clamp-2" style={{ color: 'var(--text3)' }}>{s.descricao}</p>
                 )}
                 <p className="text-sm" style={{ color: 'var(--text2)' }}>
-                  A partir de <span className="font-mono font-bold text-white">{precoDe(s)}</span>
+                  A partir de <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{precoDe(s)}</span>
                 </p>
               </button>
             ))}

@@ -39,9 +39,20 @@ export default function ConfiguracoesPage() {
   const [dadosAnonimos, setDadosAnonimos]     = useState(false)
   const [savingPriv, setSavingPriv]           = useState(false)
 
-  // ── cancelar conta ──
-  const [showCancelModal, setShowCancelModal] = useState(false)
-  const [confirmText, setConfirmText]         = useState('')
+  // ── cancelar conta (3 etapas) ──
+  const [cancelStep, setCancelStep]   = useState<0 | 1 | 2 | 3>(0) // 0=fechado 1=aviso 2=motivo 3=confirmar
+  const [cancelMotivo, setCancelMotivo] = useState('')
+  const [cancelMotivoPct, setCancelMotivoPct] = useState('')  // motivo de churn
+  const [confirmText, setConfirmText]  = useState('')
+  const MOTIVOS_CHURN = [
+    'Não encontrei profissional disponível',
+    'Preço acima do esperado',
+    'Prefiro contratar diretamente',
+    'Plataforma difícil de usar',
+    'Já conclui o que precisava',
+    'Privacidade e segurança de dados',
+    'Outro motivo',
+  ]
 
   // Inicializa os campos a partir do user uma única vez (quando user carrega do storage)
   const [initialized, setInitialized] = useState(false)
@@ -128,8 +139,15 @@ export default function ConfiguracoesPage() {
     }
   }
 
+  function fecharCancelModal() {
+    setCancelStep(0)
+    setCancelMotivoPct('')
+    setCancelMotivo('')
+    setConfirmText('')
+  }
+
   function handleCancelarConta() {
-    if (confirmText !== 'CONFIRMAR') return
+    if (confirmText !== 'CANCELAR MINHA CONTA') return
     tokenStorage.clear()
     router.push('/?cancelado=1')
   }
@@ -373,7 +391,7 @@ export default function ConfiguracoesPage() {
                 Seus dados são mantidos por 60 dias conforme a LGPD (Art. 18).
                 Esta ação é irreversível.
               </p>
-              <button onClick={() => setShowCancelModal(true)} className="btn btn-danger btn-sm">
+              <button onClick={() => setCancelStep(1)} className="btn btn-danger btn-sm">
                 Cancelar minha conta
               </button>
             </div>
@@ -381,25 +399,99 @@ export default function ConfiguracoesPage() {
         </div>
       </main>
 
-      {/* Modal cancelar conta */}
-      {showCancelModal && (
+      {/* Modal cancelar conta — 3 etapas */}
+      {cancelStep > 0 && (
         <div className="fixed inset-0 flex items-center justify-center z-50 px-4"
-          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
-          <div className="w-full max-w-sm p-6 rounded-2xl" style={{ background: 'var(--navy2)', border: '1px solid var(--border2)' }}>
-            <h3 className="text-base font-bold mb-2" style={{ color: 'var(--text)' }}>Cancelar conta</h3>
-            <p className="text-sm mb-4" style={{ color: 'var(--text2)' }}>
-              Esta ação não pode ser desfeita. Digite <strong style={{ color: 'var(--text)' }}>CONFIRMAR</strong> para prosseguir.
-            </p>
-            <input
-              className="input mb-4"
-              value={confirmText}
-              onChange={e => setConfirmText(e.target.value)}
-              placeholder="CONFIRMAR"
-            />
-            <div className="flex gap-3">
-              <button onClick={() => { setShowCancelModal(false); setConfirmText('') }} className="btn btn-secondary flex-1">Voltar</button>
-              <button onClick={handleCancelarConta} disabled={confirmText !== 'CONFIRMAR'} className="btn btn-danger flex-1">Confirmar</button>
-            </div>
+          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: 'var(--navy2)', border: '1px solid rgba(255,77,109,0.3)' }}>
+
+            {/* Etapa 1 — aviso */}
+            {cancelStep === 1 && (
+              <>
+                <div className="text-center mb-4">
+                  <p className="text-3xl mb-2">⚠️</p>
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--red)' }}>Você quer cancelar sua conta?</h3>
+                </div>
+                <div className="rounded-xl p-4 mb-5 space-y-2 text-sm" style={{ background: 'rgba(255,77,109,0.06)', border: '1px solid rgba(255,77,109,0.2)' }}>
+                  <p style={{ color: 'var(--text2)' }}>• Seu acesso será encerrado imediatamente</p>
+                  <p style={{ color: 'var(--text2)' }}>• Demandas em andamento serão afetadas</p>
+                  <p style={{ color: 'var(--text2)' }}>• Dados mantidos por 60 dias (LGPD Art. 18) e então removidos permanentemente</p>
+                  <p style={{ color: 'var(--text2)' }}>• <strong style={{ color: 'var(--red)' }}>Essa ação é irreversível</strong></p>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={fecharCancelModal} className="btn btn-secondary flex-1">Não, manter conta</button>
+                  <button onClick={() => setCancelStep(2)} className="btn btn-danger flex-1">Continuar</button>
+                </div>
+              </>
+            )}
+
+            {/* Etapa 2 — motivo de churn */}
+            {cancelStep === 2 && (
+              <>
+                <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text)' }}>Por que está saindo?</h3>
+                <p className="text-sm mb-4" style={{ color: 'var(--text3)' }}>Sua resposta nos ajuda a melhorar a plataforma para futuros usuários.</p>
+                <div className="space-y-2 mb-4">
+                  {MOTIVOS_CHURN.map(m => (
+                    <button
+                      key={m}
+                      onClick={() => setCancelMotivoPct(m)}
+                      className="w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors"
+                      style={{
+                        background: cancelMotivoPct === m ? 'rgba(255,77,109,0.15)' : 'var(--glass)',
+                        border: `1px solid ${cancelMotivoPct === m ? 'rgba(255,77,109,0.4)' : 'var(--border)'}`,
+                        color: cancelMotivoPct === m ? '#FF4D6D' : 'var(--text2)',
+                      }}
+                    >
+                      {cancelMotivoPct === m ? '● ' : '○ '}{m}
+                    </button>
+                  ))}
+                </div>
+                {cancelMotivoPct === 'Outro motivo' && (
+                  <textarea
+                    className="input mb-3"
+                    rows={2}
+                    placeholder="Conte-nos mais..."
+                    value={cancelMotivo}
+                    onChange={e => setCancelMotivo(e.target.value)}
+                  />
+                )}
+                <div className="flex gap-3">
+                  <button onClick={() => setCancelStep(1)} className="btn btn-secondary flex-1">← Voltar</button>
+                  <button
+                    onClick={() => setCancelStep(3)}
+                    disabled={!cancelMotivoPct}
+                    className="btn btn-danger flex-1"
+                  >Continuar</button>
+                </div>
+              </>
+            )}
+
+            {/* Etapa 3 — confirmação digitando texto */}
+            {cancelStep === 3 && (
+              <>
+                <h3 className="text-base font-bold mb-2" style={{ color: 'var(--red)' }}>Confirmação final</h3>
+                <p className="text-sm mb-4" style={{ color: 'var(--text2)' }}>
+                  Para confirmar o cancelamento, digite exatamente:<br />
+                  <strong style={{ color: 'var(--text)', letterSpacing: '0.05em' }}>CANCELAR MINHA CONTA</strong>
+                </p>
+                <input
+                  className="input mb-4"
+                  value={confirmText}
+                  onChange={e => setConfirmText(e.target.value)}
+                  placeholder="CANCELAR MINHA CONTA"
+                  autoComplete="off"
+                />
+                <div className="flex gap-3">
+                  <button onClick={() => setCancelStep(2)} className="btn btn-secondary flex-1">← Voltar</button>
+                  <button
+                    onClick={handleCancelarConta}
+                    disabled={confirmText !== 'CANCELAR MINHA CONTA'}
+                    className="btn btn-danger flex-1"
+                  >Cancelar conta definitivamente</button>
+                </div>
+              </>
+            )}
+
           </div>
         </div>
       )}

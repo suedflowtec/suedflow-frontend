@@ -6,7 +6,7 @@ import { orders } from '@/lib/api'
 import { formatBRL, statusLabel } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { CheckCircle2, AlertTriangle, MapPin, MessageCircle } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, MapPin, MessageCircle, Camera, Navigation } from 'lucide-react'
 
 const MARCOS_VALIDOS = [
   { tipo: 'CHECK_IN_GPS',       label: 'Check-in GPS' },
@@ -42,6 +42,9 @@ export default function ProfissionalDemandaDetalhePage() {
   const [confirmandoCancelamento, setConfirmandoCancelamento] = useState(false)
   const [cancelando, setCancelando] = useState(false)
   const [fazendoCheckin, setFazendoCheckin] = useState(false)
+  const selfieRef = useRef<HTMLInputElement>(null)
+  const [selfieFile, setSelfieFile] = useState<File | null>(null)
+  const [selfiePreview, setSelfiePreview] = useState<string | null>(null)
 
   const carregar = () => {
     if (!id) return
@@ -131,17 +134,33 @@ export default function ProfissionalDemandaDetalhePage() {
     }
   }
 
+  const capturarSelfie = () => selfieRef.current?.click()
+
+  const handleSelfie = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setSelfieFile(f)
+    setSelfiePreview(URL.createObjectURL(f))
+  }
+
   const fazerCheckin = () => {
-    if (!navigator.geolocation) {
-      toast('Geolocalização não suportada neste navegador', 'error')
-      return
-    }
+    if (!selfieFile) { toast('Tire uma selfie no local antes de fazer o check-in.', 'error'); return }
+    if (!navigator.geolocation) { toast('Geolocalização não suportada neste navegador', 'error'); return }
     setFazendoCheckin(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
-          await orders.checkin(id, pos.coords.latitude, pos.coords.longitude)
-          toast('Check-in realizado! Execução iniciada.', 'success')
+          const fd = new FormData()
+          fd.append('lat', String(pos.coords.latitude))
+          fd.append('lng', String(pos.coords.longitude))
+          fd.append('selfie', selfieFile)
+          await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'https://suedflow-backend-production.up.railway.app'}/api/orders/${id}/checkin`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${localStorage.getItem('suedflow_token')}` },
+            body: fd,
+          }).then(async r => { if (!r.ok) throw new Error((await r.json()).error || 'Erro') })
+          toast('Check-in realizado com selfie! Execução iniciada.', 'success')
+          setSelfieFile(null); setSelfiePreview(null)
           carregar()
         } catch (err: any) {
           toast(err.message || 'Erro ao fazer check-in', 'error')
@@ -150,7 +169,7 @@ export default function ProfissionalDemandaDetalhePage() {
         }
       },
       () => {
-        toast('Não foi possível obter sua localização. Permita o acesso à localização no navegador.', 'error')
+        toast('Não foi possível obter sua localização. Permita o acesso no navegador.', 'error')
         setFazendoCheckin(false)
       }
     )
@@ -183,11 +202,11 @@ export default function ProfissionalDemandaDetalhePage() {
         <div className="card grid grid-cols-3 gap-4">
           <div>
             <p className="section-label">Endereço</p>
-            <p className="text-sm text-white">{demanda.endereco || demanda.cidade || '—'}</p>
+            <p className="text-sm" style={{ color: 'var(--text)' }}>{demanda.endereco || demanda.cidade || '—'}</p>
           </div>
           <div>
             <p className="section-label">Prazo de entrega</p>
-            <p className="text-sm text-white">
+            <p className="text-sm" style={{ color: 'var(--text)' }}>
               {demanda.prazo_entrega ? new Date(demanda.prazo_entrega).toLocaleDateString('pt-BR') : '—'}
             </p>
           </div>
@@ -198,6 +217,33 @@ export default function ProfissionalDemandaDetalhePage() {
             </p>
           </div>
         </div>
+
+        {/* Mapa do local + traçar rota */}
+        {(demanda.endereco || demanda.cidade) && (
+          <div className="card-solid overflow-hidden" style={{ padding: 0 }}>
+            <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+              <p className="section-label flex items-center gap-1"><MapPin size={12} />Local da demanda</p>
+              <a
+                href={`https://www.google.com/maps/dir//${encodeURIComponent([demanda.endereco, demanda.cidade, demanda.estado, 'Brasil'].filter(Boolean).join(', '))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-2xs font-semibold hover:underline"
+                style={{ color: 'var(--orange)' }}
+              >
+                <Navigation size={11} />Traçar rota →
+              </a>
+            </div>
+            <iframe
+              title="Localização da demanda"
+              src={`https://maps.google.com/maps?q=${encodeURIComponent([demanda.endereco, demanda.cidade, demanda.estado, 'Brasil'].filter(Boolean).join(', '))}&output=embed&z=16`}
+              width="100%"
+              height="220"
+              style={{ border: 0, display: 'block' }}
+              loading="lazy"
+              allowFullScreen
+            />
+          </div>
+        )}
 
         <button className="btn btn-secondary" onClick={() => router.push(`/profissional/demandas/${id}/chat`)}>
           💬 Chat com cliente
@@ -242,7 +288,7 @@ export default function ProfissionalDemandaDetalhePage() {
             <ul className="space-y-2">
               {marcos.map((m: any) => (
                 <li key={m.tipo} className="flex items-center justify-between text-sm">
-                  <span className="text-white flex items-center gap-1"><CheckCircle2 size={13} />{MARCO_LABEL[m.tipo] || m.tipo}</span>
+                  <span className="flex items-center gap-1" style={{ color: 'var(--text)' }}><CheckCircle2 size={13} />{MARCO_LABEL[m.tipo] || m.tipo}</span>
                   <span style={{ color: 'var(--text3)' }}>
                     {m.created_at ? new Date(m.created_at).toLocaleString('pt-BR') : ''}
                   </span>
@@ -277,13 +323,62 @@ export default function ProfissionalDemandaDetalhePage() {
           <div className="card-accent space-y-3">
             <p className="section-label">Fazer check-in</p>
             {temArtAtiva ? (
-              <div>
-                <p className="text-sm mb-3" style={{ color: 'var(--text2)' }}>
-                  Pagamento confirmado e ART/RRT registrada. Faça o check-in no local para iniciar a execução.
+              <div className="space-y-3">
+                <p className="text-sm" style={{ color: 'var(--text2)' }}>
+                  Pagamento confirmado e ART/RRT registrada. Para iniciar a execução, tire uma selfie no local e confirme sua localização GPS.
                 </p>
-                <button className="btn btn-primary" disabled={fazendoCheckin} onClick={fazerCheckin}>
-                  {fazendoCheckin ? 'Obtendo localização...' : <><MapPin size={14} className="inline" /> Fazer check-in</>}
+
+                {/* Selfie */}
+                <input
+                  ref={selfieRef}
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  onChange={handleSelfie}
+                  className="hidden"
+                />
+                {selfiePreview ? (
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={selfiePreview}
+                      alt="Selfie"
+                      className="rounded-lg object-cover"
+                      style={{ width: 72, height: 72, border: '2px solid var(--green)' }}
+                    />
+                    <div>
+                      <p className="text-xs font-semibold" style={{ color: 'var(--green)' }}>Selfie capturada ✓</p>
+                      <button
+                        className="text-2xs underline mt-1"
+                        style={{ color: 'var(--text3)' }}
+                        onClick={capturarSelfie}
+                      >
+                        Tirar outra
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="btn btn-secondary flex items-center gap-2"
+                    onClick={capturarSelfie}
+                  >
+                    <Camera size={14} />
+                    Tirar selfie no local (câmera frontal)
+                  </button>
+                )}
+
+                <button
+                  className="btn btn-primary"
+                  disabled={fazendoCheckin || !selfieFile}
+                  onClick={fazerCheckin}
+                  title={!selfieFile ? 'Tire uma selfie antes de fazer o check-in' : ''}
+                >
+                  {fazendoCheckin ? 'Verificando localização...' : <><MapPin size={14} className="inline mr-1" />Fazer check-in com GPS</>}
                 </button>
+                {!selfieFile && (
+                  <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                    ⚠ Selfie obrigatória para confirmar presença no local.
+                  </p>
+                )}
               </div>
             ) : (
               <p className="text-sm" style={{ color: 'var(--text2)' }}>
