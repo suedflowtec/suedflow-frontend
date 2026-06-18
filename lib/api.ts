@@ -92,8 +92,8 @@ export const orders = {
     request<any[]>(`/api/orders${contexto ? `?contexto=${contexto}` : ''}`),
   buscar: (id: string) => request<any>(`/api/orders/${id}`),
   feed: () => request<{ demandas: any[] }>('/api/orders/feed'),
-  aceitar: (id: string, preco_negociado: number) =>
-    request(`/api/orders/${id}/aceitar`, { method: 'POST', body: { preco_negociado } }),
+  aceitar: (id: string, ajuste_pct: number) =>
+    request(`/api/orders/${id}/aceitar`, { method: 'POST', body: { ajuste_pct } }),
   pagarPix: (id: string) => request<{
     pix_code: string; pix_qr: string | null; valor: number
     expira_em: string; mock?: boolean; msg?: string
