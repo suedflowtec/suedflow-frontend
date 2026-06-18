@@ -1,72 +1,60 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
+import { termos as termosApi } from '@/lib/api'
 
 export default function PrivacidadePage() {
+  const [conteudo, setConteudo] = useState('')
+  const [vigencia, setVigencia] = useState('')
+  const [carregando, setCarregando] = useState(true)
+
+  useEffect(() => {
+    termosApi.listar('CLIENTE').then(r => {
+      const pol = r.termos.find((t: { tipo: string }) => t.tipo === 'PRIVACIDADE_DADOS')
+      if (pol) {
+        setConteudo(pol.conteudo)
+        setVigencia(new Date(pol.vigencia).toLocaleDateString('pt-BR'))
+      }
+    }).catch(() => {}).finally(() => setCarregando(false))
+  }, [])
+
   return (
-    <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
-      <header className="border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between">
-          <Link href="/" className="font-black text-white text-xl tracking-tight">
-            SUED<span style={{ color: 'var(--orange)' }}>FLOW</span>
-          </Link>
-          <Link href="/" className="btn btn-secondary btn-sm">Voltar</Link>
-        </div>
+    <div style={{ minHeight: '100vh', background: '#FAFAF7', color: '#0E2A3D' }}>
+      <header style={{ borderBottom: '1px solid #EBEDEF', padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
+        <Link href="/"><Logo height={32} /></Link>
+        <span style={{ color: '#5A7184', fontSize: 14 }}>Política de Privacidade e Proteção de Dados</span>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-12 space-y-6" style={{ color: 'var(--text2)' }}>
-        <h1 className="text-2xl font-bold text-white">Política de Privacidade</h1>
-        <p className="text-sm" style={{ color: 'var(--text3)' }}>
-          Última atualização: 11 de junho de 2026
-        </p>
+      <main style={{ maxWidth: 820, margin: '0 auto', padding: '40px 32px 80px' }}>
+        {carregando && <p style={{ color: '#5A7184', fontSize: 14 }}>Carregando...</p>}
 
-        <div className="card space-y-4 text-sm leading-relaxed">
-          <section>
-            <h2 className="font-semibold text-white mb-2">1. Dados coletados</h2>
-            <p>
-              A SUEDFLOW Tecnologia Ltda. coleta dados de cadastro (nome, e-mail, CPF/CNPJ,
-              telefone, endereço), dados de uso da plataforma e documentos enviados para
-              verificação (KYC) de profissionais.
+        {!carregando && !conteudo && (
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Política de Privacidade</h1>
+            <p style={{ color: '#5A7184', fontSize: 14 }}>
+              Documento não disponível. Execute <code>npm run db:seed-termos</code> no backend para carregá-lo.
             </p>
-          </section>
-          <section>
-            <h2 className="font-semibold text-white mb-2">2. Finalidade do tratamento</h2>
-            <p>
-              Os dados são utilizados para viabilizar a contratação de serviços de engenharia,
-              processar pagamentos via Pagar.me, emitir notas fiscais (NFS-e) e calcular o
-              Score de Qualificação Profissional (SQP).
+          </div>
+        )}
+
+        {!carregando && conteudo && (
+          <>
+            <p style={{ color: '#5A7184', fontSize: 12, marginBottom: 32 }}>
+              POLITICA-PRIVACIDADE-v1.0 · Vigência: {vigencia}
             </p>
-          </section>
-          <section>
-            <h2 className="font-semibold text-white mb-2">3. Compartilhamento</h2>
-            <p>
-              Dados podem ser compartilhados com parceiros de pagamento, armazenamento de
-              arquivos (Cloudinary) e órgãos públicos, quando exigido por lei.
-            </p>
-          </section>
-          <section>
-            <h2 className="font-semibold text-white mb-2">4. Direitos do usuário (LGPD)</h2>
-            <p>
-              Você pode solicitar acesso, correção, exportação ou exclusão dos seus dados
-              pessoais a qualquer momento em{' '}
-              <Link href="/configuracoes" className="font-semibold hover:underline" style={{ color: 'var(--orange)' }}>
-                Configurações
-              </Link>.
-            </p>
-          </section>
-          <section>
-            <h2 className="font-semibold text-white mb-2">5. Contato</h2>
-            <p>
-              Em caso de dúvidas sobre esta política, contate{' '}
-              <a href="mailto:privacidade@suedflow.com.br" className="font-semibold hover:underline" style={{ color: 'var(--orange)' }}>
-                privacidade@suedflow.com.br
-              </a>.
-            </p>
-          </section>
+            <div
+              style={{ fontSize: 14, lineHeight: 1.75, color: '#1A3347' }}
+              dangerouslySetInnerHTML={{ __html: conteudo }}
+            />
+          </>
+        )}
+
+        <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid #EBEDEF' }}>
+          <Link href="/termos" style={{ color: '#E8671A', fontSize: 14, fontWeight: 600 }}>
+            ← Ver Termos de Uso
+          </Link>
         </div>
-
-        <p className="text-xs" style={{ color: 'var(--text3)' }}>
-          SUEDFLOW Tecnologia Ltda. · João Pessoa/PB · 2026
-        </p>
       </main>
     </div>
   )
