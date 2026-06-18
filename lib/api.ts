@@ -69,6 +69,14 @@ export const svc = {
 
 export const sue = {
   buscarSvc: (descricao: string) => request<any>('/api/busca-svc', { method: 'POST', body: { descricao }, auth: false }),
+  chat: (mensagem: string, demandaId?: string) =>
+    request<{ resposta: string; trigger: string | null; tokens: number }>(
+      '/api/sue/mensagem', { method: 'POST', body: { mensagem, demandaId } }
+    ),
+  historico: (demandaId?: string) =>
+    request<{ mensagens: Array<{ role: 'user' | 'assistant'; conteudo: string; trigger: string | null; created_at: string }> }>(
+      `/api/sue/historico${demandaId ? `?demandaId=${demandaId}` : ''}`
+    ),
 }
 
 export const orders = {

@@ -88,8 +88,9 @@ export default function ConfiguracoesPage() {
       setFotoPreview(res.foto_url)
       toast('Foto atualizada.', 'success')
     } catch (e: any) {
-      // Mantém o blob preview e informa o erro; não reseta para null
-      toast(e.message || 'Erro ao enviar foto. Tente novamente.', 'error')
+      // Mantém o blob preview local; mostra erro com código HTTP para diagnóstico
+      const msg = e.status ? `Erro ${e.status}: ${e.message || 'falha no upload'}` : (e.message || 'Erro ao enviar foto.')
+      toast(msg, 'error')
     } finally {
       setUploadingFoto(false)
       if (fileRef.current) fileRef.current.value = ''

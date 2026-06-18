@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { Avatar } from '@/components/ui/Avatar'
+import { SueChat } from '@/components/ui/SueChat'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -156,6 +157,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div className="ml-64 flex-1 flex flex-col min-h-screen">
         {children}
       </div>
+
+      {/* SUE — assistente flutuante */}
+      <SueChat />
     </div>
   )
 }
