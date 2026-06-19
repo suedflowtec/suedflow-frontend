@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { tokenStorage, userStorage } from '@/lib/api'
 import { Logo } from '@/components/ui/Logo'
+import { SueChatPublica } from '@/components/ui/SueChatPublica'
 import './landing.css'
 
 type Audience = 'cliente' | 'profissional'
@@ -502,6 +503,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ═══ SUE PÚBLICA ═══ */}
+      <SueChatPublica />
 
       {/* ═══ FOOTER ═══ */}
       <footer>

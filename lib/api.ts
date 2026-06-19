@@ -176,6 +176,15 @@ export const imovel = {
   historico: (id: string) => request<{ imovel_id: string; demandas: any[]; achados: any[] }>(`/api/imovel/historico/${id}`),
 }
 
+export const suePublica = {
+  chat: (mensagem: string, historico: { role: string; content: string }[] = []) =>
+    request<{ resposta: string }>('/api/sue/publica', {
+      method: 'POST',
+      body: { mensagem, historico },
+      auth: false,
+    }),
+}
+
 export const selo = {
   meu: (imovelId: string) => request<{ selo: any; proximoNivel: any; nivel_config: any }>(`/api/selo/imovel/${imovelId}`),
   progresso: (imovelId: string) => request<{ progresso: any }>(`/api/selo/${imovelId}/progresso`),
