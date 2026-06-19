@@ -64,7 +64,8 @@ export default function DemandaDetailPage() {
   const [enviandoCancelamento, setEnviandoCancelamento] = useState(false)
   const [simulandoAceite, setSimulandoAceite] = useState(false)
   const [documentos, setDocumentos] = useState<any[]>([])
-  const [tipoDoc, setTipoDoc] = useState('OUTRO')
+  const [tipoDoc, setTipoDoc] = useState('PROJETO')
+  const [descricaoOutro, setDescricaoOutro] = useState('')
   const [uploadandoDoc, setUploadandoDoc] = useState(false)
 
   const id = params?.id as string
@@ -84,11 +85,17 @@ export default function DemandaDetailPage() {
     const arquivo = e.target.files?.[0]
     if (!arquivo) return
     if (arquivo.size > 20 * 1024 * 1024) { toast('Arquivo muito grande (máx. 20 MB)', 'error'); return }
+    if (tipoDoc === 'OUTRO' && !descricaoOutro.trim()) {
+      toast('Descreva o documento antes de anexar', 'error')
+      e.target.value = ''
+      return
+    }
     setUploadandoDoc(true)
     try {
-      const r = await orders.uploadDocumento(id, arquivo, tipoDoc)
+      const r = await orders.uploadDocumento(id, arquivo, tipoDoc, tipoDoc === 'OUTRO' ? descricaoOutro : undefined)
       setDocumentos(d => [...d, r.documento])
       toast('Documento anexado com sucesso.', 'success')
+      if (tipoDoc === 'OUTRO') setDescricaoOutro('')
     } catch (err: any) {
       toast(err.message || 'Erro ao enviar documento', 'error')
     } finally {
@@ -543,26 +550,39 @@ export default function DemandaDetailPage() {
                 </div>
               )}
 
-              <div className="flex gap-2 items-center">
+              <div className="space-y-2">
                 <select
-                  className="input flex-1 text-xs"
+                  className="input w-full text-xs"
                   value={tipoDoc}
-                  onChange={e => setTipoDoc(e.target.value)}
+                  onChange={e => { setTipoDoc(e.target.value); setDescricaoOutro('') }}
+                  style={{ color: 'var(--text)', background: 'var(--navy2)', borderColor: 'var(--border)' }}
                 >
-                  <option value="PROJETO">Projeto</option>
-                  <option value="CARTORIO">Cartório</option>
-                  <option value="CHECKLIST">Checklist inicial</option>
-                  <option value="LAUDO">Laudo anterior</option>
-                  <option value="CONSULTORIA">Consulta prévia</option>
-                  <option value="OUTRO">Outro documento</option>
+                  <option value="PROJETO" style={{ background: '#0F2030', color: '#fff' }}>Projeto</option>
+                  <option value="CARTORIO" style={{ background: '#0F2030', color: '#fff' }}>Cartório / Documentação</option>
+                  <option value="CHECKLIST" style={{ background: '#0F2030', color: '#fff' }}>Checklist inicial</option>
+                  <option value="LAUDO" style={{ background: '#0F2030', color: '#fff' }}>Laudo anterior</option>
+                  <option value="CONSULTORIA" style={{ background: '#0F2030', color: '#fff' }}>Consulta prévia</option>
+                  <option value="OUTRO" style={{ background: '#0F2030', color: '#fff' }}>Outro documento</option>
                 </select>
-                <label className={`btn btn-secondary btn-sm shrink-0 cursor-pointer ${uploadandoDoc ? 'opacity-50 pointer-events-none' : ''}`}>
+
+                {tipoDoc === 'OUTRO' && (
+                  <input
+                    className="input w-full text-xs"
+                    placeholder="Descreva o documento (ex: Projeto de reforma 2023)"
+                    value={descricaoOutro}
+                    onChange={e => setDescricaoOutro(e.target.value)}
+                    maxLength={80}
+                    style={{ color: 'var(--text)', background: 'var(--navy2)', borderColor: 'var(--border)' }}
+                  />
+                )}
+
+                <label className={`btn btn-secondary btn-sm w-full justify-center cursor-pointer ${uploadandoDoc ? 'opacity-50 pointer-events-none' : ''}`}>
                   <Upload size={13} className="mr-1" />
-                  {uploadandoDoc ? 'Enviando...' : 'Anexar'}
+                  {uploadandoDoc ? 'Enviando...' : 'Escolher arquivo e anexar'}
                   <input type="file" className="hidden" onChange={handleUploadDoc} disabled={uploadandoDoc} accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.dwg,.zip" />
                 </label>
               </div>
-              <p className="text-2xs mt-2" style={{ color: 'var(--text3)' }}>Projetos, documentos de cartório, laudos anteriores — max. 20 MB por arquivo</p>
+              <p className="text-2xs mt-2" style={{ color: 'var(--text3)' }}>PDF, DOC, DWG, imagens — máx. 20 MB por arquivo</p>
             </div>
 
             {/* Profissional designado */}

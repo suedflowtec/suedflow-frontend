@@ -126,10 +126,11 @@ export const orders = {
   avc: (id: string) => request<any>(`/api/orders/${id}/avc`),
   qaResultado: (id: string) => request<any>(`/api/orders/${id}/qa-resultado`),
   listarDocumentos: (id: string) => request<{ documentos: any[] }>(`/api/orders/${id}/documentos`),
-  uploadDocumento: (id: string, arquivo: File, tipo: string) => {
+  uploadDocumento: (id: string, arquivo: File, tipo: string, descricao?: string) => {
     const fd = new FormData()
     fd.append('arquivo', arquivo)
     fd.append('tipo', tipo)
+    if (descricao?.trim()) fd.append('descricao', descricao.trim())
     return request<{ ok: boolean; documento: any }>(`/api/orders/${id}/documentos`, { method: 'POST', formData: fd })
   },
 }
