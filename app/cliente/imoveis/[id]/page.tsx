@@ -1,13 +1,13 @@
-// app/cliente/imoveis/[id]/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
+import Link from 'next/link'
 import { Shell, Topbar } from '@/components/layout/Shell'
-import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
-import { imovel } from '@/lib/api'
-import { formatDate, statusLabel } from '@/lib/utils'
+import { imovel as imovelApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { formatBRL } from '@/lib/utils'
+import { Building2, Calendar, ChevronRight, AlertTriangle, Star, Layers } from 'lucide-react'
 
 const TIPO_LABEL: Record<string, string> = {
   RESIDENCIAL: 'Residencial',
@@ -15,94 +15,190 @@ const TIPO_LABEL: Record<string, string> = {
   INDUSTRIAL: 'Industrial',
 }
 
-const NIVEL_BADGE: Record<string, { text: string; variant: any }> = {
-  BASE: { text: 'Selo Base', variant: 'blue' },
-  QUALIFICADO: { text: 'Selo Qualificado', variant: 'green' },
-  PREMIUM: { text: 'Selo Premium', variant: 'gold' },
+const STATUS_CFG: Record<string, { label: string; badge: string }> = {
+  AGUARDANDO:              { label: 'Aguardando pagamento', badge: 'badge-gray' },
+  PAGA:                    { label: 'Paga',                 badge: 'badge-orange' },
+  ACEITA:                  { label: 'Aceita',               badge: 'badge-teal' },
+  EM_EXECUCAO:             { label: 'Em execução',          badge: 'badge-teal' },
+  AGUARDANDO_QA:           { label: 'Em revisão QA',        badge: 'badge-orange' },
+  QA_REPROVADO:            { label: 'QA reprovado',         badge: 'badge-red' },
+  AGUARDANDO_CONFIRMACAO:  { label: 'Aguardando confirm.', badge: 'badge-orange' },
+  CONCLUIDA:               { label: 'Concluída',            badge: 'badge-green' },
+  EM_DISPUTA:              { label: 'Em disputa',           badge: 'badge-red' },
+  PARALISADA_PROF:         { label: 'Paralisada (prof.)',   badge: 'badge-red' },
+  PARALISADA_CLIENTE:      { label: 'Paralisada (cliente)', badge: 'badge-red' },
+  DEMANDA_ESPECIAL:        { label: 'Demanda especial',     badge: 'badge-purple' },
 }
 
-const GRAVIDADE_BADGE: Record<string, { text: string; variant: any }> = {
-  LEVE: { text: 'Leve', variant: 'glass' },
-  MODERADA: { text: 'Moderada', variant: 'gold' },
-  GRAVE: { text: 'Grave', variant: 'orange' },
-  CRITICA: { text: 'Crítica', variant: 'red' },
+const SEV_BADGE: Record<string, string> = {
+  BAIXA:   'badge-gray',
+  MEDIA:   'badge-orange',
+  ALTA:    'badge-red',
+  CRITICA: 'badge-red',
 }
 
-const RESOLUCAO_BADGE: Record<string, { text: string; variant: any }> = {
-  ABERTA: { text: 'Aberta', variant: 'red' },
-  EM_REPARO: { text: 'Em reparo', variant: 'gold' },
-  RESOLVIDA: { text: 'Resolvida', variant: 'green' },
-  DESCARTADA: { text: 'Descartada', variant: 'glass' },
+function fmt(d: string) {
+  return new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 export default function ImovelDetailPage() {
-  const params = useParams()
   const router = useRouter()
+  const params = useParams()
+  const id = String(params?.id || '')
+  const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
-  const id = params?.id as string
-
   const [im, setIm] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!id) return
-    imovel.buscar(id)
+    if (authLoading) return
+    if (!user) { router.push('/auth/login'); return }
+    imovelApi.buscar(id)
       .then(setIm)
-      .catch(() => toast('Erro ao carregar imóvel', 'error'))
+      .catch(() => {
+        toast('Imóvel não encontrado', 'error')
+        router.push('/cliente/imoveis')
+      })
       .finally(() => setLoading(false))
-  }, [id, toast])
+  }, [user, authLoading, id, router, toast])
 
-  if (loading) return (
-    <Shell><Topbar title="Imóvel" /><main className="p-6"><p style={{ color: 'var(--text3)' }}>Carregando...</p></main></Shell>
-  )
-  if (!im) return (
-    <Shell><Topbar title="Imóvel" /><main className="p-6"><p style={{ color: 'var(--text3)' }}>Imóvel não encontrado.</p></main></Shell>
-  )
+  if (authLoading || !user) return null
 
-  const nivel = im.selo ? NIVEL_BADGE[im.selo.nivel] : null
-  const endereco = im.logradouro
-    ? `${im.logradouro}${im.numero ? `, ${im.numero}` : ''}${im.complemento ? ` - ${im.complemento}` : ''}`
-    : (im.bairro || im.cidade)
+  const endereco = im
+    ? [im.logradouro, im.numero, im.complemento, im.bairro].filter(Boolean).join(', ')
+    : ''
+  const cidadeUF = im ? `${im.cidade}/${im.estado}` : ''
+  const mapQuery = im?.lat && im?.lng
+    ? `${im.lat},${im.lng}`
+    : encodeURIComponent(`${endereco}, ${cidadeUF}`)
+  const hasMap = im && (endereco || (im.lat && im.lng))
 
   return (
     <Shell>
       <Topbar
-        title={endereco}
-        subtitle={[im.bairro, im.cidade, im.estado].filter(Boolean).join(' · ')}
-        actions={nivel ? <Badge variant={nivel.variant}>{nivel.text}</Badge> : undefined}
+        title={loading ? 'Carregando...' : (endereco || cidadeUF || 'Imóvel')}
+        subtitle="Histórico técnico do imóvel"
+        actions={
+          <button
+            onClick={() => router.push('/cliente/imoveis')}
+            className="btn btn-sm"
+            style={{ background: 'var(--glass)', color: 'var(--text2)', border: '1px solid var(--border)' }}
+          >
+            ← Meus imóveis
+          </button>
+        }
       />
 
-      <main className="p-6 max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Coluna principal */}
-          <div className="lg:col-span-2 space-y-4">
-
-            {/* Histórico de demandas */}
+      <main className="p-6 max-w-4xl space-y-5 pb-24">
+        {loading ? (
+          <div className="card text-center py-12">
+            <p className="text-sm" style={{ color: 'var(--text3)' }}>Carregando...</p>
+          </div>
+        ) : !im ? null : (
+          <>
+            {/* ── Cabeçalho ── */}
             <div className="card-solid">
-              <p className="section-label mb-3">Histórico de serviços</p>
-              {(im.demandas || []).length === 0 ? (
-                <p className="text-sm" style={{ color: 'var(--text3)' }}>Nenhuma demanda registrada para este imóvel.</p>
+              <div className="flex items-start gap-4">
+                <Building2 size={36} style={{ color: 'var(--orange)', flexShrink: 0, marginTop: 2 }} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <span className="badge badge-gray">{TIPO_LABEL[im.tipo] || im.tipo || '—'}</span>
+                    {im.area_total_m2 && <span className="badge badge-gray">{im.area_total_m2}m²</span>}
+                    {im.selo && (
+                      <span className="badge badge-gold flex items-center gap-1">
+                        <Star size={10} /> Selo {im.selo.nivel}
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-semibold" style={{ color: 'var(--text)' }}>
+                    {endereco || 'Endereço não informado'}
+                  </p>
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--text3)' }}>
+                    {cidadeUF}
+                    {im.cep ? ` · CEP ${String(im.cep).replace(/^(\d{5})(\d{3})$/, '$1-$2')}` : ''}
+                    {im.ponto_referencia ? ` · Ref.: ${im.ponto_referencia}` : ''}
+                  </p>
+                  {im.construtora && (
+                    <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
+                      Construtora: {im.construtora.nome_fantasia || im.construtora.razao_social}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Mapa ── */}
+            {hasMap && (
+              <div className="card overflow-hidden" style={{ padding: 0 }}>
+                <iframe
+                  title="Localização do imóvel"
+                  src={`https://maps.google.com/maps?q=${mapQuery}&output=embed&z=17`}
+                  width="100%"
+                  height="200"
+                  style={{ border: 0, display: 'block' }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            )}
+
+            {/* ── Histórico de demandas ── */}
+            <div className="card">
+              <div className="flex items-center justify-between mb-3">
+                <p className="section-label flex items-center gap-1.5">
+                  <Calendar size={13} /> Histórico de demandas
+                </p>
+                <Link
+                  href={`/cliente/nova-demanda`}
+                  className="btn btn-primary btn-sm"
+                >
+                  + Nova demanda
+                </Link>
+              </div>
+
+              {!im.demandas || im.demandas.length === 0 ? (
+                <p className="text-sm text-center py-6" style={{ color: 'var(--text3)' }}>
+                  Nenhuma demanda registrada para este imóvel.
+                </p>
               ) : (
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Número</th>
+                      <th>Data</th>
                       <th>Serviço</th>
                       <th>Status</th>
                       <th>Profissional</th>
-                      <th>Data</th>
+                      <th className="text-right">Valor</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
                     {im.demandas.map((d: any) => {
-                      const s = statusLabel(d.status)
+                      const st = STATUS_CFG[d.status] || { label: d.status, badge: 'badge-gray' }
+                      const prof = d.profissional?.usuario?.nome || '—'
                       return (
-                        <tr key={d.id} onClick={() => router.push(`/cliente/demandas/${d.id}`)} className="cursor-pointer">
-                          <td className="font-mono">{d.numero || d.id?.slice(0, 8)}</td>
-                          <td style={{ color: 'var(--text)' }}>{d.servico?.nome || d.svc_codigo}</td>
-                          <td><Badge variant={s.variant as any}>{s.text}</Badge></td>
-                          <td style={{ color: 'var(--text2)' }}>{d.profissional?.usuario?.nome || '—'}</td>
-                          <td style={{ color: 'var(--text3)' }}>{formatDate(d.created_at)}</td>
+                        <tr
+                          key={d.id}
+                          className="cursor-pointer"
+                          onClick={() => router.push(`/cliente/demandas/${d.id}`)}
+                        >
+                          <td style={{ color: 'var(--text3)', whiteSpace: 'nowrap' }}>
+                            {fmt(d.created_at)}
+                          </td>
+                          <td>
+                            <span className="badge badge-gray mr-1">{d.servico?.codigo}</span>
+                            <span style={{ color: 'var(--text2)' }}>{d.servico?.nome}</span>
+                          </td>
+                          <td>
+                            <span className={`badge ${st.badge}`}>{st.label}</span>
+                          </td>
+                          <td style={{ color: 'var(--text2)' }}>{prof}</td>
+                          <td className="text-right font-mono" style={{ color: 'var(--text)' }}>
+                            {d.valor_total ? formatBRL(d.valor_total) : '—'}
+                          </td>
+                          <td>
+                            <ChevronRight size={14} style={{ color: 'var(--text3)' }} />
+                          </td>
                         </tr>
                       )
                     })}
@@ -111,118 +207,90 @@ export default function ImovelDetailPage() {
               )}
             </div>
 
-            {/* Achados técnicos */}
-            <div className="card-solid">
-              <p className="section-label mb-3">Achados técnicos</p>
-              {(im.achados || []).length === 0 ? (
-                <p className="text-sm" style={{ color: 'var(--text3)' }}>Nenhuma patologia registrada até o momento.</p>
+            {/* ── Achados técnicos ── */}
+            <div className="card">
+              <p className="section-label flex items-center gap-1.5 mb-3">
+                <AlertTriangle size={13} /> Achados técnicos
+              </p>
+
+              {!im.achados || im.achados.length === 0 ? (
+                <p className="text-sm text-center py-4" style={{ color: 'var(--text3)' }}>
+                  Nenhum achado técnico registrado.
+                </p>
               ) : (
-                <ul className="space-y-3">
-                  {im.achados.map((a: any) => {
-                    const g = GRAVIDADE_BADGE[a.gravidade] || GRAVIDADE_BADGE.MODERADA
-                    const r = RESOLUCAO_BADGE[a.status_resolucao] || RESOLUCAO_BADGE.ABERTA
-                    const nome = a.patologia_tipo?.nome || a.descricao_livre || 'Patologia não especificada'
-                    return (
-                      <li key={a.id} className="pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        <div className="flex justify-between items-start gap-2">
-                          <div>
-                            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{nome}</p>
-                            {a.localizacao_no_imovel && (
-                              <p className="text-2xs" style={{ color: 'var(--text3)' }}>{a.localizacao_no_imovel}</p>
-                            )}
-                          </div>
-                          <div className="flex gap-1 shrink-0">
-                            <Badge variant={g.variant}>{g.text}</Badge>
-                            <Badge variant={r.variant}>{r.text}</Badge>
-                          </div>
-                        </div>
-                        {a.recomendacao && (
-                          <p className="text-xs mt-1" style={{ color: 'var(--text2)' }}>{a.recomendacao}</p>
-                        )}
-                        <p className="text-2xs mt-1" style={{ color: 'var(--text3)' }}>{formatDate(a.created_at)}</p>
-                      </li>
-                    )
-                  })}
-                </ul>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Categoria</th>
+                      <th>Descrição</th>
+                      <th>Severidade</th>
+                      <th>Fotos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {im.achados.map((a: any) => {
+                      const cat = a.patologia_tipo?.subcategoria?.categoria?.nome || '—'
+                      const sub = a.patologia_tipo?.subcategoria?.nome || ''
+                      const badge = SEV_BADGE[a.severidade] || 'badge-gray'
+                      return (
+                        <tr key={a.id}>
+                          <td style={{ color: 'var(--text3)', whiteSpace: 'nowrap' }}>
+                            {fmt(a.created_at)}
+                          </td>
+                          <td>
+                            <p style={{ color: 'var(--text)' }}>{cat}</p>
+                            {sub && <p className="text-xs" style={{ color: 'var(--text3)' }}>{sub}</p>}
+                          </td>
+                          <td style={{ color: 'var(--text2)', maxWidth: 240 }}>
+                            <p className="truncate">{a.descricao || a.observacao || '—'}</p>
+                          </td>
+                          <td>
+                            <span className={`badge ${badge}`}>{a.severidade || '—'}</span>
+                          </td>
+                          <td style={{ color: 'var(--text3)' }}>
+                            {a.fotos?.length ? `${a.fotos.length}×` : '—'}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               )}
             </div>
 
-            {/* Ciclos de revisão */}
-            {(im.ciclos_revisao || []).length > 0 && (
-              <div className="card-solid">
-                <p className="section-label mb-3">Ciclos de revisão</p>
-                <ul className="space-y-2">
-                  {im.ciclos_revisao.map((c: any) => (
-                    <li key={c.id} className="flex justify-between text-sm">
-                      <span style={{ color: 'var(--text)' }}>{c.svc_codigo}</span>
-                      <span style={{ color: 'var(--text3)' }}>
-                        {formatDate(c.data_inicio)} {c.data_fim ? `→ ${formatDate(c.data_fim)}` : '· em andamento'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+            {/* ── Ciclos de revisão ── */}
+            {im.ciclos_revisao && im.ciclos_revisao.length > 0 && (
+              <div className="card">
+                <p className="section-label flex items-center gap-1.5 mb-3">
+                  <Layers size={13} /> Ciclos de revisão
+                </p>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Motivo</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {im.ciclos_revisao.map((c: any) => (
+                      <tr key={c.id}>
+                        <td style={{ color: 'var(--text3)', whiteSpace: 'nowrap' }}>
+                          {fmt(c.created_at)}
+                        </td>
+                        <td style={{ color: 'var(--text2)' }}>{c.motivo || '—'}</td>
+                        <td>
+                          <span className="badge badge-gray">{c.status || '—'}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
-          </div>
-
-          {/* Coluna lateral */}
-          <div className="space-y-4">
-            <div className="card-solid">
-              <p className="section-label mb-3">Dados do imóvel</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span style={{ color: 'var(--text3)' }}>Tipo</span>
-                  <span style={{ color: 'var(--text)' }}>{TIPO_LABEL[im.tipo] || im.tipo}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: 'var(--text3)' }}>Área total</span>
-                  <span style={{ color: 'var(--text)' }}>{im.area_total_m2 ? `${im.area_total_m2}m²` : '—'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: 'var(--text3)' }}>Ano de construção</span>
-                  <span style={{ color: 'var(--text)' }}>{im.ano_construcao || '—'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: 'var(--text3)' }}>Pavimentos</span>
-                  <span style={{ color: 'var(--text)' }}>{im.pavimentos || '—'}</span>
-                </div>
-                {im.construtora && (
-                  <div className="flex justify-between">
-                    <span style={{ color: 'var(--text3)' }}>Construtora</span>
-                    <span style={{ color: 'var(--text)' }}>{im.construtora.nome_fantasia || im.construtora.razao_social}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Selo */}
-            <div className="card-solid space-y-2">
-              <p className="section-label">Selo SUEDFLOW</p>
-              {im.selo ? (
-                <>
-                  <Badge variant={nivel!.variant}>{nivel!.text}</Badge>
-                  <div className="text-sm space-y-1 pt-1">
-                    <div className="flex justify-between">
-                      <span style={{ color: 'var(--text3)' }}>Serviços concluídos</span>
-                      <span style={{ color: 'var(--text)' }}>{im.selo.total_svcs}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: 'var(--text3)' }}>Inconformidades abertas</span>
-                      <span style={{ color: im.selo.inconformidades > 0 ? 'var(--red)' : 'var(--text)' }}>{im.selo.inconformidades}</span>
-                    </div>
-                  </div>
-                  <Button variant="ghost" className="w-full mt-2" onClick={() => router.push(`/cliente/imoveis/${id}/selo`)}>
-                    Ver progresso do Selo
-                  </Button>
-                </>
-              ) : (
-                <p className="text-sm" style={{ color: 'var(--text3)' }}>
-                  Este imóvel ainda não possui Selo SUEDFLOW. O selo é emitido após a primeira demanda concluída com QA aprovado.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </main>
     </Shell>
   )
