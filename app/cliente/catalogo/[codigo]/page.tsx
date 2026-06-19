@@ -48,7 +48,7 @@ export default function SvcDetalhePage() {
     <Shell>
       <Topbar title={servico?.nome || codigo} subtitle="Detalhes do serviço" />
 
-      <main className="p-6 max-w-3xl space-y-4">
+      <main className="p-6 max-w-3xl space-y-4 pb-24">
         <button
           className="text-sm"
           style={{ color: 'var(--text3)' }}

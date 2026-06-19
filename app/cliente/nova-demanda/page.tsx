@@ -32,7 +32,9 @@ export default function NovaDemandaPage() {
     cidade: 'João Pessoa',
     logradouro: '',
     numero: '',
+    complemento: '',
     bairro: '',
+    ponto_referencia: '',
     descricao: '',
     urgencia: 'NORMAL' as 'NORMAL' | 'PRIORITARIO' | 'URGENTE',
   })
@@ -137,7 +139,7 @@ export default function NovaDemandaPage() {
     if (!precoCalc) { toast('Aguarde o cálculo de preço finalizar.', 'error'); return }
     setCriando(true)
     try {
-      const enderecoCompleto = [imovel.logradouro, imovel.numero, imovel.bairro].filter(Boolean).join(', ')
+      const enderecoCompleto = [imovel.logradouro, imovel.numero, imovel.complemento, imovel.bairro].filter(Boolean).join(', ')
       const d = await orders.criar({
         codigoSvc: svcSelecionado.codigo,
         tipoImovel: imovel.tipo_imovel,
@@ -336,8 +338,16 @@ export default function NovaDemandaPage() {
                     <Field label="Número" required>
                       <Input value={imovel.numero} onChange={e => setImovel(i => ({ ...i, numero: e.target.value }))} placeholder="123" />
                     </Field>
+                    <Field label="Complemento">
+                      <Input value={imovel.complemento} onChange={e => setImovel(i => ({ ...i, complemento: e.target.value }))} placeholder="Apto 301, Bloco B..." />
+                    </Field>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
                     <Field label="Bairro">
                       <Input value={imovel.bairro} onChange={e => setImovel(i => ({ ...i, bairro: e.target.value }))} placeholder="Centro" />
+                    </Field>
+                    <Field label="Ponto de referência">
+                      <Input value={imovel.ponto_referencia} onChange={e => setImovel(i => ({ ...i, ponto_referencia: e.target.value }))} placeholder="Próximo ao mercado..." />
                     </Field>
                   </div>
                   <Field label="Descreva a necessidade" hint="Ajuda o profissional a se preparar">

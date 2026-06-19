@@ -4,21 +4,20 @@ import { sue as sueApi, orders } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { X, Send, Minimize2 } from 'lucide-react'
 
-function SueIcon({ size = 22, color = 'white' }: { size?: number; color?: string }) {
+function SueIcon({ size = 22, color = 'white', withLabel = false }: { size?: number; color?: string; withLabel?: boolean }) {
   return (
     <span
       aria-hidden="true"
       style={{
-        fontFamily: 'inherit',
-        fontSize: size * 0.95,
-        fontWeight: 900,
-        color,
-        letterSpacing: -0.5,
-        lineHeight: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 1,
         userSelect: 'none',
       }}
     >
-      S
+      <span style={{ fontFamily: 'inherit', fontSize: size * 0.95, fontWeight: 900, color, letterSpacing: -0.5, lineHeight: 1 }}>S</span>
+      {withLabel && <span style={{ fontSize: 8, fontWeight: 800, color, letterSpacing: 1.5, lineHeight: 1, opacity: 0.9 }}>SUE</span>}
     </span>
   )
 }
@@ -119,9 +118,9 @@ export function SueChat() {
       {/* Botão flutuante */}
       <button
         onClick={() => setAberto(v => !v)}
-        className="fixed bottom-6 right-6 z-[200] w-13 h-13 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-200"
+        className="fixed bottom-6 right-4 z-[100] rounded-2xl flex flex-col items-center justify-center shadow-xl transition-all duration-200"
         style={{
-          width: 52, height: 52,
+          width: 52, height: aberto ? 52 : 60,
           background: aberto ? 'var(--navy2)' : 'linear-gradient(135deg, var(--orange), var(--orange2))',
           border: '2px solid rgba(255,255,255,0.12)',
           boxShadow: aberto ? '0 4px 20px rgba(0,0,0,0.3)' : '0 8px 28px rgba(232,103,26,0.45)',
@@ -130,14 +129,14 @@ export function SueChat() {
       >
         {aberto
           ? <Minimize2 size={20} color="var(--text2)" />
-          : <SueIcon size={22} />
+          : <SueIcon size={20} withLabel />
         }
       </button>
 
       {/* Drawer */}
       {aberto && (
         <div
-          className="fixed bottom-[72px] right-6 z-[199] flex flex-col rounded-2xl overflow-hidden"
+          className="fixed bottom-[76px] right-4 z-[99] flex flex-col rounded-2xl overflow-hidden"
           style={{
             width: 340,
             height: 480,

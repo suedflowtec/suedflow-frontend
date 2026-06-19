@@ -48,7 +48,7 @@ export default function ClienteHome() {
   return (
     <Shell>
       <Topbar
-        title={`Olá, ${user.nome.split(' ')[0]}`}
+        title={`Olá, ${user.username ?? (user.nome?.includes('@') ? user.nome.split('@')[0] : user.nome?.split(' ')[0]) ?? 'você'}`}
         actions={
           <>
             <Link href="/cliente/catalogo" className="btn btn-secondary">
