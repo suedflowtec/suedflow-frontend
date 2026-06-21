@@ -1,0 +1,211 @@
+/* Catálogo — Carrossel por categoria */
+
+.catSection {
+  position: relative;
+}
+
+/* ── Cabeçalho da linha ── */
+.catHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.catTitle {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text2);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.catTitle::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(to right, var(--orange) 0%, rgba(232, 103, 26, 0.06) 100%);
+  margin-top: 6px;
+}
+
+/* ── Botões de navegação ── */
+.arrowGroup {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.arrowBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text2);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.arrowBtn:hover {
+  border-color: var(--orange);
+  background: rgba(232, 103, 26, 0.1);
+  color: #fff;
+}
+
+/* ── Trilho do carrossel ── */
+.carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Card individual ── */
+.card {
+  position: relative;
+  flex-shrink: 0;
+  width: 272px;
+  height: 164px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--navy2);
+  border: 1.5px solid rgba(255, 255, 255, 0.07);
+  scroll-snap-align: start;
+  text-align: left;
+  padding: 0;
+  /* file-tab accent em repouso */
+  box-shadow: inset 2.5px 0 0 rgba(232, 103, 26, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.card:hover {
+  transform: scale(1.035);
+  border-color: #E8671A;
+  box-shadow:
+    0 0 0 1.5px #E8671A,
+    0 12px 32px rgba(232, 103, 26, 0.2),
+    inset 2.5px 0 0 #E8671A;
+}
+
+/* ── Imagem ── */
+.img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.card:hover .img {
+  transform: scale(1.06);
+}
+
+/* ── Gradiente sobre a imagem ── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(6, 24, 40, 0.95) 0%,
+    rgba(6, 24, 40, 0.4) 52%,
+    rgba(6, 24, 40, 0.08) 100%
+  );
+}
+
+/* ── Badge SLA (topo direito) ── */
+.topBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-family: ui-monospace, monospace;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(6, 24, 40, 0.72);
+  backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Corpo do card (sobre a imagem, alinhado na base) ── */
+.cardBody {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 12px 14px;
+  pointer-events: none;
+}
+
+.svcCode {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #E8671A;
+  font-family: ui-monospace, monospace;
+  margin-bottom: 3px;
+  display: block;
+}
+
+.cardName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.3;
+  margin: 0 0 4px;
+}
+
+/* Preço: visível em repouso, some no hover */
+.cardPrice {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: rgba(255, 255, 255, 0.5);
+  display: block;
+  margin-bottom: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.card:hover .cardPrice {
+  opacity: 0;
+  transform: translateY(3px);
+}
+
+/* CTA: oculto em repouso, aparece no hover no lugar do preço */
+.cardCta {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #E8671A;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease 0.05s, transform 0.2s ease 0.05s;
+  display: block;
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+}
+
+.card:hover .cardCta {
+  opacity: 1;
+  transform: translateY(0);
+}

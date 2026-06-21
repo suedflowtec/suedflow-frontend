@@ -1,11 +1,48 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { svc, sue } from '@/lib/api'
 import { formatBRL } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import styles from './catalogo.module.css'
+
+const SVC_IMG: Record<string, string> = {
+  SVC000: '/imagens/svc000.png',
+  SVC001: '/imagens/svc001.png',
+  SVC002: '/imagens/svc002.png',
+  SVC003: '/imagens/svc003.png',
+  SVC004: '/imagens/svc004.png',
+  SVC005: '/imagens/svc005.png',
+  SVC006: '/imagens/svc006.png',
+  SVC007: '/imagens/svc007.png',
+  SVC008: '/imagens/svc008.png',
+  SVC009: '/imagens/svc009.png',
+  SVC010: '/imagens/svc010.png',
+  SVC011: '/imagens/svc011.png',
+}
+
+const CATEGORIAS = [
+  {
+    titulo: 'Diagnóstico e Inspeção',
+    svcs: ['SVC000', 'SVC001', 'SVC003', 'SVC010'],
+  },
+  {
+    titulo: 'Projetos de Engenharia',
+    svcs: ['SVC004', 'SVC005', 'SVC006', 'SVC007'],
+  },
+  {
+    titulo: 'Avaliação, Regularização e Gestão',
+    svcs: ['SVC002', 'SVC008', 'SVC009', 'SVC011'],
+  },
+]
+
+function precoDe(s: any): string {
+  if (s.tipo_preco === 'HORA') return s.preco_hora ? `${formatBRL(s.preco_hora)}/h` : '—'
+  return s.piso ? `a partir de ${formatBRL(s.piso)}` : '—'
+}
 
 export default function CatalogoPage() {
   const router = useRouter()
@@ -16,6 +53,7 @@ export default function CatalogoPage() {
   const [busca, setBusca] = useState('')
   const [buscando, setBuscando] = useState(false)
   const [sugestao, setSugestao] = useState<any>(null)
+  const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     if (authLoading) return
@@ -46,17 +84,24 @@ export default function CatalogoPage() {
     }
   }
 
-  const precoDe = (s: any) => {
-    if (s.tipo_preco === 'HORA') return s.preco_hora ? `${formatBRL(s.preco_hora)}/h` : '—'
-    return s.piso ? formatBRL(s.piso) : '—'
+  const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
+    const el = scrollRefs.current[rowIdx]
+    if (!el) return
+    el.scrollBy({ left: dir === 'right' ? 580 : -580, behavior: 'smooth' })
   }
+
+  const svcMap = Object.fromEntries(servicos.map(s => [s.codigo, s]))
 
   return (
     <Shell>
-      <Topbar title="Catálogo de serviços" subtitle="12 serviços de engenharia disponíveis na plataforma" />
+      <Topbar
+        title="Catálogo de serviços"
+        subtitle="Escolha o serviço para o seu imóvel"
+      />
 
-      <main className="p-6 space-y-6">
-        {/* Busca semântica */}
+      <main className="p-6 space-y-8">
+
+        {/* ── Busca semântica com SUE ── */}
         <div className="card-accent">
           <p className="section-label">Não sabe qual serviço escolher?</p>
           <form onSubmit={handleBusca} className="flex gap-2">
@@ -75,54 +120,31 @@ export default function CatalogoPage() {
             <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
               {sugestao.svc_sugerido ? (
                 <div className="space-y-2">
-                  {/* Cabeçalho: SVC + percentual de exatidão */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="badge badge-orange">{sugestao.svc_sugerido}</span>
                     <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{sugestao.svc_nome}</span>
                     {sugestao.confianca != null && (
-                      <span
-                        className="badge"
-                        style={{
-                          background: sugestao.confianca >= 0.80
-                            ? 'rgba(22,163,74,0.15)'
-                            : sugestao.confianca >= 0.60
-                              ? 'rgba(234,179,8,0.15)'
-                              : 'rgba(107,114,128,0.15)',
-                          color: sugestao.confianca >= 0.80
-                            ? 'var(--green)'
-                            : sugestao.confianca >= 0.60
-                              ? '#ca8a04'
-                              : 'var(--text3)',
-                        }}
-                      >
+                      <span className="badge" style={{
+                        background: sugestao.confianca >= 0.80 ? 'rgba(22,163,74,0.15)' : sugestao.confianca >= 0.60 ? 'rgba(234,179,8,0.15)' : 'rgba(107,114,128,0.15)',
+                        color: sugestao.confianca >= 0.80 ? 'var(--green)' : sugestao.confianca >= 0.60 ? '#ca8a04' : 'var(--text3)',
+                      }}>
                         {Math.round(sugestao.confianca * 100)}% de exatidão
                       </span>
                     )}
                   </div>
-
-                  {/* Justificativa */}
                   {sugestao.justificativa && (
                     <p className="text-xs" style={{ color: 'var(--text3)' }}>{sugestao.justificativa}</p>
                   )}
-
-                  {/* Alternativa quando confiança baixa */}
                   {sugestao.alternativa && sugestao.confianca < 0.75 && (
                     <p className="text-xs" style={{ color: 'var(--text3)' }}>
                       Alternativa: <span style={{ color: 'var(--text2)' }}>{sugestao.alternativa}</span>
                     </p>
                   )}
-
                   <div className="flex gap-2 pt-1">
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => router.push(`/cliente/nova-demanda?svc=${sugestao.svc_sugerido}`)}
-                    >
+                    <button className="btn btn-primary btn-sm" onClick={() => router.push(`/cliente/nova-demanda?svc=${sugestao.svc_sugerido}`)}>
                       Criar demanda →
                     </button>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => router.push(`/cliente/catalogo/${sugestao.svc_sugerido}`)}
-                    >
+                    <button className="btn btn-secondary btn-sm" onClick={() => router.push(`/cliente/catalogo/${sugestao.svc_sugerido}`)}>
                       Ver detalhes
                     </button>
                   </div>
@@ -136,33 +158,69 @@ export default function CatalogoPage() {
           )}
         </div>
 
-        {/* Grid de SVCs */}
+        {/* ── Carrosséis por categoria ── */}
         {loading ? (
           <p className="text-sm py-10 text-center" style={{ color: 'var(--text3)' }}>Carregando catálogo...</p>
         ) : (
-          <div className="grid grid-cols-3 gap-4">
-            {servicos.map(s => (
-              <button
-                key={s.codigo}
-                onClick={() => router.push(`/cliente/catalogo/${s.codigo}`)}
-                className="card text-left hover:border-orange transition-colors"
-                style={{ borderColor: 'var(--border)' }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(232,103,26,0.4)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <span className="badge badge-gray">{s.codigo}</span>
-                  <span className="badge badge-teal">SLA {s.sla_dias}d</span>
-                </div>
-                <p className="font-semibold mb-1" style={{ color: 'var(--text)' }}>{s.nome}</p>
-                {s.descricao && (
-                  <p className="text-xs mb-3 line-clamp-2" style={{ color: 'var(--text3)' }}>{s.descricao}</p>
-                )}
-                <p className="text-sm" style={{ color: 'var(--text2)' }}>
-                  A partir de <span className="font-mono font-bold" style={{ color: 'var(--text)' }}>{precoDe(s)}</span>
-                </p>
-              </button>
-            ))}
+          <div className="space-y-10">
+            {CATEGORIAS.map((cat, rowIdx) => {
+              const items = cat.svcs.map(c => svcMap[c]).filter(Boolean)
+              if (items.length === 0) return null
+              return (
+                <section key={cat.titulo} className={styles.catSection}>
+                  {/* Cabeçalho da linha */}
+                  <div className={styles.catHeader}>
+                    <h3 className={styles.catTitle}>{cat.titulo}</h3>
+                    <div className={styles.arrowGroup}>
+                      <button
+                        className={styles.arrowBtn}
+                        onClick={() => scrollRow(rowIdx, 'left')}
+                        aria-label="Anterior"
+                      >
+                        <ChevronLeft size={15} />
+                      </button>
+                      <button
+                        className={styles.arrowBtn}
+                        onClick={() => scrollRow(rowIdx, 'right')}
+                        aria-label="Próximo"
+                      >
+                        <ChevronRight size={15} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Trilho do carrossel */}
+                  <div
+                    ref={el => { scrollRefs.current[rowIdx] = el }}
+                    className={styles.carousel}
+                  >
+                    {items.map(s => (
+                      <button
+                        key={s.codigo}
+                        className={styles.card}
+                        onClick={() => router.push(`/cliente/catalogo/${s.codigo}`)}
+                        aria-label={s.nome}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={SVC_IMG[s.codigo] || ''}
+                          alt={s.nome}
+                          className={styles.img}
+                        />
+                        <div className={styles.overlay} />
+                        <span className={styles.topBadge}>SLA {s.sla_dias}d</span>
+                        <div className={styles.cardBody}>
+                          <span className={styles.svcCode}>{s.codigo}</span>
+                          <p className={styles.cardName}>{s.nome}</p>
+                          <span className={styles.cardPrice}>{precoDe(s)}</span>
+                        </div>
+                        <span className={styles.cardCta}>Contratar →</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )
+            })}
           </div>
         )}
       </main>
