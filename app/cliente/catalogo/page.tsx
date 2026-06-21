@@ -87,7 +87,7 @@ export default function CatalogoPage() {
   const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
     const el = scrollRefs.current[rowIdx]
     if (!el) return
-    el.scrollBy({ left: dir === 'right' ? 580 : -580, behavior: 'smooth' })
+    el.scrollBy({ left: dir === 'right' ? 992 : -992, behavior: 'smooth' })
   }
 
   const svcMap = Object.fromEntries(servicos.map(s => [s.codigo, s]))
