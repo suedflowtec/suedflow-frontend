@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { svc, sue } from '@/lib/api'
@@ -45,12 +45,9 @@ export default function CatalogoPage() {
   const [buscando, setBuscando] = useState(false)
   const [sugestao, setSugestao] = useState<any>(null)
 
-  // refs para cada trilho do carrossel
   const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
-  // velocidade atual de scroll por linha (px/frame) — 0 = parado
-  const speedRefs  = useRef<number[]>([0, 0, 0])
-  // id do requestAnimationFrame por linha (null = loop parado)
-  const rafRefs    = useRef<(number | null)[]>([null, null, null])
+  // Último X do mouse por linha (-1 = fora do carrossel)
+  const lastXRefs  = useRef<number[]>([-1, -1, -1])
 
   useEffect(() => {
     if (authLoading) return
@@ -61,57 +58,29 @@ export default function CatalogoPage() {
       .finally(() => setLoading(false))
   }, [user, authLoading, router, toast])
 
-  // Para todos os loops ao desmontar
-  useEffect(() => () => {
-    rafRefs.current.forEach(id => { if (id !== null) cancelAnimationFrame(id) })
-  }, [])
-
   if (authLoading || !user) return null
 
-  // ── Inicia o loop de scroll ao entrar na área do carrossel ──────────────
-  // O loop roda enquanto o mouse está dentro e lê speedRefs a cada frame.
-  // onMouseMove só atualiza a velocidade — nunca cancela o rAF.
-  const startLoop = (rowIdx: number) => {
-    if (rafRefs.current[rowIdx] !== null) return  // já rodando
-    const el = scrollRefs.current[rowIdx]
-    if (!el) return
-
-    const tick = () => {
-      const spd = speedRefs.current[rowIdx]
-      if (spd !== 0) el.scrollLeft += spd
-      rafRefs.current[rowIdx] = requestAnimationFrame(tick)
-    }
-    rafRefs.current[rowIdx] = requestAnimationFrame(tick)
-  }
-
-  const stopLoop = (rowIdx: number) => {
-    speedRefs.current[rowIdx] = 0
-    if (rafRefs.current[rowIdx] !== null) {
-      cancelAnimationFrame(rafRefs.current[rowIdx]!)
-      rafRefs.current[rowIdx] = null
-    }
-  }
-
-  // Mouse entra no carrossel → inicia loop
-  const onEnter = (rowIdx: number) => () => startLoop(rowIdx)
-
-  // Mouse se move → atualiza velocidade (não interfere no rAF)
-  // Zona esquerda (0-30%): scroll ← | Centro (30-70%): parado | Zona direita (70-100%): scroll →
+  // ── Scroll por movimento do mouse ────────────────────────────────────────
+  // Calcula o delta entre a posição atual e a anterior do mouse.
+  // Mover o mouse → direita: scrollLeft sobe (vê próximos cards).
+  // Mover o mouse ← esquerda: scrollLeft desce (vê cards anteriores).
+  // Sensibilidade 2.5× para que movimentos curtos percorram distância real.
   const onMove = (rowIdx: number) => (e: React.MouseEvent<HTMLDivElement>) => {
     const el = scrollRefs.current[rowIdx]
     if (!el) return
-    const rect = el.getBoundingClientRect()
-    const pct  = (e.clientX - rect.left) / rect.width
-
-    if      (pct < 0.30) speedRefs.current[rowIdx] = -(1 - pct / 0.30) * 8
-    else if (pct > 0.70) speedRefs.current[rowIdx] = ((pct - 0.70) / 0.30) * 8
-    else                 speedRefs.current[rowIdx] = 0
+    const last = lastXRefs.current[rowIdx]
+    if (last >= 0) {
+      el.scrollLeft += (e.clientX - last) * 2.5
+    }
+    lastXRefs.current[rowIdx] = e.clientX
   }
 
-  // Mouse sai → para tudo
-  const onLeave = (rowIdx: number) => () => stopLoop(rowIdx)
+  // Ao sair da área: esquece o último X para não pular no próximo onMove
+  const onLeave = (rowIdx: number) => () => {
+    lastXRefs.current[rowIdx] = -1
+  }
 
-  // Setas (fallback acessível)
+  // Setas — fallback acessível
   const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
     scrollRefs.current[rowIdx]?.scrollBy({ left: dir === 'right' ? 992 : -992, behavior: 'smooth' })
   }
@@ -137,7 +106,7 @@ export default function CatalogoPage() {
     <Shell>
       <Topbar
         title="Catálogo de serviços"
-        subtitle="Mova o mouse para os lados para navegar em cada categoria"
+        subtitle="Mova o mouse para os lados para navegar"
       />
 
       <main className="p-6 space-y-8">
@@ -218,12 +187,9 @@ export default function CatalogoPage() {
                     </div>
                   </div>
 
-                  {/* Loop inicia ao entrar (onMouseEnter), velocidade atualiza
-                      a cada movimento (onMouseMove), loop para ao sair (onMouseLeave) */}
                   <div
                     ref={el => { scrollRefs.current[rowIdx] = el }}
                     className={styles.carousel}
-                    onMouseEnter={onEnter(rowIdx)}
                     onMouseMove={onMove(rowIdx)}
                     onMouseLeave={onLeave(rowIdx)}
                   >

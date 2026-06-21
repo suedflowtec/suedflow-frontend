@@ -75,10 +75,11 @@
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   padding: 20px 4px 12px;
-  margin-top: -20px;    /* compensate vertical padding */
+  margin-top: -20px;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  cursor: default;
+  cursor: ew-resize;   /* ↔ indica que pode arrastar para os lados */
+  user-select: none;   /* evita selecionar texto ao arrastar */
 }
 
 .carousel::-webkit-scrollbar {
