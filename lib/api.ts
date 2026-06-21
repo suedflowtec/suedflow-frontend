@@ -138,6 +138,7 @@ export const orders = {
 export const admin = {
   dashboard: () => request<any>('/api/admin/dashboard'),
   demandas: () => request<any>('/api/admin/demandas'),
+  demanda: (id: string) => request<{ demanda: any }>(`/api/admin/demandas/${id}`),
   profissionais: () => request<{ profissionais: any[] }>('/api/admin/profissionais'),
   profissional: (id: string) => request<{ profissional: any }>(`/api/admin/profissionais/${id}`),
   aprovarKyc: (id: string, aprovado: boolean, motivo?: string) =>

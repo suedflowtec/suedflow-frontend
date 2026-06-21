@@ -9,7 +9,7 @@ import { curador as curadorApi } from '@/lib/api'
 import { formatBRL, formatDate } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, AlertTriangle, User, Briefcase, ArrowUpCircle } from 'lucide-react'
 
 const TIPO_BADGE: Record<string, { text: string; variant: any }> = {
   QA_REPROVADO:     { text: 'QA reprovado', variant: 'gold' },
@@ -27,6 +27,7 @@ export default function CuradorCasoDetalhePage() {
   const [data, setData] = useState<{ caso: any; checklist: any[]; analise_sue: any } | null>(null)
   const [loading, setLoading] = useState(true)
   const [feedback, setFeedback] = useState('')
+  const [anotacao, setAnotacao] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [preco, setPreco] = useState('')
   const [sla, setSla] = useState('')
@@ -42,6 +43,9 @@ export default function CuradorCasoDetalhePage() {
   useEffect(() => {
     if (authLoading) return
     if (!user) { router.push('/auth/login'); return }
+    if (!['CURADOR_SUPORTE', 'CURADOR_SENIOR', 'ADMIN'].includes(user.tipo)) {
+      router.push('/cliente'); return
+    }
     if (!id) return
     carregar()
   }, [user, authLoading, router, id])
@@ -57,116 +61,166 @@ export default function CuradorCasoDetalhePage() {
   const { caso, checklist, analise_sue } = data
   const demanda = caso.demanda
   const tipo = TIPO_BADGE[caso.tipo] || { text: caso.tipo, variant: 'glass' }
+  const disputa = demanda?.disputas?.[0]
+  const isCuradorSuporte = user.tipo === 'CURADOR_SUPORTE'
+  const isSeniorOuAdmin = user.tipo === 'CURADOR_SENIOR' || user.tipo === 'ADMIN'
 
   const aprovar = async () => {
     setEnviando(true)
     try {
       await curadorApi.aprovarQa(caso.id, feedback.trim() || undefined)
-      toast('Caso aprovado', 'success')
+      toast('Entrega aprovada · cliente notificado para confirmar', 'success')
       router.push('/curador/fila')
-    } catch (err: any) {
-      toast(err.message || 'Erro ao aprovar', 'error')
-    } finally {
-      setEnviando(false)
-    }
+    } catch (err: any) { toast(err.message || 'Erro ao aprovar', 'error') }
+    finally { setEnviando(false) }
   }
 
   const reprovar = async () => {
     if (feedback.trim().length < 10) {
-      toast('Descreva o motivo da reprovação (mínimo 10 caracteres)', 'error')
-      return
+      toast('Descreva o motivo da reprovação (mínimo 10 caracteres)', 'error'); return
     }
     setEnviando(true)
     try {
       await curadorApi.reprovarQa(caso.id, feedback.trim())
-      toast('Caso reprovado · profissional notificado', 'success')
+      toast('Reprovado · profissional notificado para retrabalho', 'success')
       router.push('/curador/fila')
-    } catch (err: any) {
-      toast(err.message || 'Erro ao reprovar', 'error')
-    } finally {
-      setEnviando(false)
-    }
+    } catch (err: any) { toast(err.message || 'Erro ao reprovar', 'error') }
+    finally { setEnviando(false) }
   }
 
   const resolverDisputa = async (acao: 'REEMBOLSAR_CLIENTE' | 'LIBERAR_PROFISSIONAL' | 'RETOMAR_EXECUCAO') => {
     if (acao === 'REEMBOLSAR_CLIENTE' && feedback.trim().length < 10) {
-      toast('Descreva o motivo da decisão (mínimo 10 caracteres)', 'error')
-      return
+      toast('Descreva o motivo da decisão (mínimo 10 caracteres)', 'error'); return
     }
     setEnviando(true)
     try {
       await curadorApi.resolverDisputa(caso.id, { acao, obs: feedback.trim() || undefined })
-      toast('Disputa resolvida', 'success')
+      toast('Disputa resolvida · partes notificadas', 'success')
       router.push('/curador/fila')
-    } catch (err: any) {
-      toast(err.message || 'Erro ao resolver disputa', 'error')
-    } finally {
-      setEnviando(false)
-    }
+    } catch (err: any) { toast(err.message || 'Erro ao resolver disputa', 'error') }
+    finally { setEnviando(false) }
   }
 
   const precificar = async () => {
-    if (!preco || !sla) {
-      toast('Informe preço e prazo (SLA em dias)', 'error')
-      return
-    }
+    if (!preco || !sla) { toast('Informe preço e prazo', 'error'); return }
     setEnviando(true)
     try {
       await curadorApi.precificarEspecial(caso.demanda_id, { preco: Number(preco), sla: Number(sla), obs: obs.trim() || undefined })
       toast('Demanda especial precificada · cliente notificado', 'success')
       router.push('/curador/fila')
-    } catch (err: any) {
-      toast(err.message || 'Erro ao precificar', 'error')
-    } finally {
-      setEnviando(false)
-    }
+    } catch (err: any) { toast(err.message || 'Erro ao precificar', 'error') }
+    finally { setEnviando(false) }
   }
+
+  const prazoHoras = caso.prazo_horas || 24
+  const criado = new Date(caso.created_at)
+  const deadline = new Date(criado.getTime() + prazoHoras * 3600 * 1000)
+  const atrasado = deadline < new Date() && caso.status !== 'RESOLVIDO'
+  const horasRestantes = Math.round((deadline.getTime() - Date.now()) / 3600000)
 
   return (
     <Shell>
       <Topbar
         title={demanda?.numero || caso.demanda_id?.slice(0, 8)}
         subtitle={`${demanda?.servico?.nome || demanda?.svc_codigo || ''} · ${demanda?.area_m2 || '—'}m²`}
-        actions={<Badge variant={tipo.variant}>{tipo.text}</Badge>}
+        actions={
+          <div className="flex items-center gap-2">
+            {atrasado
+              ? <Badge variant="red">⚠ Atrasado</Badge>
+              : horasRestantes <= 4
+              ? <Badge variant="gold">{horasRestantes}h restantes</Badge>
+              : null}
+            <Badge variant={tipo.variant}>{tipo.text}</Badge>
+          </div>
+        }
       />
 
       <main className="p-6 max-w-5xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Coluna principal */}
+
+          {/* ── Coluna principal ── */}
           <div className="lg:col-span-2 space-y-4">
+
+            {/* Partes envolvidas */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="card-solid">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <User size={13} style={{ color: 'var(--orange)' }} />
+                  <p className="text-2xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text3)' }}>Cliente</p>
+                </div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                  {demanda?.cliente?.usuario?.nome || '—'}
+                </p>
+              </div>
+              <div className="card-solid">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Briefcase size={13} style={{ color: 'var(--orange)' }} />
+                  <p className="text-2xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text3)' }}>Profissional</p>
+                </div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                  {demanda?.profissional?.usuario?.nome || '—'}
+                </p>
+              </div>
+            </div>
+
+            {/* Dados da demanda */}
             <div className="card-solid">
               <p className="section-label mb-3">Demanda</p>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span style={{ color: 'var(--text3)' }}>Cliente</span>
-                  <span style={{ color: 'var(--text)' }}>{demanda?.cliente?.usuario?.nome || '—'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: 'var(--text3)' }}>Profissional</span>
-                  <span style={{ color: 'var(--text)' }}>{demanda?.profissional?.usuario?.nome || '—'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: 'var(--text3)' }}>Valor</span>
-                  <span className="font-mono" style={{ color: 'var(--orange)' }}>{formatBRL(demanda?.preco_servico || demanda?.valor_total || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: 'var(--text3)' }}>Aberto em</span>
-                  <span style={{ color: 'var(--text)' }}>{formatDate(caso.created_at)}</span>
-                </div>
+                <Row label="Valor" value={formatBRL(demanda?.valor_total || demanda?.preco_servico || 0)} mono orange />
+                <Row label="Serviço" value={`${demanda?.svc_codigo} — ${demanda?.servico?.nome || ''}`} />
+                <Row label="Imóvel" value={`${demanda?.tipo_imovel} · ${demanda?.area_m2}m²`} />
+                <Row label="Caso aberto em" value={formatDate(caso.created_at)} />
                 {demanda?.descricao && (
                   <div className="pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-2xs mb-1" style={{ color: 'var(--text3)' }}>Descrição</p>
-                    <p style={{ color: 'var(--text2)' }}>{demanda.descricao}</p>
+                    <p className="text-2xs mb-1" style={{ color: 'var(--text3)' }}>Descrição original</p>
+                    <p className="text-sm" style={{ color: 'var(--text2)' }}>{demanda.descricao}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Motivo da disputa */}
-            {caso.tipo === 'DISPUTA' && caso.obs && (
-              <div className="card-solid">
-                <p className="section-label mb-2">Motivo da disputa</p>
-                <p className="text-sm" style={{ color: 'var(--text2)' }}>{caso.obs}</p>
+            {/* ── DISPUTA: detalhes completos ── */}
+            {caso.tipo === 'DISPUTA' && (
+              <div className="card-solid" style={{ borderColor: 'rgba(220,38,38,0.3)', borderWidth: 1 }}>
+                <div className="flex items-start gap-3 mb-3">
+                  <AlertTriangle size={18} style={{ color: 'var(--red)' }} className="shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-sm" style={{ color: 'var(--red)' }}>
+                      Disputa · aberta por: {disputa ? (disputa.aberta_por === 'CLIENTE' ? 'Cliente' : 'Profissional') : '—'}
+                    </p>
+                    {disputa?.created_at && (
+                      <p className="text-2xs mt-0.5" style={{ color: 'var(--text3)' }}>{formatDate(disputa.created_at)}</p>
+                    )}
+                  </div>
+                </div>
+
+                {disputa?.motivo && (
+                  <div className="rounded-xl p-3 mb-3" style={{ background: 'rgba(220,38,38,0.08)' }}>
+                    <p className="text-2xs font-semibold mb-1" style={{ color: 'var(--text3)' }}>MOTIVO DA DISPUTA</p>
+                    <p className="text-sm" style={{ color: 'var(--text2)' }}>{disputa.motivo}</p>
+                  </div>
+                )}
+
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                  <p className="text-2xs font-semibold mb-2" style={{ color: 'var(--text3)' }}>O QUE FOI CONTRATADO</p>
+                  <p className="text-xs" style={{ color: 'var(--text2)' }}>
+                    {demanda?.descricao || 'Sem descrição registrada'}
+                  </p>
+                </div>
+
+                {/* Escalada para Curador Sênior (apenas Suporte) */}
+                {isCuradorSuporte && (
+                  <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text3)' }}>
+                      <ArrowUpCircle size={14} style={{ color: 'var(--purple)' }} />
+                      <span>
+                        Se a disputa for complexa, o Curador Sênior pode assumir em primeira ou segunda instância.
+                        Entre em contato pelo canal interno para escalar este caso (#{caso.id.slice(0,8)}).
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -174,9 +228,12 @@ export default function CuradorCasoDetalhePage() {
             {caso.tipo === 'QA_REPROVADO' && checklist.length > 0 && (
               <div className="card-solid">
                 <p className="section-label mb-3">Checklist do serviço</p>
-                <ul className="space-y-1">
+                <ul className="space-y-1.5">
                   {checklist.map((item: any) => (
-                    <li key={item.id} className="text-sm" style={{ color: 'var(--text2)' }}>• {item.descricao}</li>
+                    <li key={item.id} className="flex items-start gap-2 text-sm">
+                      <span style={{ color: 'var(--text3)' }}>•</span>
+                      <span style={{ color: 'var(--text2)' }}>{item.descricao}</span>
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -185,21 +242,21 @@ export default function CuradorCasoDetalhePage() {
             {/* Análise SUE */}
             {analise_sue && (
               <div className="card-solid">
-                <p className="section-label mb-3">Análise SUE (AVC)</p>
+                <p className="section-label mb-3">Análise AVC (Motor QA)</p>
                 <pre className="text-xs p-3 rounded-xl overflow-auto" style={{ background: 'var(--navy3)', color: 'var(--text2)' }}>
                   {JSON.stringify(analise_sue, null, 2)}
                 </pre>
               </div>
             )}
 
-            {/* Ações */}
+            {/* ── DECISÃO: QA ── */}
             {caso.tipo === 'QA_REPROVADO' && (
               <div className="card-solid space-y-3">
-                <p className="section-label">Decisão</p>
+                <p className="section-label">Decisão do curador</p>
                 <textarea
                   className="input"
                   rows={3}
-                  placeholder="Feedback (obrigatório para reprovar, opcional para aprovar)"
+                  placeholder="Feedback (obrigatório para reprovar — mínimo 10 caracteres; opcional para aprovar)"
                   value={feedback}
                   onChange={e => setFeedback(e.target.value)}
                 />
@@ -208,47 +265,51 @@ export default function CuradorCasoDetalhePage() {
                     <CheckCircle2 size={15} />Aprovar entrega
                   </Button>
                   <Button variant="orange" className="flex-1" disabled={enviando} onClick={reprovar}>
-                    <XCircle size={15} />Reprovar (retrabalho)
+                    <XCircle size={15} />Reprovar · retrabalho
                   </Button>
                 </div>
+                <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                  Reprovação aplica −40 pontos SQP ao profissional e retorna a demanda para EM_EXECUCAO.
+                </p>
               </div>
             )}
 
+            {/* ── DECISÃO: DISPUTA ── */}
             {caso.tipo === 'DISPUTA' && (
               <div className="card-solid space-y-3">
                 <p className="section-label">Resolução da disputa</p>
                 <textarea
                   className="input"
                   rows={3}
-                  placeholder="Justificativa da decisão (obrigatória para reembolsar o cliente)"
+                  placeholder="Justificativa da decisão · obrigatória para reembolsar o cliente"
                   value={feedback}
                   onChange={e => setFeedback(e.target.value)}
                 />
-                <div className="grid grid-cols-1 gap-2">
-                  <Button variant="green" disabled={enviando} onClick={() => resolverDisputa('LIBERAR_PROFISSIONAL')}>
-                    Liberar pagamento ao profissional
+                <div className="space-y-2">
+                  <Button variant="green" className="w-full" disabled={enviando} onClick={() => resolverDisputa('LIBERAR_PROFISSIONAL')}>
+                    <CheckCircle2 size={15} />Liberar pagamento ao profissional
                   </Button>
-                  <Button variant="orange" disabled={enviando} onClick={() => resolverDisputa('RETOMAR_EXECUCAO')}>
-                    Retomar execução (manter custódia)
+                  <Button variant="orange" className="w-full" disabled={enviando} onClick={() => resolverDisputa('RETOMAR_EXECUCAO')}>
+                    Retomar execução · manter custódia
                   </Button>
-                  <Button variant="ghost" disabled={enviando} onClick={() => resolverDisputa('REEMBOLSAR_CLIENTE')}>
-                    Cancelar e reembolsar o cliente
+                  <Button variant="ghost" className="w-full" disabled={enviando} onClick={() => resolverDisputa('REEMBOLSAR_CLIENTE')}>
+                    <XCircle size={15} />Cancelar e reembolsar o cliente
                   </Button>
                 </div>
-                <p className="text-2xs" style={{ color: 'var(--text3)' }}>
-                  "Liberar pagamento" conclui a demanda e libera o escrow ao profissional. "Retomar execução"
-                  devolve a demanda para EM_EXECUCAO mantendo o valor em custódia. "Cancelar e reembolsar"
-                  cancela a demanda e marca o escrow para reembolso (processamento real do reembolso depende
-                  da integração Pagar.me — pendência técnica #1).
-                </p>
+                <div className="rounded-xl p-3 text-xs space-y-1" style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text3)' }}>
+                  <p><strong style={{ color: 'var(--green)' }}>Liberar:</strong> conclui a demanda e libera o escrow ao profissional.</p>
+                  <p><strong style={{ color: 'var(--orange)' }}>Retomar:</strong> demanda volta para EM_EXECUCAO; cliente mantém o dinheiro em custódia.</p>
+                  <p><strong style={{ color: 'var(--text2)' }}>Cancelar:</strong> cancela a demanda; aplica −30 SQP ao profissional; reembolso processado pelo Pagar.me.</p>
+                </div>
               </div>
             )}
 
-            {caso.tipo === 'DEMANDA_ESPECIAL' && (user.tipo === 'CURADOR_SENIOR' || user.tipo === 'ADMIN') && (
+            {/* ── DEMANDA ESPECIAL: precificação ── */}
+            {caso.tipo === 'DEMANDA_ESPECIAL' && isSeniorOuAdmin && (
               <div className="card-solid space-y-3">
-                <p className="section-label">Precificação manual</p>
+                <p className="section-label">Precificação manual · Curador Sênior</p>
                 <p className="text-sm" style={{ color: 'var(--text2)' }}>
-                  Área acima do limite padrão do serviço — defina preço e prazo manualmente.
+                  Área acima do limite padrão para este serviço — defina preço e prazo manualmente.
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -260,28 +321,63 @@ export default function CuradorCasoDetalhePage() {
                     <input className="input mt-1" type="number" value={sla} onChange={e => setSla(e.target.value)} />
                   </div>
                 </div>
-                <textarea
-                  className="input"
-                  rows={2}
-                  placeholder="Observações (opcional)"
-                  value={obs}
-                  onChange={e => setObs(e.target.value)}
-                />
+                <textarea className="input" rows={2} placeholder="Observações técnicas (opcional)" value={obs} onChange={e => setObs(e.target.value)} />
                 <Button variant="orange" className="w-full" disabled={enviando} onClick={precificar}>
                   Enviar precificação ao cliente
                 </Button>
               </div>
             )}
+
+            {caso.tipo === 'DEMANDA_ESPECIAL' && isCuradorSuporte && (
+              <div className="card-solid">
+                <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text3)' }}>
+                  <ArrowUpCircle size={16} style={{ color: 'var(--purple)' }} />
+                  <p>Precificação de demandas especiais é exclusiva do <strong style={{ color: 'var(--purple)' }}>Curador Sênior</strong> (Art. 8.5). Escale este caso pelo canal interno.</p>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Coluna lateral */}
+          {/* ── Coluna lateral ── */}
           <div className="space-y-4">
             <Button variant="ghost" className="w-full" onClick={() => router.push('/curador/fila')}>
               ← Voltar para a fila
             </Button>
+
+            {/* Status e prazo */}
+            <div className="card-solid space-y-2 text-sm">
+              <p className="section-label">Status do caso</p>
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text3)' }}>Status</span>
+                <span style={{ color: caso.status === 'RESOLVIDO' ? 'var(--green)' : 'var(--text)' }}>{caso.status}</span>
+              </div>
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text3)' }}>Prazo</span>
+                <span style={{ color: atrasado ? 'var(--red)' : horasRestantes <= 4 ? 'var(--gold)' : 'var(--text)' }}>
+                  {caso.status === 'RESOLVIDO' ? 'Resolvido' : atrasado ? `Atrasado ${Math.abs(horasRestantes)}h` : `${horasRestantes}h`}
+                </span>
+              </div>
+              {caso.resolvido_em && (
+                <div className="flex justify-between">
+                  <span style={{ color: 'var(--text3)' }}>Resolvido em</span>
+                  <span style={{ color: 'var(--text2)' }}>{formatDate(caso.resolvido_em)}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
     </Shell>
+  )
+}
+
+function Row({ label, value, mono, orange }: { label: string; value: string; mono?: boolean; orange?: boolean }) {
+  return (
+    <div className="flex justify-between gap-4">
+      <span style={{ color: 'var(--text3)' }}>{label}</span>
+      <span className={mono ? 'font-mono font-semibold' : 'font-medium'} style={{ color: orange ? 'var(--orange)' : 'var(--text)' }}>
+        {value}
+      </span>
+    </div>
   )
 }
