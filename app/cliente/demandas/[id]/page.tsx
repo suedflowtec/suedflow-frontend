@@ -9,7 +9,7 @@ import { StarRating } from '@/components/ui/StarRating'
 import { orders, admin } from '@/lib/api'
 import { formatBRL, statusLabel, formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
-import { CheckCircle2, AlertTriangle, FileText, CreditCard, MessageCircle, Lock, Paperclip, Upload, ExternalLink } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, FileText, CreditCard, MessageCircle, Lock, Paperclip, Upload, Eye, Download, Trash2 } from 'lucide-react'
 
 const NOTAS_INICIAIS = {
   nota_geral: 0,
@@ -67,6 +67,7 @@ export default function DemandaDetailPage() {
   const [tipoDoc, setTipoDoc] = useState('PROJETO')
   const [descricaoOutro, setDescricaoOutro] = useState('')
   const [uploadandoDoc, setUploadandoDoc] = useState(false)
+  const [deletandoDoc, setDeletandoDoc] = useState<string | null>(null)
 
   const id = params?.id as string
 
@@ -101,6 +102,20 @@ export default function DemandaDetailPage() {
     } finally {
       setUploadandoDoc(false)
       e.target.value = ''
+    }
+  }
+
+  async function handleDeleteDoc(docId: string, nome: string) {
+    if (!confirm(`Remover "${nome}"?`)) return
+    setDeletandoDoc(docId)
+    try {
+      await orders.deleteDocumento(id, docId)
+      setDocumentos(d => d.filter(doc => doc.id !== docId))
+      toast('Documento removido.', 'success')
+    } catch (err: any) {
+      toast(err.message || 'Erro ao remover documento', 'error')
+    } finally {
+      setDeletandoDoc(null)
     }
   }
 
@@ -542,9 +557,20 @@ export default function DemandaDetailPage() {
                       <span className="flex-1 truncate" style={{ color: 'var(--text2)' }}>{doc.nome}</span>
                       <span className="shrink-0 px-1.5 py-0.5 rounded text-2xs font-mono" style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text3)' }}>{doc.tipo}</span>
                       {doc.tamanho_kb && <span className="shrink-0" style={{ color: 'var(--text3)' }}>{doc.tamanho_kb}KB</span>}
-                      <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text3)' }}>
-                        <ExternalLink size={12} />
+                      <a href={doc.url} target="_blank" rel="noopener noreferrer" title="Abrir" style={{ color: 'var(--text3)' }}>
+                        <Eye size={12} />
                       </a>
+                      <a href={doc.url} download={doc.nome} title="Baixar" style={{ color: 'var(--text3)' }}>
+                        <Download size={12} />
+                      </a>
+                      <button
+                        onClick={() => handleDeleteDoc(doc.id, doc.nome)}
+                        disabled={deletandoDoc === doc.id}
+                        title="Remover"
+                        style={{ color: 'var(--red)', opacity: deletandoDoc === doc.id ? 0.4 : 1, background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1 }}
+                      >
+                        <Trash2 size={12} />
+                      </button>
                     </div>
                   ))}
                 </div>

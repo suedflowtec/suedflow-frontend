@@ -133,6 +133,7 @@ export const orders = {
     if (descricao?.trim()) fd.append('descricao', descricao.trim())
     return request<{ ok: boolean; documento: any }>(`/api/orders/${id}/documentos`, { method: 'POST', formData: fd })
   },
+  deleteDocumento: (id: string, docId: string) => request<{ ok: boolean }>(`/api/orders/${id}/documentos/${docId}`, { method: 'DELETE' }),
 }
 
 export const admin = {

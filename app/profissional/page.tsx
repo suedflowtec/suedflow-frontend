@@ -43,7 +43,7 @@ export default function ProfissionalHome() {
   return (
     <Shell>
       <Topbar
-        title={`Olá, ${user.nome.split(' ')[0]} 👋`}
+        title={`Olá, ${user.nome?.includes('@') ? (user.username || 'você') : (user.nome?.split(' ')[0] || 'você')} 👋`}
         subtitle={prof.nivel ? `${prof.nivel} · ${prof.plano || 'GRATIS'}` : undefined}
         actions={
           <Link href="/profissional/feed" className="btn btn-primary btn-sm">

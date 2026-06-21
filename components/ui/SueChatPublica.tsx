@@ -28,7 +28,7 @@ const SUGESTOES = [
   'Tenho fissuras na parede, o que faço?',
 ]
 
-export function SueChatPublica() {
+export function SueChatPublica({ forceOpen }: { forceOpen?: boolean }) {
   const [aberto, setAberto] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([])
   const [input, setInput] = useState('')
@@ -53,6 +53,7 @@ export function SueChatPublica() {
   }, [aberto])
 
   useEffect(() => { if (aberto) scroll() }, [msgs, aberto])
+  useEffect(() => { if (forceOpen) setAberto(true) }, [forceOpen])
 
   const enviar = async (texto?: string) => {
     const msg = (texto ?? input).trim()

@@ -93,6 +93,7 @@ export default function LandingPage() {
   const router = useRouter()
   const [audience, setAudience] = useState<Audience>('cliente')
   const [svcFilter, setSvcFilter] = useState<SvcFilter>('all')
+  const [openSue, setOpenSue] = useState(false)
   const revealRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -332,7 +333,7 @@ export default function LandingPage() {
 
       {/* ═══ TIERS (apenas profissional) ═══ */}
       {audience === 'profissional' && (
-        <section className="lp-section-pad">
+        <section id="tiers" className="lp-section-pad">
           <div className="lp-wrap">
             <div className="lp-tiers-wrap reveal">
               <div className="lp-tiers-head">
@@ -496,16 +497,30 @@ export default function LandingPage() {
             <p>{c.ctaLede}</p>
             <div className="lp-ctas">
               <Link href={c.registerHref} className="lp-btn lp-btn-primary lp-btn-lg">{c.ctaPrimary}</Link>
-              <Link href="/auth/login" className="lp-btn lp-btn-lg" style={{ background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.25)' }}>
-                {c.ctaSecondary}
-              </Link>
+              {audience === 'cliente' ? (
+                <button
+                  className="lp-btn lp-btn-lg"
+                  style={{ background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.25)' }}
+                  onClick={() => setOpenSue(true)}
+                >
+                  {c.ctaSecondary}
+                </button>
+              ) : (
+                <a
+                  href="#tiers"
+                  className="lp-btn lp-btn-lg"
+                  style={{ background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.25)' }}
+                >
+                  {c.ctaSecondary}
+                </a>
+              )}
             </div>
           </div>
         </div>
       </section>
 
       {/* ═══ SUE PÚBLICA ═══ */}
-      <SueChatPublica />
+      <SueChatPublica forceOpen={openSue} />
 
       {/* ═══ FOOTER ═══ */}
       <footer>
