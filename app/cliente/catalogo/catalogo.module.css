@@ -31,12 +31,18 @@
   margin-top: 6px;
 }
 
-/* ── Botões de navegação ── */
+/* ── Setas (aparecem ao passar o mouse na seção) ── */
 .arrowGroup {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
   padding-top: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.catSection:hover .arrowGroup {
+  opacity: 1;
 }
 
 .arrowBtn {
@@ -59,26 +65,27 @@
   color: #fff;
 }
 
-/* ── Trilho do carrossel ── */
+/* ── Trilho do carrossel ──
+   padding-block: espaço para o card ativo não ser recortado ao escalar.
+   O mouse-move handler injeta scroll contínuo via rAF.
+*/
 .carousel {
   display: flex;
   gap: 16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  padding-bottom: 8px;
+  padding: 20px 4px 12px;
+  margin-top: -20px;    /* compensate vertical padding */
   scrollbar-width: none;
   -ms-overflow-style: none;
+  cursor: default;
 }
 
 .carousel::-webkit-scrollbar {
   display: none;
 }
 
-/* ── Card individual ──
-   Tamanho aumentado para que o texto das imagens seja legível.
-   Em telas ≥1280px aparecem ~2 cards + borda do 3º (convite ao scroll).
-   Em mobile o card preenche quase a largura, scroll natural por toque.
-*/
+/* ── Card individual ── */
 .card {
   position: relative;
   flex-shrink: 0;
@@ -93,23 +100,43 @@
   text-align: left;
   padding: 0;
   box-shadow: inset 3px 0 0 rgba(232, 103, 26, 0.22);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  /* Transição unificada para TODOS os efeitos (foreground + hover) */
+  transition:
+    transform 0.32s cubic-bezier(0.34, 1.2, 0.64, 1),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease,
+    filter 0.28s ease,
+    opacity 0.28s ease;
 }
 
 @media (max-width: 640px) {
-  .card {
-    width: 320px;
-    height: 200px;
-  }
+  .card { width: 320px; height: 200px; }
 }
 
-.card:hover {
-  transform: scale(1.025);
+/* ── Efeito primeiro/segundo plano ──────────────────────────────────────────
+   Quando QUALQUER card na fila está em hover:
+     • Esse card → destaque total (escala sobe, brightness sobe)
+     • Demais cards → recuam (escala cai, escurecem, dessaturam)
+   Usa :has() com suporte amplo em navegadores modernos.
+*/
+
+/* Cards em segundo plano */
+.carousel:has(.card:hover) .card:not(:hover) {
+  transform: scale(0.91);
+  filter: brightness(0.45) saturate(0.5);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Card em primeiro plano */
+.carousel .card:hover {
+  transform: scale(1.05);
   border-color: #E8671A;
   box-shadow:
     0 0 0 1.5px #E8671A,
-    0 16px 40px rgba(232, 103, 26, 0.22),
+    0 20px 48px rgba(232, 103, 26, 0.28),
     inset 3px 0 0 #E8671A;
+  filter: brightness(1.06);
 }
 
 /* ── Imagem ── */
@@ -119,15 +146,15 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.35s ease;
+  transition: transform 0.4s ease;
 }
 
 .card:hover .img {
   transform: scale(1.05);
 }
 
-/* ── Overlay: escuro APENAS na faixa inferior (onde ficam nossos labels).
-   Centro e topo quase transparentes para o conteúdo visual da imagem respirar.
+/* ── Overlay: escuro apenas na faixa inferior para nossos labels.
+   Centro e topo quase transparentes → imagem respira.
 */
 .overlay {
   position: absolute;
@@ -158,7 +185,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* ── Corpo do card (sobre a imagem, alinhado na base) ── */
+/* ── Corpo do card ── */
 .cardBody {
   position: absolute;
   inset: 0;
@@ -202,7 +229,7 @@
   transform: translateY(4px);
 }
 
-/* CTA: oculto em repouso, aparece no hover no lugar do preço */
+/* CTA: slide-up no hover */
 .cardCta {
   font-size: 13px;
   font-weight: 700;

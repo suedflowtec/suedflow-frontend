@@ -25,18 +25,9 @@ const SVC_IMG: Record<string, string> = {
 }
 
 const CATEGORIAS = [
-  {
-    titulo: 'Diagnóstico e Inspeção',
-    svcs: ['SVC000', 'SVC001', 'SVC003', 'SVC010'],
-  },
-  {
-    titulo: 'Projetos de Engenharia',
-    svcs: ['SVC004', 'SVC005', 'SVC006', 'SVC007'],
-  },
-  {
-    titulo: 'Avaliação, Regularização e Gestão',
-    svcs: ['SVC002', 'SVC008', 'SVC009', 'SVC011'],
-  },
+  { titulo: 'Diagnóstico e Inspeção',              svcs: ['SVC000', 'SVC001', 'SVC003', 'SVC010'] },
+  { titulo: 'Projetos de Engenharia',               svcs: ['SVC004', 'SVC005', 'SVC006', 'SVC007'] },
+  { titulo: 'Avaliação, Regularização e Gestão',   svcs: ['SVC002', 'SVC008', 'SVC009', 'SVC011'] },
 ]
 
 function precoDe(s: any): string {
@@ -53,7 +44,9 @@ export default function CatalogoPage() {
   const [busca, setBusca] = useState('')
   const [buscando, setBuscando] = useState(false)
   const [sugestao, setSugestao] = useState<any>(null)
+
   const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
+  const rafRefs   = useRef<(number | null)[]>([null, null, null])
 
   useEffect(() => {
     if (authLoading) return
@@ -64,14 +57,57 @@ export default function CatalogoPage() {
       .finally(() => setLoading(false))
   }, [user, authLoading, router, toast])
 
+  // Limpa todos os rAF ao desmontar
+  useEffect(() => {
+    return () => { rafRefs.current.forEach(id => { if (id !== null) cancelAnimationFrame(id) }) }
+  }, [])
+
   if (authLoading || !user) return null
+
+  // ── Mouse move: zona de borda → velocidade automática ──────────────────────
+  // Zona esquerda (0–18%): scroll esquerda, até 7px/frame
+  // Zona direita (82–100%): scroll direita, até 7px/frame
+  // Centro (18–82%): sem scroll automático
+  const onMouseMove = (rowIdx: number) => (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = scrollRefs.current[rowIdx]
+    if (!el) return
+
+    if (rafRefs.current[rowIdx] !== null) {
+      cancelAnimationFrame(rafRefs.current[rowIdx]!)
+      rafRefs.current[rowIdx] = null
+    }
+
+    const rect = el.getBoundingClientRect()
+    const pct  = (e.clientX - rect.left) / rect.width
+
+    let speed = 0
+    if (pct < 0.18)      speed = -(1 - pct / 0.18) * 7
+    else if (pct > 0.82) speed = ((pct - 0.82) / 0.18) * 7
+
+    if (speed === 0) return
+
+    const tick = () => {
+      el.scrollLeft += speed
+      rafRefs.current[rowIdx] = requestAnimationFrame(tick)
+    }
+    rafRefs.current[rowIdx] = requestAnimationFrame(tick)
+  }
+
+  const onMouseLeave = (rowIdx: number) => () => {
+    if (rafRefs.current[rowIdx] !== null) {
+      cancelAnimationFrame(rafRefs.current[rowIdx]!)
+      rafRefs.current[rowIdx] = null
+    }
+  }
+
+  // Setas (fallback acessível)
+  const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
+    scrollRefs.current[rowIdx]?.scrollBy({ left: dir === 'right' ? 992 : -992, behavior: 'smooth' })
+  }
 
   const handleBusca = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (busca.trim().length < 10) {
-      toast('Descreva sua necessidade com pelo menos 10 caracteres.', 'error')
-      return
-    }
+    if (busca.trim().length < 10) { toast('Descreva sua necessidade com pelo menos 10 caracteres.', 'error'); return }
     setBuscando(true)
     setSugestao(null)
     try {
@@ -84,20 +120,11 @@ export default function CatalogoPage() {
     }
   }
 
-  const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
-    const el = scrollRefs.current[rowIdx]
-    if (!el) return
-    el.scrollBy({ left: dir === 'right' ? 992 : -992, behavior: 'smooth' })
-  }
-
   const svcMap = Object.fromEntries(servicos.map(s => [s.codigo, s]))
 
   return (
     <Shell>
-      <Topbar
-        title="Catálogo de serviços"
-        subtitle="Escolha o serviço para o seu imóvel"
-      />
+      <Topbar title="Catálogo de serviços" subtitle="Passe o mouse sobre a categoria para navegar" />
 
       <main className="p-6 space-y-8">
 
@@ -132,9 +159,7 @@ export default function CatalogoPage() {
                       </span>
                     )}
                   </div>
-                  {sugestao.justificativa && (
-                    <p className="text-xs" style={{ color: 'var(--text3)' }}>{sugestao.justificativa}</p>
-                  )}
+                  {sugestao.justificativa && <p className="text-xs" style={{ color: 'var(--text3)' }}>{sugestao.justificativa}</p>}
                   {sugestao.alternativa && sugestao.confianca < 0.75 && (
                     <p className="text-xs" style={{ color: 'var(--text3)' }}>
                       Alternativa: <span style={{ color: 'var(--text2)' }}>{sugestao.alternativa}</span>
@@ -150,9 +175,7 @@ export default function CatalogoPage() {
                   </div>
                 </div>
               ) : (
-                <p className="text-sm" style={{ color: 'var(--text3)' }}>
-                  Não foi possível identificar um serviço. Escolha abaixo.
-                </p>
+                <p className="text-sm" style={{ color: 'var(--text3)' }}>Não foi possível identificar um serviço. Escolha abaixo.</p>
               )}
             </div>
           )}
@@ -168,31 +191,26 @@ export default function CatalogoPage() {
               if (items.length === 0) return null
               return (
                 <section key={cat.titulo} className={styles.catSection}>
+
                   {/* Cabeçalho da linha */}
                   <div className={styles.catHeader}>
                     <h3 className={styles.catTitle}>{cat.titulo}</h3>
                     <div className={styles.arrowGroup}>
-                      <button
-                        className={styles.arrowBtn}
-                        onClick={() => scrollRow(rowIdx, 'left')}
-                        aria-label="Anterior"
-                      >
+                      <button className={styles.arrowBtn} onClick={() => scrollRow(rowIdx, 'left')} aria-label="Anterior">
                         <ChevronLeft size={15} />
                       </button>
-                      <button
-                        className={styles.arrowBtn}
-                        onClick={() => scrollRow(rowIdx, 'right')}
-                        aria-label="Próximo"
-                      >
+                      <button className={styles.arrowBtn} onClick={() => scrollRow(rowIdx, 'right')} aria-label="Próximo">
                         <ChevronRight size={15} />
                       </button>
                     </div>
                   </div>
 
-                  {/* Trilho do carrossel */}
+                  {/* Trilho do carrossel — mouse move drive scroll */}
                   <div
                     ref={el => { scrollRefs.current[rowIdx] = el }}
                     className={styles.carousel}
+                    onMouseMove={onMouseMove(rowIdx)}
+                    onMouseLeave={onMouseLeave(rowIdx)}
                   >
                     {items.map(s => (
                       <button
@@ -202,11 +220,7 @@ export default function CatalogoPage() {
                         aria-label={s.nome}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={SVC_IMG[s.codigo] || ''}
-                          alt={s.nome}
-                          className={styles.img}
-                        />
+                        <img src={SVC_IMG[s.codigo] || ''} alt={s.nome} className={styles.img} />
                         <div className={styles.overlay} />
                         <span className={styles.topBadge}>SLA {s.sla_dias}d</span>
                         <div className={styles.cardBody}>
