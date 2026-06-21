@@ -61,13 +61,13 @@ export default function CatalogoPage() {
   if (authLoading || !user) return null
 
   // ── Scroll por movimento do mouse ────────────────────────────────────────
-  // Calcula o delta entre a posição atual e a anterior do mouse.
-  // Mover o mouse → direita: scrollLeft sobe (vê próximos cards).
-  // Mover o mouse ← esquerda: scrollLeft desce (vê cards anteriores).
-  // Sensibilidade 2.5× para que movimentos curtos percorram distância real.
+  // scroll-snap-type reverte qualquer scrollLeft programático imediatamente
+  // de volta ao snap point. Por isso desabilitamos o snap enquanto o mouse
+  // se move e reativamos ao sair — aí o browser encaixa no card mais próximo.
   const onMove = (rowIdx: number) => (e: React.MouseEvent<HTMLDivElement>) => {
     const el = scrollRefs.current[rowIdx]
     if (!el) return
+    el.style.scrollSnapType = 'none'        // libera o snap durante o arrasto
     const last = lastXRefs.current[rowIdx]
     if (last >= 0) {
       el.scrollLeft += (e.clientX - last) * 2.5
@@ -75,8 +75,10 @@ export default function CatalogoPage() {
     lastXRefs.current[rowIdx] = e.clientX
   }
 
-  // Ao sair da área: esquece o último X para não pular no próximo onMove
+  // Ao sair: reativa o snap (browser encaixa no card mais próximo)
   const onLeave = (rowIdx: number) => () => {
+    const el = scrollRefs.current[rowIdx]
+    if (el) el.style.scrollSnapType = ''    // restaura o valor do CSS
     lastXRefs.current[rowIdx] = -1
   }
 
