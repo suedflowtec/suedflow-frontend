@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { svc, sue } from '@/lib/api'
@@ -25,9 +25,9 @@ const SVC_IMG: Record<string, string> = {
 }
 
 const CATEGORIAS = [
-  { titulo: 'Diagnóstico e Inspeção',              svcs: ['SVC000', 'SVC001', 'SVC003', 'SVC010'] },
-  { titulo: 'Projetos de Engenharia',               svcs: ['SVC004', 'SVC005', 'SVC006', 'SVC007'] },
-  { titulo: 'Avaliação, Regularização e Gestão',   svcs: ['SVC002', 'SVC008', 'SVC009', 'SVC011'] },
+  { titulo: 'Diagnóstico e Inspeção',            svcs: ['SVC000', 'SVC001', 'SVC003', 'SVC010'] },
+  { titulo: 'Projetos de Engenharia',             svcs: ['SVC004', 'SVC005', 'SVC006', 'SVC007'] },
+  { titulo: 'Avaliação, Regularização e Gestão', svcs: ['SVC002', 'SVC008', 'SVC009', 'SVC011'] },
 ]
 
 function precoDe(s: any): string {
@@ -45,8 +45,12 @@ export default function CatalogoPage() {
   const [buscando, setBuscando] = useState(false)
   const [sugestao, setSugestao] = useState<any>(null)
 
+  // refs para cada trilho do carrossel
   const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
-  const rafRefs   = useRef<(number | null)[]>([null, null, null])
+  // velocidade atual de scroll por linha (px/frame) — 0 = parado
+  const speedRefs  = useRef<number[]>([0, 0, 0])
+  // id do requestAnimationFrame por linha (null = loop parado)
+  const rafRefs    = useRef<(number | null)[]>([null, null, null])
 
   useEffect(() => {
     if (authLoading) return
@@ -57,48 +61,55 @@ export default function CatalogoPage() {
       .finally(() => setLoading(false))
   }, [user, authLoading, router, toast])
 
-  // Limpa todos os rAF ao desmontar
-  useEffect(() => {
-    return () => { rafRefs.current.forEach(id => { if (id !== null) cancelAnimationFrame(id) }) }
+  // Para todos os loops ao desmontar
+  useEffect(() => () => {
+    rafRefs.current.forEach(id => { if (id !== null) cancelAnimationFrame(id) })
   }, [])
 
   if (authLoading || !user) return null
 
-  // ── Mouse move: zona de borda → velocidade automática ──────────────────────
-  // Zona esquerda (0–18%): scroll esquerda, até 7px/frame
-  // Zona direita (82–100%): scroll direita, até 7px/frame
-  // Centro (18–82%): sem scroll automático
-  const onMouseMove = (rowIdx: number) => (e: React.MouseEvent<HTMLDivElement>) => {
+  // ── Inicia o loop de scroll ao entrar na área do carrossel ──────────────
+  // O loop roda enquanto o mouse está dentro e lê speedRefs a cada frame.
+  // onMouseMove só atualiza a velocidade — nunca cancela o rAF.
+  const startLoop = (rowIdx: number) => {
+    if (rafRefs.current[rowIdx] !== null) return  // já rodando
     const el = scrollRefs.current[rowIdx]
     if (!el) return
 
-    if (rafRefs.current[rowIdx] !== null) {
-      cancelAnimationFrame(rafRefs.current[rowIdx]!)
-      rafRefs.current[rowIdx] = null
-    }
-
-    const rect = el.getBoundingClientRect()
-    const pct  = (e.clientX - rect.left) / rect.width
-
-    let speed = 0
-    if (pct < 0.18)      speed = -(1 - pct / 0.18) * 7
-    else if (pct > 0.82) speed = ((pct - 0.82) / 0.18) * 7
-
-    if (speed === 0) return
-
     const tick = () => {
-      el.scrollLeft += speed
+      const spd = speedRefs.current[rowIdx]
+      if (spd !== 0) el.scrollLeft += spd
       rafRefs.current[rowIdx] = requestAnimationFrame(tick)
     }
     rafRefs.current[rowIdx] = requestAnimationFrame(tick)
   }
 
-  const onMouseLeave = (rowIdx: number) => () => {
+  const stopLoop = (rowIdx: number) => {
+    speedRefs.current[rowIdx] = 0
     if (rafRefs.current[rowIdx] !== null) {
       cancelAnimationFrame(rafRefs.current[rowIdx]!)
       rafRefs.current[rowIdx] = null
     }
   }
+
+  // Mouse entra no carrossel → inicia loop
+  const onEnter = (rowIdx: number) => () => startLoop(rowIdx)
+
+  // Mouse se move → atualiza velocidade (não interfere no rAF)
+  // Zona esquerda (0-30%): scroll ← | Centro (30-70%): parado | Zona direita (70-100%): scroll →
+  const onMove = (rowIdx: number) => (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = scrollRefs.current[rowIdx]
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const pct  = (e.clientX - rect.left) / rect.width
+
+    if      (pct < 0.30) speedRefs.current[rowIdx] = -(1 - pct / 0.30) * 8
+    else if (pct > 0.70) speedRefs.current[rowIdx] = ((pct - 0.70) / 0.30) * 8
+    else                 speedRefs.current[rowIdx] = 0
+  }
+
+  // Mouse sai → para tudo
+  const onLeave = (rowIdx: number) => () => stopLoop(rowIdx)
 
   // Setas (fallback acessível)
   const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
@@ -124,7 +135,10 @@ export default function CatalogoPage() {
 
   return (
     <Shell>
-      <Topbar title="Catálogo de serviços" subtitle="Passe o mouse sobre a categoria para navegar" />
+      <Topbar
+        title="Catálogo de serviços"
+        subtitle="Mova o mouse para os lados para navegar em cada categoria"
+      />
 
       <main className="p-6 space-y-8">
 
@@ -192,7 +206,6 @@ export default function CatalogoPage() {
               return (
                 <section key={cat.titulo} className={styles.catSection}>
 
-                  {/* Cabeçalho da linha */}
                   <div className={styles.catHeader}>
                     <h3 className={styles.catTitle}>{cat.titulo}</h3>
                     <div className={styles.arrowGroup}>
@@ -205,12 +218,14 @@ export default function CatalogoPage() {
                     </div>
                   </div>
 
-                  {/* Trilho do carrossel — mouse move drive scroll */}
+                  {/* Loop inicia ao entrar (onMouseEnter), velocidade atualiza
+                      a cada movimento (onMouseMove), loop para ao sair (onMouseLeave) */}
                   <div
                     ref={el => { scrollRefs.current[rowIdx] = el }}
                     className={styles.carousel}
-                    onMouseMove={onMouseMove(rowIdx)}
-                    onMouseLeave={onMouseLeave(rowIdx)}
+                    onMouseEnter={onEnter(rowIdx)}
+                    onMouseMove={onMove(rowIdx)}
+                    onMouseLeave={onLeave(rowIdx)}
                   >
                     {items.map(s => (
                       <button
