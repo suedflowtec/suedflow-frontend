@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutGrid, List, Plus, Home, Radar, Wallet, Star,
   User, Settings, FlaskConical, HeartPulse, ArrowLeftRight,
-  LogOut, Sun, Moon, ChevronLeft, ChevronRight, Menu, X,
+  LogOut, Sun, Moon, ChevronLeft, ChevronRight, Menu, X, ShieldCheck,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { Avatar } from '@/components/ui/Avatar'
@@ -37,12 +37,14 @@ const NAV = {
     { href: '/profissional/perfil',     Icon: User,       label: 'Meu perfil' },
   ],
   ADMIN: [
-    { href: '/admin',               Icon: LayoutGrid,  label: 'Dashboard' },
-    { href: '/admin/demandas',      Icon: List,        label: 'Demandas' },
-    { href: '/admin/profissionais', Icon: Star,        label: 'Profissionais' },
-    { href: '/admin/precos',        Icon: Settings,    label: 'Motor UTS' },
+    { href: '/admin',               Icon: LayoutGrid,   label: 'Dashboard' },
+    { href: '/admin/demandas',      Icon: List,         label: 'Demandas' },
+    { href: '/admin/profissionais', Icon: Star,         label: 'Profissionais' },
+    { href: '/admin/precos',        Icon: Settings,     label: 'Motor UTS' },
     { href: '/admin/teste',         Icon: FlaskConical, label: 'Ferramentas' },
-    { href: '/admin/health',        Icon: HeartPulse,  label: 'Saúde do sistema' },
+    { href: '/admin/health',        Icon: HeartPulse,   label: 'Saúde do sistema' },
+    { href: '/curador',             Icon: ShieldCheck,  label: 'Curadoria' },
+    { href: '/curador/fila',        Icon: List,         label: 'Fila de casos' },
   ],
   CURADOR: [
     { href: '/curador',      Icon: LayoutGrid, label: 'Painel' },
@@ -220,7 +222,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     {user?.username ? `@${user.username}` : (user?.nome?.split(' ')[0] ?? '—')}
                   </p>
                   <p className="text-xs truncate" style={{ color: 'var(--text3)' }}>
-                    {TIPO_LABEL[user?.tipo] ?? user?.tipo ?? ''}
+                    {temAmbosPerfis
+                      ? (emModoProfissional ? 'Profissional' : 'Cliente')
+                      : (TIPO_LABEL[user?.tipo] ?? user?.tipo ?? '')}
                   </p>
                 </div>
               </div>

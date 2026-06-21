@@ -426,9 +426,16 @@ export default function NovaDemandaPage() {
                         </span>
                       </div>
                     </div>
-                    <p className="text-2xs mt-3" style={{ color: 'var(--text3)' }}>
-                      Profissional pode ajustar ±15% (autonomia técnica · STF Tema 1291)
-                    </p>
+                    <div className="mt-3 rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <p className="text-2xs font-semibold mb-1" style={{ color: 'var(--text2)' }}>Faixa de pagamento</p>
+                      <p className="text-xs font-mono" style={{ color: 'var(--text)' }}>
+                        {formatBRL(precoCalc.preco_cliente)} até {formatBRL(Math.ceil(precoCalc.preco_cliente * 1.15))}
+                      </p>
+                      <p className="text-2xs mt-1" style={{ color: 'var(--text3)' }}>
+                        O profissional pode aplicar acréscimo técnico de até +15% ao aceitar.
+                        Você será notificado do valor final antes de pagar.
+                      </p>
+                    </div>
                   </div>
                 )}
 
@@ -487,12 +494,21 @@ export default function NovaDemandaPage() {
 
               {/* Coluna direita: total + confirmação (sticky) */}
               <div className="lg:col-span-2 lg:sticky lg:top-[72px] space-y-4">
-                <div className="card-accent text-center py-8">
-                  <p className="text-2xs uppercase tracking-wider font-semibold mb-2" style={{ color: 'var(--orange)' }}>Total a pagar</p>
-                  <p className="text-4xl font-bold font-mono mb-2" style={{ color: 'var(--orange)' }}>
+                <div className="card-accent text-center py-6">
+                  <p className="text-2xs uppercase tracking-wider font-semibold mb-2" style={{ color: 'var(--orange)' }}>Valor base estimado</p>
+                  <p className="text-4xl font-bold font-mono mb-1" style={{ color: 'var(--orange)' }}>
                     {formatBRL(precoCalc.preco_cliente)}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--text3)' }}>PIX via Pagar.me · Escrow protegido</p>
+                  <p className="text-xs mb-3" style={{ color: 'var(--text3)' }}>PIX via Pagar.me · Escrow protegido</p>
+                  <div className="rounded-lg px-3 py-2 text-left" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <p className="text-2xs font-semibold mb-0.5" style={{ color: 'var(--text2)' }}>Faixa de pagamento</p>
+                    <p className="text-xs font-mono" style={{ color: 'var(--text)' }}>
+                      {formatBRL(precoCalc.preco_cliente)} — {formatBRL(Math.ceil(precoCalc.preco_cliente * 1.15))}
+                    </p>
+                    <p className="text-2xs mt-1" style={{ color: 'var(--text3)' }}>
+                      O profissional pode aplicar acréscimo de até +15%. Você será notificado antes de pagar.
+                    </p>
+                  </div>
                 </div>
                 <Button onClick={criarDemanda} loading={criando} className="w-full btn-lg">
                   Confirmar e criar demanda →

@@ -146,19 +146,19 @@ export default function ProfissionalFeed() {
                     <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold" style={{ color: 'var(--text2)' }}>
-                          Ajuste de preço (opcional · ±15%)
+                          Acréscimo técnico (0% a +15%)
                         </span>
                         <span
                           className="text-sm font-bold font-mono"
-                          style={{ color: ajustePct > 0 ? 'var(--green)' : ajustePct < 0 ? 'var(--red)' : 'var(--text3)' }}
+                          style={{ color: ajustePct > 0 ? 'var(--green)' : 'var(--text3)' }}
                         >
-                          {ajustePct > 0 ? `+${ajustePct}%` : ajustePct < 0 ? `${ajustePct}%` : 'Sem ajuste'}
+                          {ajustePct > 0 ? `+${ajustePct}%` : 'Sem acréscimo'}
                         </span>
                       </div>
 
                       <input
                         type="range"
-                        min={-15}
+                        min={0}
                         max={15}
                         step={1}
                         value={ajustePct}
@@ -168,8 +168,8 @@ export default function ProfissionalFeed() {
                       />
 
                       <div className="flex justify-between text-xs mb-4" style={{ color: 'var(--text3)' }}>
-                        <span>−15%</span>
-                        <span>0%</span>
+                        <span>Sem acréscimo</span>
+                        <span>+8%</span>
                         <span>+15%</span>
                       </div>
 

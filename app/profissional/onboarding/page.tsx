@@ -106,6 +106,12 @@ export default function ProfissionalOnboardingPage() {
       toast('Selecione pelo menos um serviço que você executa', 'error')
       return
     }
+    const todosDocsEnviados = KYC_DOCS.every(d => docsEnviados[d.tipo])
+    if (!todosDocsEnviados) {
+      toast('Envie todos os 4 documentos de verificação (KYC) antes de concluir', 'error')
+      setStep(3)
+      return
+    }
     if (!aceitaTermos) {
       toast('É necessário aceitar os termos para concluir', 'error')
       return
@@ -247,9 +253,20 @@ export default function ProfissionalOnboardingPage() {
                 </div>
               ))}
             </div>
+            {KYC_DOCS.some(d => !docsEnviados[d.tipo]) && (
+              <p className="text-xs" style={{ color: 'var(--gold)' }}>
+                ⚠ Envie todos os documentos para avançar ({Object.keys(docsEnviados).length}/{KYC_DOCS.length} enviados)
+              </p>
+            )}
             <div className="flex gap-2">
               <Button variant="ghost" onClick={() => setStep(2)}>Voltar</Button>
-              <Button onClick={() => setStep(4)}>Avançar</Button>
+              <Button
+                onClick={() => {
+                  const todos = KYC_DOCS.every(d => docsEnviados[d.tipo])
+                  if (!todos) { toast('Envie todos os 4 documentos antes de avançar', 'error'); return }
+                  setStep(4)
+                }}
+              >Avançar</Button>
             </div>
           </div>
         )}

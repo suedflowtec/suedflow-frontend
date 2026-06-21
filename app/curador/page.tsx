@@ -24,6 +24,9 @@ export default function CuradorPainelPage() {
   useEffect(() => {
     if (authLoading) return
     if (!user) { router.push('/auth/login'); return }
+    if (!['CURADOR_SUPORTE', 'CURADOR_SENIOR', 'ADMIN'].includes(user.tipo)) {
+      router.push('/cliente'); return
+    }
     curadorApi.fila()
       .then(({ casos }) => setCasos(casos))
       .catch(() => toast('Erro ao carregar fila de casos', 'error'))
