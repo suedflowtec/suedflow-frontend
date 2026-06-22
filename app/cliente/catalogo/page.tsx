@@ -163,14 +163,14 @@ export default function CatalogoPage() {
                     As setas são colunas fixas no flex — sempre visíveis,
                     sempre ao lado dos cards, sem position:absolute.
                   */}
-                  <div className={styles.carouselRow}>
+                  <div className={styles.carouselOuter}>
 
                     <button
-                      className={`${styles.sideBtn} ${styles.sideBtnLeft}`}
+                      className={`${styles.arrowBtn} ${styles.arrowBtnLeft}`}
                       onClick={() => scrollRow(rowIdx, 'left')}
                       aria-label="Voltar"
                     >
-                      <ChevronLeft size={28} strokeWidth={2.5} />
+                      <ChevronLeft size={22} strokeWidth={2.5} />
                     </button>
 
                     <div
@@ -199,11 +199,11 @@ export default function CatalogoPage() {
                     </div>
 
                     <button
-                      className={`${styles.sideBtn} ${styles.sideBtnRight}`}
+                      className={`${styles.arrowBtn} ${styles.arrowBtnRight}`}
                       onClick={() => scrollRow(rowIdx, 'right')}
                       aria-label="Avançar"
                     >
-                      <ChevronRight size={28} strokeWidth={2.5} />
+                      <ChevronRight size={22} strokeWidth={2.5} />
                     </button>
 
                   </div>

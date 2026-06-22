@@ -27,66 +27,64 @@
   margin-top: 6px;
 }
 
-/* ── Linha do carrossel: [seta] [trilho] [seta] ─────────────────────────────
-   Setas são colunas fixas de 56px. O trilho expande (flex:1).
-   Não há position:absolute nem z-index — as setas estão no fluxo normal.
-*/
-.carouselRow {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
+/* ── Outer: contexto de posicionamento para as setas sobrepostas ── */
+.carouselOuter {
+  position: relative;
 }
 
-/* ── Setas laterais ── */
-.sideBtn {
-  flex-shrink: 0;
-  width: 56px;
+/* ── Setas: sobrepostas nas bordas esquerda/direita da área visível ──
+   position:absolute dentro de carouselOuter (position:relative).
+   z-index:20 garante que ficam acima dos cards mesmo no hover (transform).
+*/
+.arrowBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  width: 44px;
+  height: 84px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(232, 103, 26, 0.10);
-  border: 1.5px solid rgba(232, 103, 26, 0.28);
+  background: rgba(6, 24, 40, 0.82);
+  border: 1.5px solid rgba(232, 103, 26, 0.35);
   color: #E8671A;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  /* Padding vertical para respirar com o scale dos cards */
-  padding: 20px 0 12px;
+  backdrop-filter: blur(6px);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.sideBtnLeft {
-  border-radius: 10px 0 0 10px;
-  margin-right: 4px;
+.arrowBtnLeft {
+  left: 0;
+  border-radius: 0 8px 8px 0;
 }
 
-.sideBtnRight {
-  border-radius: 0 10px 10px 0;
-  margin-left: 4px;
+.arrowBtnRight {
+  right: 0;
+  border-radius: 8px 0 0 8px;
 }
 
-.sideBtn:hover {
+.arrowBtn:hover {
   background: #E8671A;
   border-color: #E8671A;
   color: #fff;
 }
 
-.sideBtn:active {
+.arrowBtn:active {
   background: rgba(232, 103, 26, 0.75);
 }
 
 @media (max-width: 640px) {
-  .sideBtn { width: 36px; }
+  .arrowBtn { width: 32px; height: 64px; }
 }
 
 /* ── Trilho do carrossel ── */
 .carousel {
-  flex: 1;
-  min-width: 0;
   display: flex;
   gap: 16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  padding: 20px 4px 12px;
-  margin-top: -20px;
+  padding: 20px 0 16px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
