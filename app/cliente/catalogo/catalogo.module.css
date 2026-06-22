@@ -27,9 +27,14 @@
   margin-top: 6px;
 }
 
-/* ── Outer: contexto de posicionamento para as setas sobrepostas ── */
+/* ── Outer: contexto de posicionamento + clip para forçar scroll interno ──
+   overflow:hidden garante que carouselOuter nunca se expande além da largura
+   do pai, mesmo que os cards somados sejam mais largos. Sem isso, right:0
+   cairia no final do último card em vez da borda da tela.
+*/
 .carouselOuter {
   position: relative;
+  overflow: hidden;
 }
 
 /* ── Setas: sobrepostas nas bordas esquerda/direita da área visível ──
@@ -80,6 +85,7 @@
 
 /* ── Trilho do carrossel ── */
 .carousel {
+  width: 100%;
   display: flex;
   gap: 16px;
   overflow-x: auto;
