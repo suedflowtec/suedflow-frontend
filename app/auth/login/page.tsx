@@ -55,7 +55,11 @@ export default function LoginPage() {
       toast(`Bem-vindo, ${u.nome.split(' ')[0]}!`, 'success')
       router.push('/cliente')
     } catch (err: any) {
-      setError(err.message || 'E-mail ou senha inválidos.')
+      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.')
+      } else {
+        setError(err.message || 'E-mail ou senha inválidos.')
+      }
     } finally {
       setLoading(false)
     }

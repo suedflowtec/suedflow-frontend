@@ -44,9 +44,6 @@ export default function CatalogoPage() {
   const [busca, setBusca] = useState('')
   const [buscando, setBuscando] = useState(false)
   const [sugestao, setSugestao] = useState<any>(null)
-  const [scrollPos, setScrollPos] = useState<{ left: boolean; right: boolean }[]>(
-    CATEGORIAS.map(() => ({ left: false, right: true }))
-  )
 
   const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -63,19 +60,6 @@ export default function CatalogoPage() {
 
   const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
     scrollRefs.current[rowIdx]?.scrollBy({ left: dir === 'right' ? 504 : -504, behavior: 'smooth' })
-  }
-
-  const handleScroll = (rowIdx: number) => {
-    const el = scrollRefs.current[rowIdx]
-    if (!el) return
-    setScrollPos(prev => {
-      const next = [...prev]
-      next[rowIdx] = {
-        left: el.scrollLeft > 4,
-        right: el.scrollLeft < el.scrollWidth - el.clientWidth - 4,
-      }
-      return next
-    })
   }
 
   const handleBusca = async (e: React.FormEvent) => {
@@ -99,7 +83,7 @@ export default function CatalogoPage() {
     <Shell>
       <Topbar
         title="Catálogo de serviços"
-        subtitle="Clique nas setas para navegar entre os serviços"
+        subtitle="Use as setas ‹ › para navegar em cada categoria"
       />
 
       <main className="p-6 space-y-8">
@@ -168,56 +152,52 @@ export default function CatalogoPage() {
               return (
                 <section key={cat.titulo} className={styles.catSection}>
 
+                  {/* Cabeçalho com setas sempre visíveis */}
                   <div className={styles.catHeader}>
                     <h3 className={styles.catTitle}>{cat.titulo}</h3>
-                  </div>
-
-                  <div className={styles.carouselWrapper}>
-                    {scrollPos[rowIdx].left && (
+                    <div className={styles.navBtns}>
                       <button
-                        className={`${styles.sideArrow} ${styles.sideArrowLeft}`}
+                        className={styles.navBtn}
                         onClick={() => scrollRow(rowIdx, 'left')}
                         aria-label="Anterior"
+                        title="Anterior"
                       >
-                        <ChevronLeft size={24} />
+                        <ChevronLeft size={18} />
                       </button>
-                    )}
-
-                    <div
-                      ref={el => { scrollRefs.current[rowIdx] = el }}
-                      className={styles.carousel}
-                      onScroll={() => handleScroll(rowIdx)}
-                    >
-                      {items.map(s => (
-                        <button
-                          key={s.codigo}
-                          className={styles.card}
-                          onClick={() => router.push(`/cliente/catalogo/${s.codigo}`)}
-                          aria-label={s.nome}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={SVC_IMG[s.codigo] || ''} alt={s.nome} className={styles.img} />
-                          <div className={styles.overlay} />
-                          <span className={styles.topBadge}>SLA {s.sla_dias}d</span>
-                          <div className={styles.cardBody}>
-                            <span className={styles.svcCode}>{s.codigo}</span>
-                            <p className={styles.cardName}>{s.nome}</p>
-                            <span className={styles.cardPrice}>{precoDe(s)}</span>
-                          </div>
-                          <span className={styles.cardCta}>Contratar →</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    {scrollPos[rowIdx].right && (
                       <button
-                        className={`${styles.sideArrow} ${styles.sideArrowRight}`}
+                        className={styles.navBtn}
                         onClick={() => scrollRow(rowIdx, 'right')}
                         aria-label="Próximo"
+                        title="Próximo"
                       >
-                        <ChevronRight size={24} />
+                        <ChevronRight size={18} />
                       </button>
-                    )}
+                    </div>
+                  </div>
+
+                  <div
+                    ref={el => { scrollRefs.current[rowIdx] = el }}
+                    className={styles.carousel}
+                  >
+                    {items.map(s => (
+                      <button
+                        key={s.codigo}
+                        className={styles.card}
+                        onClick={() => router.push(`/cliente/catalogo/${s.codigo}`)}
+                        aria-label={s.nome}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={SVC_IMG[s.codigo] || ''} alt={s.nome} className={styles.img} />
+                        <div className={styles.overlay} />
+                        <span className={styles.topBadge}>SLA {s.sla_dias}d</span>
+                        <div className={styles.cardBody}>
+                          <span className={styles.svcCode}>{s.codigo}</span>
+                          <p className={styles.cardName}>{s.nome}</p>
+                          <span className={styles.cardPrice}>{precoDe(s)}</span>
+                        </div>
+                        <span className={styles.cardCta}>Contratar →</span>
+                      </button>
+                    ))}
                   </div>
 
                 </section>
