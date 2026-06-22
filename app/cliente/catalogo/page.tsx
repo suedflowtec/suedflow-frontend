@@ -58,8 +58,9 @@ export default function CatalogoPage() {
 
   if (authLoading || !user) return null
 
+  // Avança/recua exatamente 1 card (480px + 16px de gap)
   const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
-    scrollRefs.current[rowIdx]?.scrollBy({ left: dir === 'right' ? 504 : -504, behavior: 'smooth' })
+    scrollRefs.current[rowIdx]?.scrollBy({ left: dir === 'right' ? 496 : -496, behavior: 'smooth' })
   }
 
   const handleBusca = async (e: React.FormEvent) => {
@@ -83,7 +84,7 @@ export default function CatalogoPage() {
     <Shell>
       <Topbar
         title="Catálogo de serviços"
-        subtitle="Use as setas ‹ › para navegar em cada categoria"
+        subtitle="Use as setas nas laterais de cada fila para navegar"
       />
 
       <main className="p-6 space-y-8">
@@ -152,52 +153,59 @@ export default function CatalogoPage() {
               return (
                 <section key={cat.titulo} className={styles.catSection}>
 
-                  {/* Cabeçalho com setas sempre visíveis */}
+                  {/* Título da categoria */}
                   <div className={styles.catHeader}>
                     <h3 className={styles.catTitle}>{cat.titulo}</h3>
-                    <div className={styles.navBtns}>
-                      <button
-                        className={styles.navBtn}
-                        onClick={() => scrollRow(rowIdx, 'left')}
-                        aria-label="Anterior"
-                        title="Anterior"
-                      >
-                        <ChevronLeft size={18} />
-                      </button>
-                      <button
-                        className={styles.navBtn}
-                        onClick={() => scrollRow(rowIdx, 'right')}
-                        aria-label="Próximo"
-                        title="Próximo"
-                      >
-                        <ChevronRight size={18} />
-                      </button>
-                    </div>
                   </div>
 
-                  <div
-                    ref={el => { scrollRefs.current[rowIdx] = el }}
-                    className={styles.carousel}
-                  >
-                    {items.map(s => (
-                      <button
-                        key={s.codigo}
-                        className={styles.card}
-                        onClick={() => router.push(`/cliente/catalogo/${s.codigo}`)}
-                        aria-label={s.nome}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={SVC_IMG[s.codigo] || ''} alt={s.nome} className={styles.img} />
-                        <div className={styles.overlay} />
-                        <span className={styles.topBadge}>SLA {s.sla_dias}d</span>
-                        <div className={styles.cardBody}>
-                          <span className={styles.svcCode}>{s.codigo}</span>
-                          <p className={styles.cardName}>{s.nome}</p>
-                          <span className={styles.cardPrice}>{precoDe(s)}</span>
-                        </div>
-                        <span className={styles.cardCta}>Contratar →</span>
-                      </button>
-                    ))}
+                  {/*
+                    Linha: [← seta] [carrossel] [seta →]
+                    As setas são colunas fixas no flex — sempre visíveis,
+                    sempre ao lado dos cards, sem position:absolute.
+                  */}
+                  <div className={styles.carouselRow}>
+
+                    <button
+                      className={`${styles.sideBtn} ${styles.sideBtnLeft}`}
+                      onClick={() => scrollRow(rowIdx, 'left')}
+                      aria-label="Voltar"
+                    >
+                      <ChevronLeft size={28} strokeWidth={2.5} />
+                    </button>
+
+                    <div
+                      ref={el => { scrollRefs.current[rowIdx] = el }}
+                      className={styles.carousel}
+                    >
+                      {items.map(s => (
+                        <button
+                          key={s.codigo}
+                          className={styles.card}
+                          onClick={() => router.push(`/cliente/catalogo/${s.codigo}`)}
+                          aria-label={s.nome}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={SVC_IMG[s.codigo] || ''} alt={s.nome} className={styles.img} />
+                          <div className={styles.overlay} />
+                          <span className={styles.topBadge}>SLA {s.sla_dias}d</span>
+                          <div className={styles.cardBody}>
+                            <span className={styles.svcCode}>{s.codigo}</span>
+                            <p className={styles.cardName}>{s.nome}</p>
+                            <span className={styles.cardPrice}>{precoDe(s)}</span>
+                          </div>
+                          <span className={styles.cardCta}>Contratar →</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      className={`${styles.sideBtn} ${styles.sideBtnRight}`}
+                      onClick={() => scrollRow(rowIdx, 'right')}
+                      aria-label="Avançar"
+                    >
+                      <ChevronRight size={28} strokeWidth={2.5} />
+                    </button>
+
                   </div>
 
                 </section>

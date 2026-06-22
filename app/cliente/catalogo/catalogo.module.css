@@ -6,10 +6,7 @@
 
 /* ── Cabeçalho da linha ── */
 .catHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .catTitle {
@@ -18,7 +15,6 @@
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--text2);
-  flex: 1;
   line-height: 1.4;
 }
 
@@ -31,42 +27,60 @@
   margin-top: 6px;
 }
 
-/* ── Setas de navegação — sempre visíveis no catHeader ── */
-.navBtns {
+/* ── Linha do carrossel: [seta] [trilho] [seta] ─────────────────────────────
+   Setas são colunas fixas de 56px. O trilho expande (flex:1).
+   Não há position:absolute nem z-index — as setas estão no fluxo normal.
+*/
+.carouselRow {
   display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+  align-items: stretch;
+  gap: 0;
 }
 
-.navBtn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+/* ── Setas laterais ── */
+.sideBtn {
+  flex-shrink: 0;
+  width: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(232, 103, 26, 0.12);
-  border: 1.5px solid rgba(232, 103, 26, 0.35);
+  background: rgba(232, 103, 26, 0.10);
+  border: 1.5px solid rgba(232, 103, 26, 0.28);
   color: #E8671A;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
-  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  /* Padding vertical para respirar com o scale dos cards */
+  padding: 20px 0 12px;
 }
 
-.navBtn:hover {
-  background: rgba(232, 103, 26, 0.88);
+.sideBtnLeft {
+  border-radius: 10px 0 0 10px;
+  margin-right: 4px;
+}
+
+.sideBtnRight {
+  border-radius: 0 10px 10px 0;
+  margin-left: 4px;
+}
+
+.sideBtn:hover {
+  background: #E8671A;
   border-color: #E8671A;
   color: #fff;
-  transform: scale(1.08);
-  box-shadow: 0 4px 20px rgba(232, 103, 26, 0.4);
 }
 
-.navBtn:active {
-  transform: scale(0.96);
+.sideBtn:active {
+  background: rgba(232, 103, 26, 0.75);
+}
+
+@media (max-width: 640px) {
+  .sideBtn { width: 36px; }
 }
 
 /* ── Trilho do carrossel ── */
 .carousel {
+  flex: 1;
+  min-width: 0;
   display: flex;
   gap: 16px;
   overflow-x: auto;
@@ -105,8 +119,7 @@
 }
 
 @media (max-width: 640px) {
-  .card { width: 320px; height: 200px; }
-  .navBtn { width: 38px; height: 38px; }
+  .card { width: 300px; height: 190px; }
 }
 
 /* ── Efeito primeiro/segundo plano ── */
@@ -141,7 +154,7 @@
   transform: scale(1.05);
 }
 
-/* ── Overlay: escuro na faixa inferior ── */
+/* ── Overlay ── */
 .overlay {
   position: absolute;
   inset: 0;
@@ -154,7 +167,7 @@
   );
 }
 
-/* ── Badge SLA (topo direito) ── */
+/* ── Badge SLA ── */
 .topBadge {
   position: absolute;
   top: 12px;
