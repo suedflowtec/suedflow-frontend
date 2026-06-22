@@ -45,7 +45,8 @@ export default function CatalogoPage() {
   const [buscando, setBuscando] = useState(false)
   const [sugestao, setSugestao] = useState<any>(null)
 
-  const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [currentIdx, setCurrentIdx] = useState<Record<number, number>>({})
+  const containerRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     if (authLoading) return
@@ -58,9 +59,17 @@ export default function CatalogoPage() {
 
   if (authLoading || !user) return null
 
-  // Avança/recua exatamente 1 card (480px + 16px de gap)
-  const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
-    scrollRefs.current[rowIdx]?.scrollBy({ left: dir === 'right' ? 496 : -496, behavior: 'smooth' })
+  // Avança/recua via transform — sem depender de overflow-x ou scrollBy
+  const scrollRow = (rowIdx: number, dir: 'left' | 'right', count: number) => {
+    const containerW = containerRefs.current[rowIdx]?.offsetWidth ?? 900
+    const STEP = 496 // 480px card + 16px gap
+    const visible = Math.max(1, Math.floor((containerW + 16) / STEP))
+    const maxIdx = Math.max(0, count - visible)
+    setCurrentIdx(prev => {
+      const curr = prev[rowIdx] ?? 0
+      const next = dir === 'right' ? Math.min(curr + 1, maxIdx) : Math.max(curr - 1, 0)
+      return { ...prev, [rowIdx]: next }
+    })
   }
 
   const handleBusca = async (e: React.FormEvent) => {
@@ -163,19 +172,21 @@ export default function CatalogoPage() {
                     As setas são colunas fixas no flex — sempre visíveis,
                     sempre ao lado dos cards, sem position:absolute.
                   */}
-                  <div className={styles.carouselOuter}>
-
+                  <div
+                    ref={el => { containerRefs.current[rowIdx] = el }}
+                    className={styles.carouselOuter}
+                  >
                     <button
                       className={`${styles.arrowBtn} ${styles.arrowBtnLeft}`}
-                      onClick={() => scrollRow(rowIdx, 'left')}
+                      onClick={() => scrollRow(rowIdx, 'left', items.length)}
                       aria-label="Voltar"
                     >
                       <ChevronLeft size={22} strokeWidth={2.5} />
                     </button>
 
                     <div
-                      ref={el => { scrollRefs.current[rowIdx] = el }}
                       className={styles.carousel}
+                      style={{ transform: `translateX(-${(currentIdx[rowIdx] ?? 0) * 496}px)` }}
                     >
                       {items.map(s => (
                         <button
@@ -200,7 +211,7 @@ export default function CatalogoPage() {
 
                     <button
                       className={`${styles.arrowBtn} ${styles.arrowBtnRight}`}
-                      onClick={() => scrollRow(rowIdx, 'right')}
+                      onClick={() => scrollRow(rowIdx, 'right', items.length)}
                       aria-label="Avançar"
                     >
                       <ChevronRight size={22} strokeWidth={2.5} />

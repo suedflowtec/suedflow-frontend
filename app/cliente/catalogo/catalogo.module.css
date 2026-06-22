@@ -83,20 +83,16 @@
   .arrowBtn { width: 32px; height: 64px; }
 }
 
-/* ── Trilho do carrossel ── */
+/* ── Trilho do carrossel ──
+   Move via transform (não scroll) — imune a problemas de largura de container.
+   overflow:hidden no pai (carouselOuter) garante que os cards fora da tela ficam ocultos.
+*/
 .carousel {
-  width: 100%;
   display: flex;
   gap: 16px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
   padding: 20px 0 16px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.carousel::-webkit-scrollbar {
-  display: none;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
 /* ── Card individual ── */
@@ -110,7 +106,6 @@
   cursor: pointer;
   background: var(--navy2);
   border: 1.5px solid rgba(255, 255, 255, 0.07);
-  scroll-snap-align: start;
   text-align: left;
   padding: 0;
   box-shadow: inset 3px 0 0 rgba(232, 103, 26, 0.22);
