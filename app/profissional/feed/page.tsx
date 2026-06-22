@@ -43,7 +43,8 @@ export default function ProfissionalFeed() {
   const confirmarAceite = async (id: string) => {
     setAceitando(id)
     try {
-      await orders.aceitar(id, ajustes[id] ?? 0)
+      // Envia como valor negativo (desconto): 10% de desconto → -10
+      await orders.aceitar(id, -(ajustes[id] ?? 0))
       toast('Demanda aceita! Aguardando pagamento do cliente.', 'success')
       setAjusteAtivo(null)
       carregar()
@@ -90,8 +91,9 @@ export default function ProfissionalFeed() {
         ) : (
           <div className="space-y-3">
             {demandas.map(d => {
-              const ajustePct = ajustes[d.id] ?? 0
-              const fator = 1 + ajustePct / 100
+              // desconto: 0 = sem desconto, 15 = 15% de desconto sobre o UTS
+              const descontoPct = ajustes[d.id] ?? 0
+              const fator = 1 - descontoPct / 100
               const precoBase = d.preco_servico || 0
               const liquidoBase = d.liquido_estimado || precoBase
               const precoAjustado = precoBase * fator
@@ -146,13 +148,13 @@ export default function ProfissionalFeed() {
                     <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold" style={{ color: 'var(--text2)' }}>
-                          Acréscimo técnico (0% a +15%)
+                          Desconto oferecido ao cliente (0% a 15%)
                         </span>
                         <span
                           className="text-sm font-bold font-mono"
-                          style={{ color: ajustePct > 0 ? 'var(--green)' : 'var(--text3)' }}
+                          style={{ color: descontoPct > 0 ? 'var(--orange)' : 'var(--text3)' }}
                         >
-                          {ajustePct > 0 ? `+${ajustePct}%` : 'Sem acréscimo'}
+                          {descontoPct > 0 ? `-${descontoPct}%` : 'Sem desconto'}
                         </span>
                       </div>
 
@@ -161,30 +163,30 @@ export default function ProfissionalFeed() {
                         min={0}
                         max={15}
                         step={1}
-                        value={ajustePct}
+                        value={descontoPct}
                         onChange={e => setAjustes(a => ({ ...a, [d.id]: Number(e.target.value) }))}
                         className="w-full mb-2"
                         style={{ accentColor: 'var(--orange)' }}
                       />
 
                       <div className="flex justify-between text-xs mb-4" style={{ color: 'var(--text3)' }}>
-                        <span>Sem acréscimo</span>
-                        <span>+8%</span>
-                        <span>+15%</span>
+                        <span>Sem desconto</span>
+                        <span>-8%</span>
+                        <span>-15%</span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 mb-4">
                         <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
                           <p className="text-xs mb-1" style={{ color: 'var(--text3)' }}>Valor ao cliente</p>
                           <p className="font-bold font-mono text-white">{formatBRL(precoAjustado)}</p>
-                          {ajustePct !== 0 && (
+                          {descontoPct !== 0 && (
                             <p className="text-xs" style={{ color: 'var(--text3)' }}>era {formatBRL(precoBase)}</p>
                           )}
                         </div>
                         <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
                           <p className="text-xs mb-1" style={{ color: 'var(--text3)' }}>Seu líquido</p>
                           <p className="font-bold font-mono" style={{ color: 'var(--green)' }}>{formatBRL(liquidoAjustado)}</p>
-                          {ajustePct !== 0 && (
+                          {descontoPct !== 0 && (
                             <p className="text-xs" style={{ color: 'var(--text3)' }}>era {formatBRL(liquidoBase)}</p>
                           )}
                         </div>
