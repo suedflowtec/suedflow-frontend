@@ -44,10 +44,11 @@ export default function CatalogoPage() {
   const [busca, setBusca] = useState('')
   const [buscando, setBuscando] = useState(false)
   const [sugestao, setSugestao] = useState<any>(null)
+  const [scrollPos, setScrollPos] = useState<{ left: boolean; right: boolean }[]>(
+    CATEGORIAS.map(() => ({ left: false, right: true }))
+  )
 
   const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
-  // Último X do mouse por linha (-1 = fora do carrossel)
-  const lastXRefs  = useRef<number[]>([-1, -1, -1])
 
   useEffect(() => {
     if (authLoading) return
@@ -60,31 +61,21 @@ export default function CatalogoPage() {
 
   if (authLoading || !user) return null
 
-  // ── Scroll por movimento do mouse ────────────────────────────────────────
-  // scroll-snap-type reverte qualquer scrollLeft programático imediatamente
-  // de volta ao snap point. Por isso desabilitamos o snap enquanto o mouse
-  // se move e reativamos ao sair — aí o browser encaixa no card mais próximo.
-  const onMove = (rowIdx: number) => (e: React.MouseEvent<HTMLDivElement>) => {
+  const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
+    scrollRefs.current[rowIdx]?.scrollBy({ left: dir === 'right' ? 504 : -504, behavior: 'smooth' })
+  }
+
+  const handleScroll = (rowIdx: number) => {
     const el = scrollRefs.current[rowIdx]
     if (!el) return
-    el.style.scrollSnapType = 'none'        // libera o snap durante o arrasto
-    const last = lastXRefs.current[rowIdx]
-    if (last >= 0) {
-      el.scrollLeft += (e.clientX - last) * 2.5
-    }
-    lastXRefs.current[rowIdx] = e.clientX
-  }
-
-  // Ao sair: reativa o snap (browser encaixa no card mais próximo)
-  const onLeave = (rowIdx: number) => () => {
-    const el = scrollRefs.current[rowIdx]
-    if (el) el.style.scrollSnapType = ''    // restaura o valor do CSS
-    lastXRefs.current[rowIdx] = -1
-  }
-
-  // Setas — fallback acessível
-  const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
-    scrollRefs.current[rowIdx]?.scrollBy({ left: dir === 'right' ? 992 : -992, behavior: 'smooth' })
+    setScrollPos(prev => {
+      const next = [...prev]
+      next[rowIdx] = {
+        left: el.scrollLeft > 4,
+        right: el.scrollLeft < el.scrollWidth - el.clientWidth - 4,
+      }
+      return next
+    })
   }
 
   const handleBusca = async (e: React.FormEvent) => {
@@ -108,7 +99,7 @@ export default function CatalogoPage() {
     <Shell>
       <Topbar
         title="Catálogo de serviços"
-        subtitle="Mova o mouse para os lados para navegar"
+        subtitle="Clique nas setas para navegar entre os serviços"
       />
 
       <main className="p-6 space-y-8">
@@ -179,42 +170,56 @@ export default function CatalogoPage() {
 
                   <div className={styles.catHeader}>
                     <h3 className={styles.catTitle}>{cat.titulo}</h3>
-                    <div className={styles.arrowGroup}>
-                      <button className={styles.arrowBtn} onClick={() => scrollRow(rowIdx, 'left')} aria-label="Anterior">
-                        <ChevronLeft size={15} />
-                      </button>
-                      <button className={styles.arrowBtn} onClick={() => scrollRow(rowIdx, 'right')} aria-label="Próximo">
-                        <ChevronRight size={15} />
-                      </button>
-                    </div>
                   </div>
 
-                  <div
-                    ref={el => { scrollRefs.current[rowIdx] = el }}
-                    className={styles.carousel}
-                    onMouseMove={onMove(rowIdx)}
-                    onMouseLeave={onLeave(rowIdx)}
-                  >
-                    {items.map(s => (
+                  <div className={styles.carouselWrapper}>
+                    {scrollPos[rowIdx].left && (
                       <button
-                        key={s.codigo}
-                        className={styles.card}
-                        onClick={() => router.push(`/cliente/catalogo/${s.codigo}`)}
-                        aria-label={s.nome}
+                        className={`${styles.sideArrow} ${styles.sideArrowLeft}`}
+                        onClick={() => scrollRow(rowIdx, 'left')}
+                        aria-label="Anterior"
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={SVC_IMG[s.codigo] || ''} alt={s.nome} className={styles.img} />
-                        <div className={styles.overlay} />
-                        <span className={styles.topBadge}>SLA {s.sla_dias}d</span>
-                        <div className={styles.cardBody}>
-                          <span className={styles.svcCode}>{s.codigo}</span>
-                          <p className={styles.cardName}>{s.nome}</p>
-                          <span className={styles.cardPrice}>{precoDe(s)}</span>
-                        </div>
-                        <span className={styles.cardCta}>Contratar →</span>
+                        <ChevronLeft size={24} />
                       </button>
-                    ))}
+                    )}
+
+                    <div
+                      ref={el => { scrollRefs.current[rowIdx] = el }}
+                      className={styles.carousel}
+                      onScroll={() => handleScroll(rowIdx)}
+                    >
+                      {items.map(s => (
+                        <button
+                          key={s.codigo}
+                          className={styles.card}
+                          onClick={() => router.push(`/cliente/catalogo/${s.codigo}`)}
+                          aria-label={s.nome}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={SVC_IMG[s.codigo] || ''} alt={s.nome} className={styles.img} />
+                          <div className={styles.overlay} />
+                          <span className={styles.topBadge}>SLA {s.sla_dias}d</span>
+                          <div className={styles.cardBody}>
+                            <span className={styles.svcCode}>{s.codigo}</span>
+                            <p className={styles.cardName}>{s.nome}</p>
+                            <span className={styles.cardPrice}>{precoDe(s)}</span>
+                          </div>
+                          <span className={styles.cardCta}>Contratar →</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {scrollPos[rowIdx].right && (
+                      <button
+                        className={`${styles.sideArrow} ${styles.sideArrowRight}`}
+                        onClick={() => scrollRow(rowIdx, 'right')}
+                        aria-label="Próximo"
+                      >
+                        <ChevronRight size={24} />
+                      </button>
+                    )}
                   </div>
+
                 </section>
               )
             })}
