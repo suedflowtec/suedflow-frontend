@@ -45,8 +45,9 @@ export default function CatalogoPage() {
   const [buscando, setBuscando] = useState(false)
   const [sugestao, setSugestao] = useState<any>(null)
 
-  const [currentIdx, setCurrentIdx] = useState<Record<number, number>>({})
-  const containerRefs = useRef<(HTMLDivElement | null)[]>([])
+  // Refs para os dois elementos de cada linha: outer (posicionamento) e track (scroll)
+  const outerRefs = useRef<(HTMLDivElement | null)[]>([])
+  const trackRefs  = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     if (authLoading) return
@@ -57,19 +58,27 @@ export default function CatalogoPage() {
       .finally(() => setLoading(false))
   }, [user, authLoading, router, toast])
 
+  // Força a largura correta em pixels depois que os serviços carregam.
+  // CSS puro não garante o confinamento — medir via JS é a única solução confiável.
+  useEffect(() => {
+    if (loading) return
+    const applyWidths = () => {
+      const aside  = document.querySelector('aside')
+      const sw     = aside ? Math.round(aside.getBoundingClientRect().width) : 0
+      const w      = Math.max(280, window.innerWidth - sw - 48) // 48 = p-6 × 2
+      outerRefs.current.forEach(el => { if (el) el.style.maxWidth = `${w}px` })
+      trackRefs.current.forEach(el => { if (el) el.style.maxWidth = `${w}px` })
+    }
+    requestAnimationFrame(applyWidths)
+    window.addEventListener('resize', applyWidths)
+    return () => window.removeEventListener('resize', applyWidths)
+  }, [loading])
+
   if (authLoading || !user) return null
 
-  // Avança/recua via transform — sem depender de overflow-x ou scrollBy
-  const scrollRow = (rowIdx: number, dir: 'left' | 'right', count: number) => {
-    const containerW = containerRefs.current[rowIdx]?.offsetWidth ?? 900
-    const STEP = 496 // 480px card + 16px gap
-    const visible = Math.max(1, Math.floor((containerW + 16) / STEP))
-    const maxIdx = Math.max(0, count - visible)
-    setCurrentIdx(prev => {
-      const curr = prev[rowIdx] ?? 0
-      const next = dir === 'right' ? Math.min(curr + 1, maxIdx) : Math.max(curr - 1, 0)
-      return { ...prev, [rowIdx]: next }
-    })
+  // Scroll nativo — igual ao Instagram: arrasta no mobile, clica nas setas no desktop
+  const scrollRow = (rowIdx: number, dir: 'left' | 'right') => {
+    trackRefs.current[rowIdx]?.scrollBy({ left: dir === 'right' ? 500 : -500, behavior: 'smooth' })
   }
 
   const handleBusca = async (e: React.FormEvent) => {
@@ -93,7 +102,7 @@ export default function CatalogoPage() {
     <Shell>
       <Topbar
         title="Catálogo de serviços"
-        subtitle="Use as setas nas laterais de cada fila para navegar"
+        subtitle="Arraste os cards ou use as setas para explorar os serviços"
       />
 
       <main className="p-6 space-y-8">
@@ -173,20 +182,20 @@ export default function CatalogoPage() {
                     sempre ao lado dos cards, sem position:absolute.
                   */}
                   <div
-                    ref={el => { containerRefs.current[rowIdx] = el }}
+                    ref={el => { outerRefs.current[rowIdx] = el }}
                     className={styles.carouselOuter}
                   >
                     <button
                       className={`${styles.arrowBtn} ${styles.arrowBtnLeft}`}
-                      onClick={() => scrollRow(rowIdx, 'left', items.length)}
+                      onClick={() => scrollRow(rowIdx, 'left')}
                       aria-label="Voltar"
                     >
-                      <ChevronLeft size={22} strokeWidth={2.5} />
+                      <ChevronLeft size={20} strokeWidth={2.5} />
                     </button>
 
                     <div
+                      ref={el => { trackRefs.current[rowIdx] = el }}
                       className={styles.carousel}
-                      style={{ transform: `translateX(-${(currentIdx[rowIdx] ?? 0) * 496}px)` }}
                     >
                       {items.map(s => (
                         <button
@@ -211,10 +220,10 @@ export default function CatalogoPage() {
 
                     <button
                       className={`${styles.arrowBtn} ${styles.arrowBtnRight}`}
-                      onClick={() => scrollRow(rowIdx, 'right', items.length)}
+                      onClick={() => scrollRow(rowIdx, 'right')}
                       aria-label="Avançar"
                     >
-                      <ChevronRight size={22} strokeWidth={2.5} />
+                      <ChevronRight size={20} strokeWidth={2.5} />
                     </button>
 
                   </div>
