@@ -6,7 +6,8 @@ import { orders } from '@/lib/api'
 import { formatBRL } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { Home, Building2, Factory, Radar, MapPin, Ruler, Clock } from 'lucide-react'
+import { Home, Building2, Factory, Radar, MapPin, Ruler, Clock, GraduationCap } from 'lucide-react'
+import Link from 'next/link'
 
 export default function ProfissionalFeed() {
   const router = useRouter()
@@ -77,7 +78,26 @@ export default function ProfissionalFeed() {
           </button>
         }
       />
-      <main className="p-6">
+      <main className="p-6 space-y-4">
+        {/* Aviso M1 incompleto */}
+        {!user.profissional?.prepara_m1 && (
+          <Link
+            href="/profissional/prepara/m1"
+            className="flex items-start gap-3 rounded-xl p-4 transition-opacity hover:opacity-90"
+            style={{ background: 'rgba(232,103,26,0.12)', border: '1px solid rgba(232,103,26,0.35)', textDecoration: 'none' }}
+          >
+            <GraduationCap size={20} className="shrink-0 mt-0.5" style={{ color: 'var(--orange)' }} />
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--orange)' }}>
+                SUEDPrepara M1 obrigatório para aceitar demandas
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>
+                Você pode ver as demandas disponíveis, mas não conseguirá aceitá-las sem concluir o módulo de fundamentos. Clique para começar →
+              </p>
+            </div>
+          </Link>
+        )}
+
         {loading ? (
           <div className="text-center py-16" style={{ color: 'var(--text3)' }}>Carregando feed...</div>
         ) : demandas.length === 0 ? (
