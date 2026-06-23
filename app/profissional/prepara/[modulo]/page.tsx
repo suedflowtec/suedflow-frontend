@@ -4,11 +4,10 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import { profissional as profissionalApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import { useToast } from '@/hooks/useToast'
-import { CheckCircle2, ArrowLeft, BookOpen } from 'lucide-react'
+import { CheckCircle2, ArrowLeft, BookOpen, ClipboardCheck } from 'lucide-react'
+import Link from 'next/link'
 
 const MODULOS_CONTEUDO: Record<string, {
   titulo: string
@@ -290,15 +289,12 @@ export default function SuedPreparaModuloPage() {
   const params = useParams()
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
-  const { toast } = useToast()
 
   const modulo = (params?.modulo as string || '').toLowerCase()
   const conteudo = MODULOS_CONTEUDO[modulo]
 
   const [jaConcluido, setJaConcluido] = useState(false)
-  const [concluindo, setConcluindo] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [confirmou, setConfirmou] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -316,24 +312,6 @@ export default function SuedPreparaModuloPage() {
 
   if (authLoading || !user || loading) return null
   if (!conteudo) return null
-
-  const handleConcluir = async () => {
-    if (!confirmou) {
-      toast('Marque a confirmação de leitura antes de concluir.', 'error')
-      return
-    }
-    setConcluindo(true)
-    try {
-      await profissionalApi.concluirPrepara(modulo)
-      setJaConcluido(true)
-      toast(`Módulo ${modulo.toUpperCase()} concluído! Serviços habilitados.`, 'success')
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Erro ao registrar conclusão.'
-      toast(msg, 'error')
-    } finally {
-      setConcluindo(false)
-    }
-  }
 
   return (
     <Shell>
@@ -423,55 +401,33 @@ export default function SuedPreparaModuloPage() {
           </div>
         )}
 
-        {/* Confirmação e botão */}
+        {/* Avaliação de conhecimento */}
         {!jaConcluido && (
-          <div className="card-solid space-y-4">
-            <p className="section-label">Confirmar conclusão</p>
-
-            <label className="flex items-start gap-3 cursor-pointer">
-              <div className="relative mt-0.5">
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={confirmou}
-                  onChange={e => setConfirmou(e.target.checked)}
-                />
-                <div
-                  className="w-4 h-4 rounded border flex items-center justify-center transition-colors"
-                  style={{
-                    background: confirmou ? 'var(--orange)' : 'transparent',
-                    borderColor: confirmou ? 'var(--orange)' : 'var(--border)',
-                  }}
-                >
-                  {confirmou && <span className="text-white text-xs">✓</span>}
-                </div>
-              </div>
-              <p className="text-sm" style={{ color: 'var(--text2)' }}>
-                Li e compreendi o conteúdo deste módulo. Declaro estar apto a executar os serviços
-                habilitados conforme os padrões de qualidade SUEDFLOW.
-              </p>
-            </label>
-
-            <Button
-              onClick={handleConcluir}
-              loading={concluindo}
-              disabled={!confirmou || concluindo}
-              className="w-full"
+          <div className="card-solid space-y-3">
+            <div className="flex items-center gap-2">
+              <ClipboardCheck size={16} style={{ color: 'var(--orange)' }} />
+              <p className="section-label">Avaliação de conhecimento</p>
+            </div>
+            <p className="text-sm" style={{ color: 'var(--text2)' }}>
+              Responda 5 perguntas sobre o conteúdo deste módulo para confirmar sua habilitação.
+              Mínimo de 3 respostas corretas para concluir.
+            </p>
+            <Link
+              href={`/profissional/prepara/${modulo}/quiz`}
+              className="btn btn-primary w-full flex items-center justify-center gap-2"
             >
-              <CheckCircle2 size={16} />
-              Concluir módulo {modulo.toUpperCase()}
-            </Button>
+              Iniciar avaliação →
+            </Link>
           </div>
         )}
 
         {jaConcluido && (
-          <Button
-            variant="ghost"
+          <button
             onClick={() => router.push('/profissional/prepara')}
-            className="w-full"
+            className="btn btn-ghost w-full"
           >
             ← Ver todos os módulos
-          </Button>
+          </button>
         )}
       </main>
     </Shell>
