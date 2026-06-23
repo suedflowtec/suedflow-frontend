@@ -50,6 +50,7 @@ export const auth = {
   alterarSenha: (senha_atual: string, nova_senha: string) =>
     request<{ ok: boolean; msg: string }>('/api/auth/alterar-senha', { method: 'PUT', body: { senha_atual, nova_senha } }),
   atualizarPerfil: (data: {
+    nome?: string
     username?: string | null
     telefone?: string
     exibir_selo_publico?: boolean

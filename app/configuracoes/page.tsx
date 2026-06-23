@@ -17,6 +17,7 @@ export default function ConfiguracoesPage() {
   const [section, setSection] = useState<Section>('conta')
 
   // ── conta ──
+  const [nomeCompleto, setNomeCompleto] = useState('')
   const [username, setUsername]   = useState('')
   const [telefone, setTelefone]   = useState('')
   const [savingPerfil, setSavingPerfil] = useState(false)
@@ -58,6 +59,7 @@ export default function ConfiguracoesPage() {
   const [initialized, setInitialized] = useState(false)
   useEffect(() => {
     if (!user || initialized) return
+    setNomeCompleto(user.nome ?? '')
     setUsername(user.username ?? '')
     setTelefone(user.telefone ?? '')
     setSeloPublico(user.exibir_selo_publico ?? true)
@@ -71,9 +73,13 @@ export default function ConfiguracoesPage() {
   // ── handlers ──
 
   async function handleSalvarPerfil() {
+    if (nomeCompleto.trim().length < 2) {
+      toast('Nome completo deve ter ao menos 2 caracteres.', 'error'); return
+    }
     setSavingPerfil(true)
     try {
       const res = await authApi.atualizarPerfil({
+        nome: nomeCompleto.trim(),
         username: username.trim() || null,
         telefone: telefone.trim(),
       })
@@ -210,6 +216,21 @@ export default function ConfiguracoesPage() {
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>{user.email}</p>
                   {uploadingFoto && <p className="text-xs mt-1" style={{ color: 'var(--orange)' }}>Enviando foto…</p>}
                 </div>
+              </div>
+
+              {/* Nome completo */}
+              <div>
+                <label className="label">Nome completo</label>
+                <input
+                  className="input"
+                  value={nomeCompleto}
+                  onChange={e => setNomeCompleto(e.target.value)}
+                  placeholder="Seu nome completo"
+                  maxLength={120}
+                />
+                <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
+                  Aparece no seu perfil público e nas demandas que você realiza
+                </p>
               </div>
 
               {/* Username */}
