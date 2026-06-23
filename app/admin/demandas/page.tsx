@@ -38,9 +38,9 @@ export default function AdminDemandas() {
 
         <div className="card">
           {loading ? (
-            <div className="px-4 py-10 text-center text-sm text-ink-muted">Carregando...</div>
+            <div className="px-4 py-10 text-center text-sm" style={{ color: 'var(--text3)' }}>Carregando...</div>
           ) : filtradas.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-ink-muted">Nenhuma demanda encontrada</div>
+            <div className="px-4 py-10 text-center text-sm" style={{ color: 'var(--text3)' }}>Nenhuma demanda encontrada</div>
           ) : (
             <table className="data-table">
               <thead>
@@ -59,11 +59,11 @@ export default function AdminDemandas() {
                   return (
                     <tr key={d.id} onClick={() => router.push(`/admin/demandas/${d.id}`)}>
                       <td className="mono">{d.numero || d.id?.slice(0,8)}</td>
-                      <td className="font-medium text-navy">{d.cliente?.nome || '—'}</td>
+                      <td className="font-semibold text-white">{d.cliente?.nome || '—'}</td>
                       <td>{d.svc_codigo}</td>
                       <td>{d.profissional?.nome || 'Sem prof.'}</td>
                       <td><span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span></td>
-                      <td className="text-right font-mono font-semibold text-navy">{formatBRL(d.preco_cliente || 0)}</td>
+                      <td className="text-right font-mono font-semibold" style={{ color: 'var(--green)' }}>{formatBRL(d.preco_cliente || 0)}</td>
                     </tr>
                   )
                 })}

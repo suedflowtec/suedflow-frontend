@@ -15,7 +15,7 @@ const VARIANT_CLASS: Record<Variant, string> = {
   orange: 'btn-primary',
   ghost: 'btn-ghost',
   navy: 'btn-secondary bg-navy text-white border-navy hover:bg-navy-600',
-  green: 'btn bg-teal text-white hover:bg-teal-600 focus:ring-teal',
+  green: 'btn bg-green text-navy hover:opacity-90',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

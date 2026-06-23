@@ -15,16 +15,16 @@ export default function AdminTeste() {
       <Topbar title="Ferramentas de Teste" />
 
       <main className="p-6 space-y-4 max-w-2xl">
-        <p className="text-sm text-ink-muted">
+        <p className="text-sm" style={{ color: 'var(--text3)' }}>
           Endpoints administrativos do backend v4.4.5 para validar fluxos sem dependências externas.
         </p>
 
-        <div className="card p-4 border-yellow-200 bg-yellow-50">
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(245,166,35,0.10)', borderColor: 'rgba(245,166,35,0.35)' }}>
           <div className="flex gap-2 items-start">
-            <span className="text-yellow-600 text-lg">⚠</span>
+            <span className="text-lg" style={{ color: 'var(--gold)' }}>⚠</span>
             <div>
-              <p className="text-sm font-semibold text-yellow-700">Modo de teste · Fase de Validação</p>
-              <p className="text-xs text-ink-secondary mt-1">
+              <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>Modo de teste · Fase de Validação</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
                 Disponível apenas para admin. Cada ação é registrada no histórico para auditoria. Em produção real podem ser desativadas.
               </p>
             </div>
@@ -65,10 +65,10 @@ function CriarProfissionalTeste() {
   return (
     <div className="card p-4">
       <div className="flex justify-between mb-3">
-        <h3 className="text-sm font-semibold text-navy">Criar profissional teste</h3>
+        <h3 className="text-sm font-semibold text-white">Criar profissional teste</h3>
         <Badge variant="orange">v4.4.5</Badge>
       </div>
-      <p className="text-xs text-ink-muted mb-3">Cria um novo profissional já com KYC, CREA, M1-M6 e SVCs habilitados.</p>
+      <p className="text-xs mb-3" style={{ color: 'var(--text3)' }}>Cria um novo profissional já com KYC, CREA, M1-M6 e SVCs habilitados.</p>
       <div className="space-y-2">
         <Field label="Nome"><Input value={nome} onChange={e => setNome(e.target.value)} /></Field>
         <Field label="E-mail"><Input value={email} onChange={e => setEmail(e.target.value)} /></Field>
@@ -79,9 +79,11 @@ function CriarProfissionalTeste() {
               <button
                 key={s}
                 onClick={() => toggle(s)}
-                className={`px-3 py-1.5 rounded text-xs font-semibold border transition-colors ${
-                  svcs.includes(s) ? 'bg-orange text-white border-orange' : 'bg-white text-ink-secondary border-surface-border hover:bg-surface-hover'
-                }`}
+                className="px-3 py-1.5 rounded text-xs font-semibold border transition-opacity hover:opacity-80"
+                style={svcs.includes(s)
+                  ? { background: 'var(--orange)', color: '#fff', borderColor: 'var(--orange)' }
+                  : { background: 'rgba(255,255,255,0.06)', color: 'var(--text2)', borderColor: 'rgba(255,255,255,0.12)' }
+                }
               >
                 {s}
               </button>
@@ -117,14 +119,14 @@ function LoginAs() {
   return (
     <div className="card p-4">
       <div className="flex justify-between mb-3">
-        <h3 className="text-sm font-semibold text-navy">Login como outro usuário</h3>
+        <h3 className="text-sm font-semibold text-white">Login como outro usuário</h3>
         <Badge variant="orange">v4.4.5</Badge>
       </div>
-      <p className="text-xs text-ink-muted mb-3">Gera token JWT de qualquer usuário sem precisar saber a senha. Útil para reproduzir bugs reportados.</p>
+      <p className="text-xs mb-3" style={{ color: 'var(--text3)' }}>Gera token JWT de qualquer usuário sem precisar saber a senha. Útil para reproduzir bugs reportados.</p>
       <div className="space-y-2">
         <Field label="E-mail do usuário"><Input value={email} onChange={e => setEmail(e.target.value)} placeholder="cliente@email.com" /></Field>
         <Button onClick={submit} loading={loading} className="w-full">Assumir identidade</Button>
-        <p className="text-2xs text-ink-muted mt-1">⚠ Ação registrada em auditoria.</p>
+        <p className="text-2xs mt-1" style={{ color: 'var(--text3)' }}>⚠ Ação registrada em auditoria.</p>
       </div>
     </div>
   )
@@ -149,10 +151,10 @@ function MarcarPaga() {
   return (
     <div className="card p-4">
       <div className="flex justify-between mb-3">
-        <h3 className="text-sm font-semibold text-navy">Simular pagamento</h3>
+        <h3 className="text-sm font-semibold text-white">Simular pagamento</h3>
         <Badge variant="orange">v4.4.5</Badge>
       </div>
-      <p className="text-xs text-ink-muted mb-3">Marca uma demanda como paga sem precisar do Pagar.me real.</p>
+      <p className="text-xs mb-3" style={{ color: 'var(--text3)' }}>Marca uma demanda como paga sem precisar do Pagar.me real.</p>
       <div className="space-y-2">
         <Field label="ID da demanda"><Input value={demandaId} onChange={e => setDemandaId(e.target.value)} placeholder="UUID ou OS-2026-0001" /></Field>
         <Button onClick={submit} loading={loading} className="w-full">Marcar como paga</Button>
@@ -182,10 +184,10 @@ function ForcarStatus() {
   return (
     <div className="card p-4">
       <div className="flex justify-between mb-3">
-        <h3 className="text-sm font-semibold text-navy">Forçar status</h3>
+        <h3 className="text-sm font-semibold text-white">Forçar status</h3>
         <Badge variant="orange">v4.4.5</Badge>
       </div>
-      <p className="text-xs text-ink-muted mb-3">Pula etapas do FSM. Útil para testar QA, conclusão sem passar pelos marcos.</p>
+      <p className="text-xs mb-3" style={{ color: 'var(--text3)' }}>Pula etapas do FSM. Útil para testar QA, conclusão sem passar pelos marcos.</p>
       <div className="space-y-2">
         <Field label="ID da demanda"><Input value={demandaId} onChange={e => setDemandaId(e.target.value)} placeholder="UUID" /></Field>
         <Field label="Novo status">

@@ -54,9 +54,9 @@ export default function AdminProfissionais() {
 
         <div className="card">
           {loading ? (
-            <div className="px-4 py-10 text-center text-sm text-ink-muted">Carregando...</div>
+            <div className="px-4 py-10 text-center text-sm" style={{ color: 'var(--text3)' }}>Carregando...</div>
           ) : lista.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-ink-muted">Nenhum profissional cadastrado</div>
+            <div className="px-4 py-10 text-center text-sm" style={{ color: 'var(--text3)' }}>Nenhum profissional cadastrado</div>
           ) : (
             <table className="data-table">
               <thead>
@@ -71,7 +71,7 @@ export default function AdminProfissionais() {
               <tbody>
                 {lista.map(p => (
                   <tr key={p.id} className="cursor-pointer" onClick={() => router.push(`/admin/profissionais/${p.id}`)}>
-                    <td className="font-medium text-navy">{p.usuario?.nome || p.nome || p.usuario?.email || p.email}</td>
+                    <td className="font-semibold text-white">{p.usuario?.nome || p.nome || p.usuario?.email || p.email}</td>
                     <td className="mono">{p.conselho || 'CREA'}-{p.uf_conselho || 'PB'} {p.numero_conselho}</td>
                     <td>
                       <span className={`badge ${p.nivel === 'ELITE' ? 'badge-gold' : p.nivel === 'SENIOR' ? 'badge-purple' : 'badge-orange'}`}>
