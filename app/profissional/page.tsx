@@ -7,6 +7,7 @@ import { orders, auth as authApi } from '@/lib/api'
 import { formatBRL, statusLabel } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { Radar, Wallet, Star, CreditCard } from 'lucide-react'
 
 const STATUS_BADGE: Record<string, string> = {
   AGUARDANDO: 'badge badge-yellow', PAGA: 'badge badge-blue',
@@ -111,18 +112,21 @@ export default function ProfissionalHome() {
         </div>
 
         {/* Atalhos rápidos */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { href: '/profissional/feed',       icon: '◉', label: 'Feed de demandas', desc: 'Ver demandas disponíveis' },
-            { href: '/profissional/financeiro',  icon: '₿', label: 'Financeiro',       desc: 'Saldo e saques PIX' },
-            { href: '/profissional/score',       icon: '★', label: 'Score SQP',        desc: 'Minha reputação' },
-          ].map(item => (
-            <Link key={item.href} href={item.href} className="card-solid hover:border-orange transition-colors block"
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {([
+            { href: '/profissional/feed',      Icon: Radar,       label: 'Feed de demandas', desc: 'Ver demandas disponíveis' },
+            { href: '/profissional/financeiro', Icon: Wallet,      label: 'Financeiro',        desc: 'Saldo e saques PIX' },
+            { href: '/profissional/score',      Icon: Star,        label: 'Score SQP',         desc: 'Minha reputação' },
+            { href: '/profissional/planos',     Icon: CreditCard,  label: 'Meu plano',         desc: `${prof.plano || 'GRATIS'} · ver opções` },
+          ] as const).map(item => (
+            <Link key={item.href} href={item.href} className="card-solid block"
               style={{ borderColor: 'rgba(255,255,255,0.07)', textDecoration: 'none' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(232,103,26,0.4)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
             >
-              <div className="text-2xl mb-2">{item.icon}</div>
+              <div className="mb-2" style={{ color: 'var(--orange)' }}>
+                <item.Icon size={22} strokeWidth={1.5} />
+              </div>
               <p className="text-sm font-semibold text-white">{item.label}</p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>{item.desc}</p>
             </Link>

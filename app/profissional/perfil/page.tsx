@@ -64,7 +64,7 @@ export default function ProfissionalPerfilPage() {
     <Shell>
       <Topbar
         title="Meu perfil"
-        subtitle={perfil?.usuario?.email}
+        subtitle={perfil?.usuario?.nome}
         actions={<Badge variant={kyc.variant}>{kyc.text}</Badge>}
       />
 

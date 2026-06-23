@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutGrid, List, Plus, Home, Radar, Wallet, Star,
   User, Settings, FlaskConical, HeartPulse, ArrowLeftRight,
-  LogOut, Sun, Moon, ChevronLeft, ChevronRight, Menu, X, ShieldCheck,
+  LogOut, Sun, Moon, ChevronLeft, ChevronRight, Menu, X, ShieldCheck, CreditCard,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { Avatar } from '@/components/ui/Avatar'
@@ -29,12 +29,13 @@ const NAV = {
     { href: '/cliente/imoveis',      Icon: Home,        label: 'Meus imóveis' },
   ],
   PROFISSIONAL: [
-    { href: '/profissional',            Icon: LayoutGrid, label: 'Painel' },
-    { href: '/profissional/feed',       Icon: Radar,      label: 'Feed de demandas' },
-    { href: '/profissional/demandas',   Icon: List,       label: 'Em andamento' },
-    { href: '/profissional/financeiro', Icon: Wallet,     label: 'Financeiro' },
-    { href: '/profissional/score',      Icon: Star,       label: 'Score SQP' },
-    { href: '/profissional/perfil',     Icon: User,       label: 'Meu perfil' },
+    { href: '/profissional',            Icon: LayoutGrid,  label: 'Painel' },
+    { href: '/profissional/feed',       Icon: Radar,       label: 'Feed de demandas' },
+    { href: '/profissional/demandas',   Icon: List,        label: 'Em andamento' },
+    { href: '/profissional/financeiro', Icon: Wallet,      label: 'Financeiro' },
+    { href: '/profissional/score',      Icon: Star,        label: 'Score SQP' },
+    { href: '/profissional/planos',     Icon: CreditCard,  label: 'Meu plano' },
+    { href: '/profissional/perfil',     Icon: User,        label: 'Meu perfil' },
   ],
   ADMIN: [
     { href: '/admin',               Icon: LayoutGrid,   label: 'Dashboard' },
