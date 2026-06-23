@@ -9,7 +9,7 @@ import { curador as curadorApi } from '@/lib/api'
 import { formatBRL, formatDate } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { CheckCircle2, XCircle, AlertTriangle, User, Briefcase, ArrowUpCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, AlertTriangle, User, Briefcase, ArrowUpCircle, Eye, FileText, Image } from 'lucide-react'
 
 const TIPO_BADGE: Record<string, { text: string; variant: any }> = {
   QA_REPROVADO:     { text: 'QA reprovado', variant: 'gold' },
@@ -239,6 +239,62 @@ export default function CuradorCasoDetalhePage() {
               </div>
             )}
 
+            {/* ── Entregável + Documentos + Fotos de marcos ── */}
+            {(demanda?.url_entregavel || demanda?.documentos?.length > 0 || demanda?.marcos_execucao?.some((m: any) => m.url_foto)) && (
+              <div className="card-solid space-y-3">
+                <p className="section-label">Arquivos da demanda</p>
+
+                {/* Entregável principal (PDF do profissional) */}
+                {demanda.url_entregavel && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(232,103,26,0.08)', border: '1px solid rgba(232,103,26,0.25)' }}>
+                    <p className="text-2xs font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--orange)' }}>Entregável principal</p>
+                    <ArquivoLink url={demanda.url_entregavel} nome="Laudo / Relatório entregue" tipo="pdf" />
+                  </div>
+                )}
+
+                {/* Fotos de marcos (check-in, pré, pós) */}
+                {demanda.marcos_execucao?.some((m: any) => m.url_foto) && (
+                  <div>
+                    <p className="text-2xs font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--text3)' }}>Fotos de execução</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {demanda.marcos_execucao.filter((m: any) => m.url_foto).map((m: any) => (
+                        <a
+                          key={m.id || m.tipo}
+                          href={m.url_foto}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="relative rounded-lg overflow-hidden block"
+                          style={{ aspectRatio: '16/9', background: 'rgba(255,255,255,0.04)' }}
+                        >
+                          <img src={m.url_foto} alt={m.tipo} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 flex items-end p-1.5" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
+                            <span className="text-2xs text-white font-semibold">{m.tipo.replace(/_/g, ' ')}</span>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Documentos adicionais */}
+                {demanda.documentos?.length > 0 && (
+                  <div>
+                    <p className="text-2xs font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--text3)' }}>Documentos de suporte</p>
+                    <div className="space-y-1.5">
+                      {demanda.documentos.map((doc: any) => (
+                        <ArquivoLink
+                          key={doc.id}
+                          url={doc.url}
+                          nome={doc.nome || doc.tipo || 'Documento'}
+                          tipo={doc.tipo}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Análise SUE */}
             {analise_sue && (
               <div className="card-solid">
@@ -368,6 +424,29 @@ export default function CuradorCasoDetalhePage() {
         </div>
       </main>
     </Shell>
+  )
+}
+
+function ArquivoLink({ url, nome, tipo }: { url: string; nome: string; tipo?: string }) {
+  const isPdf = tipo?.toLowerCase().includes('pdf') || url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/')
+  const isImage = /\.(jpe?g|png|gif|webp)/i.test(url) || url.includes('/image/')
+  const Icon = isImage ? Image : FileText
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 transition-opacity hover:opacity-80 group"
+      style={{ background: 'rgba(255,255,255,0.05)', textDecoration: 'none' }}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        <Icon size={15} className="shrink-0" style={{ color: 'var(--orange)' }} />
+        <span className="text-sm truncate" style={{ color: 'var(--text2)' }}>{nome}</span>
+        {isPdf && <span className="shrink-0 text-2xs font-mono px-1 rounded" style={{ background: 'rgba(232,103,26,0.15)', color: 'var(--orange)' }}>PDF</span>}
+      </div>
+      <Eye size={14} className="shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--text3)' }} />
+    </a>
   )
 }
 
