@@ -65,11 +65,12 @@ export default function AdminDashboard() {
             {/* Atalhos admin */}
             <div className="card p-4">
               <h2 className="text-sm font-semibold text-white mb-3">Acesso rápido</h2>
-              <div className="grid grid-cols-4 gap-2">
-                <AdminLink href="/admin/demandas" icon="📋" label="Demandas" />
+              <div className="grid grid-cols-5 gap-2">
+                <AdminLink href="/admin/demandas"    icon="📋" label="Demandas" />
                 <AdminLink href="/admin/profissionais" icon="👷" label="Profissionais" />
-                <AdminLink href="/admin/teste" icon="🧪" label="Ferramentas teste" highlight />
-                <AdminLink href="/admin/precos" icon="💰" label="Preços (UTS)" />
+                <AdminLink href="/admin/precos"        icon="💰" label="Motor UTS" />
+                <AdminLink href="/admin/parametros"    icon="⚙️" label="Parâmetros" />
+                <AdminLink href="/admin/teste"         icon="🧪" label="Ferramentas" highlight />
               </div>
             </div>
 

@@ -5,6 +5,7 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { orders } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { MessageSquareWarning } from 'lucide-react'
 
 const TIER_COLOR: Record<string, string> = {
   CANDIDATO: 'var(--text3)', JUNIOR: 'var(--blue)',
@@ -32,6 +33,9 @@ export default function ResultadoQaPage() {
 
   const [dados, setDados] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [justificativa, setJustificativa] = useState('')
+  const [justificando, setJustificando] = useState(false)
+  const [justificado, setJustificado] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -126,6 +130,61 @@ export default function ResultadoQaPage() {
               </div>
             )}
           </>
+        )}
+
+        {/* Contestação do AVC — Art. 13.1 */}
+        {avc?.tem_inconsistencia && !justificado && (
+          <div className="card-solid space-y-3" style={{ borderColor: 'rgba(255,193,7,0.3)' }}>
+            <div className="flex items-start gap-2">
+              <MessageSquareWarning size={16} className="shrink-0 mt-0.5" style={{ color: 'var(--gold)' }} />
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>Contestar resultado do AVC</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
+                  Se você discordar das inconsistências apontadas, justifique tecnicamente e prossiga com a entrega.
+                  A justificativa fica registrada para o curador analisar junto com o entregável (Art. 13.1).
+                </p>
+              </div>
+            </div>
+            <textarea
+              className="input"
+              rows={3}
+              placeholder="Descreva tecnicamente por que sua entrega está correta apesar do AVC (mínimo 20 caracteres)"
+              value={justificativa}
+              onChange={e => setJustificativa(e.target.value)}
+            />
+            <button
+              onClick={async () => {
+                if (justificativa.trim().length < 20) {
+                  toast('Justificativa muito curta (mínimo 20 caracteres)', 'error')
+                  return
+                }
+                setJustificando(true)
+                try {
+                  await orders.justificarAvc(id, justificativa.trim())
+                  setJustificado(true)
+                  toast('Contestação registrada. O curador irá analisá-la junto com o entregável.', 'success')
+                } catch (err: any) {
+                  toast(err.message || 'Erro ao registrar contestação', 'error')
+                } finally {
+                  setJustificando(false)
+                }
+              }}
+              disabled={justificando || justificativa.trim().length < 20}
+              className="btn btn-primary w-full"
+              style={{ opacity: justificativa.trim().length < 20 ? 0.5 : 1 }}
+            >
+              {justificando ? 'Registrando...' : 'Registrar contestação técnica'}
+            </button>
+          </div>
+        )}
+
+        {justificado && (
+          <div className="rounded-xl p-4" style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.3)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>✓ Contestação registrada</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
+              O curador irá analisar sua justificativa junto com o entregável no processo de QA.
+            </p>
+          </div>
         )}
 
         {/* Impacto no Score SQP */}

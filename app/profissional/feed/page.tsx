@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
-import { orders } from '@/lib/api'
+import { orders, profissional as profissionalApi } from '@/lib/api'
 import { formatBRL } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { Home, Building2, Factory, Radar, MapPin, Ruler, Clock, GraduationCap } from 'lucide-react'
+import { Home, Building2, Factory, Radar, MapPin, Ruler, Clock, GraduationCap, Activity } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ProfissionalFeed() {
@@ -15,19 +15,23 @@ export default function ProfissionalFeed() {
   const { toast } = useToast()
   const [demandas, setDemandas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [carga, setCarga] = useState<any>(null)
   const [aceitando, setAceitando] = useState<string | null>(null)
   const [ajusteAtivo, setAjusteAtivo] = useState<string | null>(null)
   const [ajustes, setAjustes] = useState<Record<string, number>>({})
 
   const carregar = () => {
     setLoading(true)
-    orders.feed()
-      .then(d => setDemandas(d?.demandas || []))
-      .catch(err => {
-        if (err.status === 403) toast(err.message || 'KYC ou módulo pendente', 'error')
-        else toast('Erro ao carregar feed', 'error')
-      })
-      .finally(() => setLoading(false))
+    Promise.all([
+      orders.feed(),
+      profissionalApi.carga().catch(() => null),
+    ]).then(([feed, c]) => {
+      setDemandas(feed?.demandas || [])
+      if (c) setCarga(c)
+    }).catch(err => {
+      if (err.status === 403) toast(err.message || 'KYC ou módulo pendente', 'error')
+      else toast('Erro ao carregar feed', 'error')
+    }).finally(() => setLoading(false))
   }
 
   useEffect(() => {
@@ -97,6 +101,31 @@ export default function ProfissionalFeed() {
             </div>
           </Link>
         )}
+
+        {/* Indicador de carga operacional */}
+        {carga && (() => {
+          const svcs = Object.entries(carga.svcs || {}) as [string, any][]
+          const totalAtivas = svcs.reduce((s, [, v]) => s + (v.ativas || 0), 0)
+          const totalPontos = svcs.reduce((s, [, v]) => s + (v.pontos || 0), 0)
+          const capPontos   = svcs.reduce((s, [, v]) => s + (v.cap_pontos || 0), 0)
+          const pct = capPontos > 0 ? Math.round((totalPontos / capPontos) * 100) : 0
+          const cor = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--gold)' : 'var(--green)'
+          return (
+            <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <Activity size={16} className="shrink-0" style={{ color: cor }} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold text-white">Carga operacional</span>
+                  <span className="text-xs font-mono font-bold" style={{ color: cor }}>{pct}%</span>
+                </div>
+                <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                  <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(pct, 100)}%`, background: cor }} />
+                </div>
+              </div>
+              <span className="text-xs shrink-0" style={{ color: 'var(--text3)' }}>{totalAtivas} ativa{totalAtivas !== 1 ? 's' : ''}</span>
+            </div>
+          )
+        })()}
 
         {loading ? (
           <div className="text-center py-16" style={{ color: 'var(--text3)' }}>Carregando feed...</div>

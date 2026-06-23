@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutGrid, List, Plus, Home, Radar, Wallet, Star,
-  User, Settings, FlaskConical, HeartPulse, ArrowLeftRight,
+  User, Settings, FlaskConical, HeartPulse, ArrowLeftRight, SlidersHorizontal,
   LogOut, Sun, Moon, ChevronLeft, ChevronRight, Menu, X, ShieldCheck, CreditCard, GraduationCap,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
@@ -42,8 +42,9 @@ const NAV = {
     { href: '/admin',               Icon: LayoutGrid,   label: 'Dashboard' },
     { href: '/admin/demandas',      Icon: List,         label: 'Demandas' },
     { href: '/admin/profissionais', Icon: Star,         label: 'Profissionais' },
-    { href: '/admin/precos',        Icon: Settings,     label: 'Motor UTS' },
-    { href: '/admin/teste',         Icon: FlaskConical, label: 'Ferramentas' },
+    { href: '/admin/precos',        Icon: Settings,          label: 'Motor UTS' },
+    { href: '/admin/parametros',    Icon: SlidersHorizontal, label: 'Parâmetros' },
+    { href: '/admin/teste',         Icon: FlaskConical,      label: 'Ferramentas' },
     { href: '/admin/health',        Icon: HeartPulse,   label: 'Saúde do sistema' },
     { href: '/curador',             Icon: ShieldCheck,  label: 'Curadoria' },
     { href: '/curador/fila',        Icon: List,         label: 'Fila de casos' },

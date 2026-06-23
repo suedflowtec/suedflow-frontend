@@ -79,13 +79,21 @@ export default function ImovelDetailPage() {
         title={loading ? 'Carregando...' : (endereco || cidadeUF || 'Imóvel')}
         subtitle="Histórico técnico do imóvel"
         actions={
-          <button
-            onClick={() => router.push('/cliente/imoveis')}
-            className="btn btn-sm"
-            style={{ background: 'var(--glass)', color: 'var(--text2)', border: '1px solid var(--border)' }}
-          >
-            ← Meus imóveis
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => router.push(`/cliente/imoveis/${id}/editar`)}
+              className="btn btn-sm btn-secondary"
+            >
+              Editar
+            </button>
+            <button
+              onClick={() => router.push('/cliente/imoveis')}
+              className="btn btn-sm"
+              style={{ background: 'var(--glass)', color: 'var(--text2)', border: '1px solid var(--border)' }}
+            >
+              ← Meus imóveis
+            </button>
+          </div>
         }
       />
 

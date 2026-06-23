@@ -99,6 +99,11 @@ export const orders = {
     pix_code: string; pix_qr: string | null; valor: number
     expira_em: string; mock?: boolean; msg?: string
   }>(`/api/orders/${id}/pagar/pix`, { method: 'POST' }),
+  pagarBoleto: (id: string) => request<{
+    boleto_url: string; boleto_codigo: string; valor: number; vencimento: string
+  }>(`/api/orders/${id}/pagar/boleto`, { method: 'POST' }),
+  justificarAvc: (id: string, justificativa: string) =>
+    request<{ ok: boolean }>(`/api/orders/${id}/avc/justificar`, { method: 'POST', body: { justificativa } }),
   mockConfirmarPagamento: (id: string) =>
     request<any>(`/api/orders/${id}/mock-confirmar-pagamento`, { method: 'POST' }),
   confirmarEntrega: (id: string) =>
@@ -177,6 +182,8 @@ export const imovel = {
     return request<{ imoveis: any[]; total: number; page: number; pages: number }>(`/api/imovel${qs ? `?${qs}` : ''}`)
   },
   buscar: (id: string) => request<any>(`/api/imovel/${id}`),
+  atualizar: (id: string, data: { logradouro?: string; numero?: string; complemento?: string; bairro?: string; cidade?: string; estado?: string; cep?: string; area_total_m2?: number; ponto_referencia?: string }) =>
+    request<{ ok: boolean; imovel: any }>(`/api/imovel/${id}`, { method: 'PATCH', body: data }),
   historico: (id: string) => request<{ imovel_id: string; demandas: any[]; achados: any[] }>(`/api/imovel/historico/${id}`),
 }
 
@@ -222,6 +229,7 @@ export const profissional = {
     faturado_mes: number; comissao_mes: number; liquido_mes: number
     total_demandas_mes: number
   }>('/api/profissional/financeiro'),
+  carga: () => request<{ svcs: Record<string, { ativas: number; cap: number | null; pontos: number; cap_pontos: number }> }>('/api/profissional/carga'),
   prepara: () => request<any>('/api/profissional/perfil'),
   concluirPrepara: (modulo: string) =>
     request<{ ok: boolean; prepara: Record<string, boolean> }>(

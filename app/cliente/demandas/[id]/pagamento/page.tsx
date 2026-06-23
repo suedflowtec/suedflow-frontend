@@ -18,6 +18,8 @@ function formatCountdown(ms: number): string {
   return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
 }
 
+type Metodo = 'PIX' | 'BOLETO'
+
 export default function PagamentoPixPage() {
   const params = useParams()
   const router = useRouter()
@@ -26,7 +28,9 @@ export default function PagamentoPixPage() {
 
   const [demanda, setDemanda] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [metodo, setMetodo] = useState<Metodo>('PIX')
   const [pix, setPix] = useState<{ pix_code: string; pix_qr: string | null; valor: number; expira_em: string; mock?: boolean } | null>(null)
+  const [boleto, setBoleto] = useState<{ boleto_url: string; boleto_codigo: string; valor: number; vencimento: string } | null>(null)
   const [gerando, setGerando] = useState(false)
   const [confirmando, setConfirmando] = useState(false)
   const [agora, setAgora] = useState(Date.now())
@@ -73,12 +77,24 @@ export default function PagamentoPixPage() {
     }
   }
 
-  // Gera o PIX automaticamente ao entrar, se a demanda estiver ACEITA
+  const gerarBoleto = async () => {
+    setGerando(true)
+    try {
+      const r = await orders.pagarBoleto(id)
+      setBoleto(r)
+    } catch (err: any) {
+      toast(err.message || 'Erro ao gerar boleto', 'error')
+    } finally {
+      setGerando(false)
+    }
+  }
+
+  // Gera PIX automaticamente ao entrar, se a demanda estiver ACEITA e metodo=PIX
   useEffect(() => {
-    if (demanda?.status === 'ACEITA' && !pix && !gerando) {
+    if (demanda?.status === 'ACEITA' && metodo === 'PIX' && !pix && !gerando) {
       gerarPix()
     }
-  }, [demanda])
+  }, [demanda, metodo])
 
   const simularConfirmacao = async () => {
     setConfirmando(true)
@@ -146,10 +162,31 @@ export default function PagamentoPixPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* QR Code + código */}
+            {/* Painel de pagamento */}
             <div className="lg:col-span-2 card-solid space-y-4">
-              <p className="section-label">Pague com PIX</p>
+              {/* Toggle PIX / Boleto */}
+              <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                {(['PIX', 'BOLETO'] as const).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => setMetodo(m)}
+                    className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+                    style={{
+                      background: metodo === m ? 'linear-gradient(135deg, var(--orange), var(--orange2))' : 'transparent',
+                      color: metodo === m ? '#fff' : 'var(--text3)',
+                      boxShadow: metodo === m ? '0 2px 8px rgba(232,103,26,0.35)' : 'none',
+                    }}
+                  >
+                    {m === 'PIX' ? '⚡ PIX' : '📄 Boleto'}
+                  </button>
+                ))}
+              </div>
 
+              <p className="section-label">{metodo === 'PIX' ? 'Pague com PIX' : 'Pague com Boleto Bancário'}</p>
+
+              {/* ── PIX ── */}
+              {metodo === 'PIX' && (
+              <>
               {pix?.mock && (
                 <div className="text-2xs px-3 py-2 rounded-lg" style={{ background: 'rgba(255,193,7,0.12)', color: 'var(--gold)' }}>
                   🎭 Modo demonstração (PAYMENT_MODE=mock) · este PIX é simulado. A integração real com o Pagar.me
@@ -199,6 +236,45 @@ export default function PagamentoPixPage() {
                 </div>
               ) : (
                 <Button onClick={gerarPix} loading={gerando}>Gerar código PIX</Button>
+              )}
+              </>
+              )}
+
+              {/* ── BOLETO ── */}
+              {metodo === 'BOLETO' && (
+                <div className="space-y-3">
+                  <p className="text-sm" style={{ color: 'var(--text2)' }}>
+                    Prazo de compensação: até 3 dias úteis. A demanda será iniciada após a confirmação do banco.
+                  </p>
+                  {!boleto ? (
+                    <Button onClick={gerarBoleto} loading={gerando} className="w-full">
+                      Gerar boleto bancário
+                    </Button>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <p className="text-xs font-semibold" style={{ color: 'var(--text3)' }}>Código do boleto</p>
+                        <input
+                          readOnly
+                          value={boleto.boleto_codigo}
+                          className="input text-xs font-mono w-full"
+                          onFocus={e => e.target.select()}
+                        />
+                        <p className="text-xs" style={{ color: 'var(--text3)' }}>
+                          Vencimento: {new Date(boleto.vencimento).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <a
+                        href={boleto.boleto_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-primary w-full flex items-center justify-center gap-2"
+                      >
+                        Abrir boleto para imprimir / salvar ↗
+                      </a>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
