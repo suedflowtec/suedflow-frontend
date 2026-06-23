@@ -8,13 +8,12 @@ import { svc } from '@/lib/api'
 import { formatBRL } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { SVC_DETALHES } from '@/lib/svcDetalhes'
 
 const SECOES = [
-  { campo: 'para_quem', icone: '👤', titulo: 'Para quem é este serviço' },
-  { campo: 'voce_precisa', icone: '📋', titulo: 'O que você precisa ter antes de contratar' },
+  { campo: 'para_quem',   icone: '👤', titulo: 'Para quem é este serviço' },
+  { campo: 'voce_precisa',icone: '📋', titulo: 'O que você precisa ter antes de contratar' },
   { campo: 'entregaveis', icone: '📦', titulo: 'O que você vai receber' },
-  { campo: 'nao_inclui', icone: '🚫', titulo: 'Não está incluído neste serviço' },
+  { campo: 'nao_inclui',  icone: '🚫', titulo: 'Não está incluído neste serviço' },
 ] as const
 
 export default function SvcDetalhePage() {
@@ -36,8 +35,6 @@ export default function SvcDetalhePage() {
   }, [user, authLoading, codigo, router, toast])
 
   if (authLoading || !user) return null
-
-  const detalhe = SVC_DETALHES[codigo]
 
   const precoDe = (s: any) => {
     if (s.tipo_preco === 'HORA') return s.preco_hora ? `${formatBRL(s.preco_hora)}/h` : '—'
@@ -68,7 +65,7 @@ export default function SvcDetalhePage() {
             {/* Cabeçalho */}
             <div className="card-solid">
               <div className="flex items-start gap-4">
-                <div className="text-4xl">{detalhe?.icone || '🔧'}</div>
+                <div className="text-4xl">{servico.icone || '🔧'}</div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="badge badge-gray">{servico.codigo}</span>
@@ -84,16 +81,16 @@ export default function SvcDetalhePage() {
             </div>
 
             {/* O que é */}
-            {detalhe?.o_que_e && (
+            {servico.o_que_e && (
               <div className="card">
                 <p className="section-label">O que é</p>
-                <p className="text-sm" style={{ color: 'var(--text2)' }}>{detalhe.o_que_e}</p>
+                <p className="text-sm" style={{ color: 'var(--text2)' }}>{servico.o_que_e}</p>
               </div>
             )}
 
             {/* Seções dinâmicas */}
-            {detalhe && SECOES.map(secao => {
-              const itens = detalhe[secao.campo]
+            {SECOES.map(secao => {
+              const itens = servico[secao.campo] as string[] | null
               if (!itens || itens.length === 0) return null
               return (
                 <div key={secao.campo} className="card">
