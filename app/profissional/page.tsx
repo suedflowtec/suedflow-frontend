@@ -7,7 +7,7 @@ import { orders, auth as authApi } from '@/lib/api'
 import { formatBRL, statusLabel } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { Radar, Wallet, Star, CreditCard } from 'lucide-react'
+import { Radar, Wallet, Star, CreditCard, GraduationCap } from 'lucide-react'
 
 const STATUS_BADGE: Record<string, string> = {
   AGUARDANDO: 'badge badge-yellow', PAGA: 'badge badge-blue',
@@ -53,6 +53,25 @@ export default function ProfissionalHome() {
         }
       />
       <main className="p-6 space-y-6">
+        {/* Alerta SUEDPrepara M1 */}
+        {!prof.prepara_m1 && (
+          <Link
+            href="/profissional/prepara/m1"
+            className="flex items-start gap-3 rounded-xl p-4 transition-opacity hover:opacity-90"
+            style={{ background: 'rgba(232,103,26,0.12)', border: '1px solid rgba(232,103,26,0.35)', textDecoration: 'none' }}
+          >
+            <GraduationCap size={20} className="shrink-0 mt-0.5" style={{ color: 'var(--orange)' }} />
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--orange)' }}>
+                Complete o SUEDPrepara M1 para acessar o marketplace
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>
+                O módulo de fundamentos é obrigatório antes de aceitar demandas. Clique para começar →
+              </p>
+            </div>
+          </Link>
+        )}
+
         {/* KPIs */}
         <div className="grid grid-cols-4 gap-4">
           <div className="kpi-card">

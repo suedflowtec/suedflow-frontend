@@ -14,6 +14,21 @@ type Etapa = 1 | 2 | 3
 type SVC = { codigo: string; nome: string; descricao?: string; uts_res: number; uts_com: number; uts_ind: number; piso: number; teto: number; sla_dias: number; area_max_res?: number | null; area_max_com?: number | null; area_max_ind?: number | null }
 type MensagemSue = { autor: 'sue' | 'usuario'; texto: string; svc?: SVC }
 
+const SVC_IMG: Record<string, string> = {
+  SVC000: '/imagens/svc000.png',
+  SVC001: '/imagens/svc001.png',
+  SVC002: '/imagens/svc002.png',
+  SVC003: '/imagens/svc003.png',
+  SVC004: '/imagens/svc004.png',
+  SVC005: '/imagens/svc005.png',
+  SVC006: '/imagens/svc006.png',
+  SVC007: '/imagens/svc007.png',
+  SVC008: '/imagens/svc008.png',
+  SVC009: '/imagens/svc009.png',
+  SVC010: '/imagens/svc010.png',
+  SVC011: '/imagens/svc011.png',
+}
+
 export default function NovaDemandaPage() {
   const router = useRouter()
   const { toast } = useToast()
@@ -254,27 +269,53 @@ export default function NovaDemandaPage() {
                 </div>
               </div>
 
-              {/* Coluna direita: lista manual de serviços */}
+              {/* Coluna direita: seleção visual de serviços */}
               <div>
                 <p className="section-label mb-3">Ou escolha manualmente</p>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1 pb-2">
                   {svcs.length === 0 ? (
                     <p className="text-center text-sm py-6" style={{ color: 'var(--text3)' }}>Carregando serviços...</p>
                   ) : svcs.filter(s => s.codigo !== 'SVC000').map(s => (
                     <button
                       key={s.codigo}
                       onClick={() => { setSvcSelecionado(s); setEtapa(2) }}
-                      className={`card w-full text-left transition-colors ${svcSelecionado?.codigo === s.codigo ? 'border-orange ring-1 ring-orange' : 'hover:bg-white/5'}`}
+                      className="w-full text-left rounded-xl overflow-hidden transition-all"
+                      style={{
+                        background: 'var(--navy2)',
+                        border: svcSelecionado?.codigo === s.codigo
+                          ? '1.5px solid var(--orange)'
+                          : '1.5px solid rgba(255,255,255,0.08)',
+                        boxShadow: svcSelecionado?.codigo === s.codigo
+                          ? '0 0 0 2px rgba(232,103,26,0.25)'
+                          : undefined,
+                      }}
                     >
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-2xs font-mono" style={{ color: 'var(--text3)' }}>{s.codigo}</span>
-                        <Badge variant="orange">a partir de {formatBRL(s.piso || 680)}</Badge>
+                      {/* Image header */}
+                      <div className="relative overflow-hidden" style={{ height: 76 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={SVC_IMG[s.codigo] || '/imagens/svc001.png'}
+                          alt={s.nome}
+                          className="w-full h-full object-cover"
+                        />
+                        <div
+                          className="absolute inset-0"
+                          style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(6,24,40,0.82))' }}
+                        />
+                        <span
+                          className="absolute bottom-1.5 left-2.5 text-2xs font-mono font-bold"
+                          style={{ color: 'rgba(255,255,255,0.55)' }}
+                        >
+                          {s.codigo}
+                        </span>
                       </div>
-                      <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text)' }}>{s.nome}</p>
-                      <p className="text-xs line-clamp-2" style={{ color: 'var(--text3)' }}>{s.descricao || 'Serviço técnico SUEDFLOW'}</p>
-                      <div className="flex gap-3 mt-2 text-2xs" style={{ color: 'var(--text3)' }}>
-                        <span>⏱ {s.sla_dias || 5} dias</span>
-                        <span>📐 {s.area_max_res ? `até ${s.area_max_res.toLocaleString('pt-BR')}m² res.` : 'Área livre'}</span>
+                      {/* Content row */}
+                      <div className="px-3 py-2 flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{s.nome}</p>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-2xs" style={{ color: 'var(--text3)' }}>⏱ {s.sla_dias || 5}d</span>
+                          <Badge variant="orange">a partir de {formatBRL(s.piso || 680)}</Badge>
+                        </div>
                       </div>
                     </button>
                   ))}

@@ -222,6 +222,11 @@ export const profissional = {
     faturado_mes: number; comissao_mes: number; liquido_mes: number
     total_demandas_mes: number
   }>('/api/profissional/financeiro'),
+  prepara: () => request<any>('/api/profissional/perfil'),
+  concluirPrepara: (modulo: string) =>
+    request<{ ok: boolean; prepara: Record<string, boolean> }>(
+      `/api/profissional/prepara/${modulo}/concluir`, { method: 'POST' }
+    ),
 }
 
 export const saques = {

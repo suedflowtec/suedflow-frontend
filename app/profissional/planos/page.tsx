@@ -9,9 +9,9 @@ import { Check, X, Zap, Star, Shield } from 'lucide-react'
 type Plano = 'GRATIS' | 'PRO' | 'ELITE'
 
 const COMISSAO: Record<Plano, Record<string, number>> = {
-  GRATIS: { CANDIDATO: 22, JUNIOR: 21, PLENO: 19, SENIOR: 17, ELITE: 15 },
-  PRO:    { CANDIDATO: 20, JUNIOR: 19, PLENO: 17, SENIOR: 15, ELITE: 13 },
-  ELITE:  { CANDIDATO: 18, JUNIOR: 17, PLENO: 15, SENIOR: 13, ELITE: 11 },
+  GRATIS: { CANDIDATO: 22, JUNIOR: 21, PLENO: 20, SENIOR: 19, ELITE: 18 },
+  PRO:    { CANDIDATO: 20, JUNIOR: 19, PLENO: 18, SENIOR: 17, ELITE: 16 },
+  ELITE:  { CANDIDATO: 18, JUNIOR: 17, PLENO: 16, SENIOR: 15, ELITE: 15 },
 }
 
 const NIVEIS = ['CANDIDATO', 'JUNIOR', 'PLENO', 'SENIOR', 'ELITE']
@@ -46,7 +46,7 @@ const PLANOS: PlanoConfig[] = [
       { texto: 'Comissão reduzida', incluso: false },
       { texto: 'Prioridade no feed', incluso: false },
       { texto: 'Badge PRO no perfil', incluso: false },
-      { texto: 'Acesso ao SUEDPrepara', incluso: false },
+      { texto: 'SUEDPrepara (habilitação profissional)', incluso: true },
       { texto: 'Relatórios financeiros avançados', incluso: false },
     ],
   },
@@ -67,7 +67,7 @@ const PLANOS: PlanoConfig[] = [
       { texto: 'Comissão reduzida em 2%', incluso: true },
       { texto: 'Prioridade no feed de demandas', incluso: true },
       { texto: 'Badge PRO no perfil', incluso: true },
-      { texto: 'Acesso ao SUEDPrepara', incluso: false },
+      { texto: 'SUEDPrepara completo', incluso: true },
       { texto: 'Relatórios financeiros avançados', incluso: true },
     ],
   },
@@ -85,10 +85,10 @@ const PLANOS: PlanoConfig[] = [
       { texto: 'Score SQP e progressão de nível', incluso: true },
       { texto: 'Chat com cliente', incluso: true },
       { texto: 'Suporte VIP', incluso: true },
-      { texto: 'Comissão reduzida em 4%', incluso: true },
+      { texto: 'Comissão reduzida em até 4%', incluso: true },
       { texto: 'Máxima prioridade no feed', incluso: true },
       { texto: 'Badge ELITE no perfil', incluso: true },
-      { texto: 'Acesso ao SUEDPrepara', incluso: true },
+      { texto: 'SUEDPrepara completo', incluso: true },
       { texto: 'Relatórios financeiros avançados', incluso: true },
     ],
   },
@@ -287,7 +287,7 @@ export default function PlanosPage() {
             </table>
           </div>
           <p className="text-xs mt-3" style={{ color: 'var(--text3)' }}>
-            Comissão descontada automaticamente no repasse. Quanto menor, mais você retém por demanda concluída.
+            Comissão descontada automaticamente no repasse. Piso de 15% — quanto menor, mais você retém por demanda concluída.
           </p>
         </div>
 
@@ -299,7 +299,7 @@ export default function PlanosPage() {
               <p className="font-bold text-white mb-1">Score SQP (grátis)</p>
               <p style={{ color: 'var(--text3)' }}>
                 Seu nível sobe automaticamente conforme você conclui demandas com qualidade, pontualidade e boa avaliação.
-                Chegar ao nível ELITE reduz sua comissão para 15% mesmo no plano GRÁTIS.
+                Chegar ao nível ELITE reduz sua comissão para 18% no plano GRÁTIS.
               </p>
             </div>
             <div>
@@ -312,8 +312,8 @@ export default function PlanosPage() {
             <div>
               <p className="font-bold text-white mb-1">Plano ELITE (R$ 149/mês)</p>
               <p style={{ color: 'var(--text3)' }}>
-                Reduz a comissão em 4%. Máxima prioridade no feed, badge ELITE, acesso ao SUEDPrepara
-                para treinamento técnico e suporte VIP. Para os melhores da plataforma.
+                Reduz a comissão em até 4% (piso absoluto de 15%). Máxima prioridade no feed, badge ELITE
+                e suporte VIP. SUEDPrepara completo incluso. Para os melhores da plataforma.
               </p>
             </div>
           </div>

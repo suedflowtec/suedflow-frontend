@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutGrid, List, Plus, Home, Radar, Wallet, Star,
   User, Settings, FlaskConical, HeartPulse, ArrowLeftRight,
-  LogOut, Sun, Moon, ChevronLeft, ChevronRight, Menu, X, ShieldCheck, CreditCard,
+  LogOut, Sun, Moon, ChevronLeft, ChevronRight, Menu, X, ShieldCheck, CreditCard, GraduationCap,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { Avatar } from '@/components/ui/Avatar'
@@ -34,8 +34,9 @@ const NAV = {
     { href: '/profissional/demandas',   Icon: List,        label: 'Em andamento' },
     { href: '/profissional/financeiro', Icon: Wallet,      label: 'Financeiro' },
     { href: '/profissional/score',      Icon: Star,        label: 'Score SQP' },
-    { href: '/profissional/planos',     Icon: CreditCard,  label: 'Meu plano' },
-    { href: '/profissional/perfil',     Icon: User,        label: 'Meu perfil' },
+    { href: '/profissional/planos',     Icon: CreditCard,      label: 'Meu plano' },
+    { href: '/profissional/prepara',    Icon: GraduationCap,   label: 'SUEDPrepara' },
+    { href: '/profissional/perfil',     Icon: User,            label: 'Meu perfil' },
   ],
   ADMIN: [
     { href: '/admin',               Icon: LayoutGrid,   label: 'Dashboard' },
