@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/useToast'
 import { Logo } from '@/components/ui/Logo'
 import { Eye, EyeOff, ShieldAlert } from 'lucide-react'
 
-type Modo = 'CLIENTE' | 'PROFISSIONAL' | 'ADMIN'
+type Modo = 'CLIENTE' | 'PROFISSIONAL' | 'ADMIN' | 'CURADOR'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -29,14 +29,24 @@ export default function LoginPage() {
       const u = await login(email, senha)
 
       if (modo === 'ADMIN') {
-        if (u.tipo !== 'ADMIN' && u.tipo !== 'MODERADOR' && u.tipo !== 'CURADOR_SUPORTE' && u.tipo !== 'CURADOR_SENIOR') {
-          setError('Acesso não autorizado. Esta área é restrita à equipe SUEDFLOW.')
+        if (u.tipo !== 'ADMIN' && u.tipo !== 'MODERADOR') {
+          setError('Acesso não autorizado. Esta área é restrita aos administradores SUEDFLOW.')
           setLoading(false)
           return
         }
-        const destino = (u.tipo === 'CURADOR_SUPORTE' || u.tipo === 'CURADOR_SENIOR') ? '/curador' : '/admin'
         toast(`Bem-vindo, ${u.nome.split(' ')[0]}.`, 'success')
-        router.push(destino)
+        router.push('/admin')
+        return
+      }
+
+      if (modo === 'CURADOR') {
+        if (u.tipo !== 'CURADOR_SUPORTE' && u.tipo !== 'CURADOR_SENIOR' && u.tipo !== 'ADMIN') {
+          setError('Acesso não autorizado. Esta área é restrita aos curadores SUEDFLOW.')
+          setLoading(false)
+          return
+        }
+        toast(`Bem-vindo, ${u.nome.split(' ')[0]}.`, 'success')
+        router.push('/curador')
         return
       }
 
@@ -65,12 +75,14 @@ export default function LoginPage() {
     }
   }
 
-  const isAdmin = modo === 'ADMIN'
+  const isAdmin    = modo === 'ADMIN'
+  const isCurador  = modo === 'CURADOR'
+  const isRestrito = isAdmin || isCurador
 
   return (
     <div className="min-h-screen bg-surface flex">
       {/* Painel esquerdo — navy */}
-      <div className={`hidden lg:flex w-[420px] shrink-0 flex-col justify-between p-10 transition-colors duration-300 ${isAdmin ? 'bg-[#0A0E18]' : 'bg-navy'}`}>
+      <div className={`hidden lg:flex w-[420px] shrink-0 flex-col justify-between p-10 transition-colors duration-300 ${isRestrito ? 'bg-[#0A0E18]' : 'bg-navy'}`}>
         <Link href="/">
           <Logo height={36} />
         </Link>
@@ -82,10 +94,23 @@ export default function LoginPage() {
               </p>
               <h2 className="text-3xl font-black text-white leading-snug mb-4">
                 Acesso exclusivo<br />
-                <span className="text-orange">equipe SUEDFLOW</span>
+                <span className="text-orange">administradores</span>
               </h2>
               <p className="text-white/40 text-sm">
-                Somente colaboradores autorizados têm acesso a este painel.
+                Somente administradores e moderadores têm acesso a este painel.
+              </p>
+            </>
+          ) : isCurador ? (
+            <>
+              <p className="text-orange/70 text-xs mb-3 uppercase tracking-widest font-semibold flex items-center gap-2">
+                <ShieldAlert size={13} /> Painel de curadoria
+              </p>
+              <h2 className="text-3xl font-black text-white leading-snug mb-4">
+                Curadoria de<br />
+                <span className="text-orange">qualidade técnica</span>
+              </h2>
+              <p className="text-white/40 text-sm">
+                Revisão de entregas, aprovação de KYC e resolução de disputas.
               </p>
             </>
           ) : (
@@ -112,8 +137,8 @@ export default function LoginPage() {
             <Link href="/"><Logo height={32} /></Link>
           </div>
 
-          {/* Seletor de perfil — visível apenas quando não está em modo Admin */}
-          {!isAdmin && (
+          {/* Seletor de perfil — visível apenas quando não está em modo restrito */}
+          {!isRestrito && (
             <div className="flex gap-1 mb-8 p-1 rounded-xl" style={{ background: 'var(--glass)', border: '1px solid var(--border)' }}>
               {(['CLIENTE', 'PROFISSIONAL'] as const).map(m => (
                 <button
@@ -134,18 +159,17 @@ export default function LoginPage() {
           )}
 
           <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>
-            {isAdmin ? 'Acesso administrativo' : 'Entrar'}
+            {isAdmin ? 'Acesso administrativo' : isCurador ? 'Acesso curador' : 'Entrar'}
           </h1>
           <p className="text-sm mb-8" style={{ color: 'var(--text3)' }}>
-            {isAdmin
-              ? 'Restrito à equipe SUEDFLOW'
-              : modo === 'PROFISSIONAL'
-                ? 'Acesse sua conta de profissional'
-                : 'Acesse sua conta de cliente'}
+            {isAdmin    ? 'Restrito a administradores SUEDFLOW'
+            : isCurador ? 'Painel de curadoria e qualidade'
+            : modo === 'PROFISSIONAL' ? 'Acesse sua conta de profissional'
+            : 'Acesse sua conta de cliente'}
           </p>
 
-          {/* Aviso admin */}
-          {isAdmin && (
+          {/* Aviso área restrita */}
+          {isRestrito && (
             <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl mb-5 text-xs"
               style={{ background: 'rgba(232,103,26,0.08)', border: '1px solid rgba(232,103,26,0.2)', color: 'var(--text2)' }}>
               <ShieldAlert size={14} className="shrink-0 mt-0.5" style={{ color: 'var(--orange)' }} />
@@ -209,11 +233,11 @@ export default function LoginPage() {
               disabled={loading}
               className="btn btn-primary w-full btn-lg mt-2"
             >
-              {loading ? 'Entrando…' : isAdmin ? 'Acessar painel restrito' : 'Entrar'}
+              {loading ? 'Entrando…' : isAdmin ? 'Acessar painel admin' : isCurador ? 'Acessar painel curador' : 'Entrar'}
             </button>
           </form>
 
-          {!isAdmin && (
+          {!isRestrito && (
             <p className="text-center text-sm mt-6" style={{ color: 'var(--text3)' }}>
               Não tem conta?{' '}
               <Link href="/auth/cadastro" className="font-semibold hover:underline" style={{ color: 'var(--orange)' }}>
@@ -222,26 +246,36 @@ export default function LoginPage() {
             </p>
           )}
 
-          {/* Área restrita — link discreto na base */}
-          <div className="mt-10 pt-6 text-center" style={{ borderTop: '1px solid var(--border)' }}>
-            {isAdmin ? (
+          {/* Links de acesso restrito na base */}
+          <div className="mt-10 pt-6" style={{ borderTop: '1px solid var(--border)' }}>
+            {isRestrito ? (
               <button
                 type="button"
                 onClick={() => { setModo('CLIENTE'); setError(null) }}
-                className="text-xs hover:underline"
+                className="text-xs hover:underline w-full text-center"
                 style={{ color: 'var(--text3)' }}
               >
                 ← Voltar para login de clientes
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={() => { setModo('ADMIN'); setError(null) }}
-                className="text-xs hover:underline"
-                style={{ color: 'var(--text3)' }}
-              >
-                Área restrita — equipe SUEDFLOW
-              </button>
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={() => { setModo('CURADOR'); setError(null) }}
+                  className="text-xs hover:underline"
+                  style={{ color: 'var(--text3)' }}
+                >
+                  Acesso curador
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setModo('ADMIN'); setError(null) }}
+                  className="text-xs hover:underline"
+                  style={{ color: 'var(--text3)' }}
+                >
+                  Acesso administrador
+                </button>
+              </div>
             )}
           </div>
         </div>
