@@ -158,6 +158,10 @@ export const admin = {
   paramsGlobais: () => request<{ pnr: number; fe: number; params: Record<string, string> }>('/api/admin/params-globais'),
   atualizarParamsGlobais: (data: { pnr?: number; fe?: number }) =>
     request<{ ok: boolean }>('/api/admin/params-globais', { method: 'PATCH', body: data }),
+  verificarSue: (demandaId: string) =>
+    request<{ ok: boolean; demanda_id: string; avc: any; latencia_ms: number }>(`/api/admin/teste/qa/verificar/${demandaId}`, { method: 'POST' }),
+  simularEntregavel: (url_pdf: string, demanda_id?: string) =>
+    request<{ ok: boolean; demanda_id: string; avc: any }>('/api/admin/teste/qa/simular-entregavel', { method: 'POST', body: { url_pdf, demanda_id } }),
   teste: {
     criarProfissionalCompleto: (data: any) =>
       request<any>('/api/admin/teste/criar-profissional-completo', { method: 'POST', body: data }),

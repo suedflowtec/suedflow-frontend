@@ -125,9 +125,18 @@ export default function SuedPreparaHomePage() {
             </div>
           )}
           {concluidos === total && (
-            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--green)' }}>
-              <CheckCircle2 size={16} />
-              <span className="font-semibold">Habilitação completa — você está apto para todas as demandas da plataforma!</span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--green)' }}>
+                <CheckCircle2 size={16} />
+                <span className="font-semibold">Habilitação completa — você está apto para todas as demandas da plataforma!</span>
+              </div>
+              <button
+                onClick={() => router.push('/profissional/prepara/certificado')}
+                className="btn w-full flex items-center justify-center gap-2"
+                style={{ background: 'rgba(245,166,35,0.12)', color: 'var(--gold)', border: '1px solid rgba(245,166,35,0.3)' }}
+              >
+                🏆 Ver e baixar meu certificado SUEDPrepara
+              </button>
             </div>
           )}
         </div>

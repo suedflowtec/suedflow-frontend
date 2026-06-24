@@ -280,6 +280,32 @@ export default function AdminDemandaDetalhePage() {
                 🎭 Simular pagamento PIX
               </Button>
             </div>
+
+            {/* Verificação SUE (AVC) */}
+            {demanda.url_entregavel && (
+              <div className="card-solid space-y-2">
+                <p className="section-label">Verificação SUE (AVC)</p>
+                <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                  Dispara a análise de conformidade do entregável pela IA. Resultado disponível no campo AVC da demanda.
+                </p>
+                <Button
+                  variant="ghost"
+                  className="w-full text-sm"
+                  disabled={intervindo}
+                  onClick={async () => {
+                    setIntervindo(true)
+                    try {
+                      const r = await admin.verificarSue(id)
+                      toast(`AVC concluído em ${r.latencia_ms}ms — resultado registrado`, 'success')
+                      carregar()
+                    } catch (err: any) { toast(err.message || 'Erro na verificação SUE', 'error') }
+                    finally { setIntervindo(false) }
+                  }}
+                >
+                  🤖 Verificar AVC com SUE
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </main>
