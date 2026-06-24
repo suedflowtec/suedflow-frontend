@@ -6,8 +6,9 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
 import { profissional as profissionalApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import { CheckCircle2, ArrowLeft, BookOpen, ClipboardCheck } from 'lucide-react'
+import { CheckCircle2, ArrowLeft, BookOpen, ClipboardCheck, ListChecks, Footprints, ShieldCheck, AlertCircle, FileDown } from 'lucide-react'
 import Link from 'next/link'
+import { MODULO_RICO } from '@/lib/moduloContent'
 
 const MODULOS_CONTEUDO: Record<string, {
   titulo: string
@@ -313,6 +314,8 @@ export default function SuedPreparaModuloPage() {
   if (authLoading || !user || loading) return null
   if (!conteudo) return null
 
+  const rico = MODULO_RICO[modulo]
+
   return (
     <Shell>
       <Topbar
@@ -379,6 +382,131 @@ export default function SuedPreparaModuloPage() {
             </ul>
           </div>
         ))}
+
+        {/* ── CONTEÚDO RICO: Passo a passo ── */}
+        {rico?.passo_a_passo?.map((bloco, bi) => (
+          <div key={bi} className="card-solid">
+            <div className="flex items-center gap-2 mb-3">
+              <Footprints size={15} style={{ color: 'var(--orange)' }} />
+              <p className="section-label">{bloco.titulo}</p>
+            </div>
+            <ol className="space-y-2">
+              {bloco.etapas.map((etapa, ei) => (
+                <li key={ei} className="flex items-start gap-3 text-sm">
+                  <span className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold font-mono mt-0.5"
+                    style={{ background: 'rgba(232,103,26,0.15)', color: 'var(--orange)' }}>
+                    {ei + 1}
+                  </span>
+                  <span style={{ color: 'var(--text2)' }}>{etapa}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ))}
+
+        {/* ── CONTEÚDO RICO: Pode e Não Pode ── */}
+        {rico?.pode_nao_pode && (
+          <div className="card-solid">
+            <div className="flex items-center gap-2 mb-4">
+              <ListChecks size={15} style={{ color: 'var(--orange)' }} />
+              <p className="section-label">O que pode e o que não pode fazer</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--green)' }}>✓ Pode</p>
+                <ul className="space-y-1.5">
+                  {rico.pode_nao_pode.pode.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs rounded-lg px-2 py-1.5" style={{ background: 'rgba(0,214,143,0.06)' }}>
+                      <span className="shrink-0 mt-0.5" style={{ color: 'var(--green)' }}>✓</span>
+                      <span style={{ color: 'var(--text2)' }}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--red)' }}>✗ Não pode</p>
+                <ul className="space-y-1.5">
+                  {rico.pode_nao_pode.nao_pode.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs rounded-lg px-2 py-1.5" style={{ background: 'rgba(255,77,109,0.06)' }}>
+                      <span className="shrink-0 mt-0.5" style={{ color: 'var(--red)' }}>✗</span>
+                      <span style={{ color: 'var(--text2)' }}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── CONTEÚDO RICO: Autoconfiança ── */}
+        {rico?.autoconfianca?.map((bloco, bi) => (
+          <div key={bi} className="card-solid">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck size={15} style={{ color: 'var(--purple)' }} />
+              <p className="section-label">{bloco.titulo}</p>
+            </div>
+            <ul className="space-y-2">
+              {bloco.dicas.map((dica, di) => (
+                <li key={di} className="text-sm rounded-lg px-3 py-2" style={{ background: 'rgba(155,109,255,0.06)', color: 'var(--text2)', borderLeft: '2px solid var(--purple)' }}>
+                  {dica}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
+        {/* ── CONTEÚDO RICO: Erros comuns ── */}
+        {rico?.erros_comuns && rico.erros_comuns.length > 0 && (
+          <div className="card-solid">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertCircle size={15} style={{ color: 'var(--gold)' }} />
+              <p className="section-label">Erros comuns — e como evitar</p>
+            </div>
+            <div className="space-y-3">
+              {rico.erros_comuns.map((e, i) => (
+                <div key={i} className="rounded-xl p-3" style={{ background: 'rgba(245,166,35,0.06)', border: '1px solid rgba(245,166,35,0.15)' }}>
+                  <p className="text-sm font-semibold mb-1" style={{ color: 'var(--gold)' }}>⚠ {e.erro}</p>
+                  <p className="text-xs mb-1" style={{ color: 'var(--text3)' }}>
+                    <span className="font-semibold">Por que acontece:</span> {e.por_que_acontece}
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--green)' }}>
+                    <span className="font-semibold">Como evitar:</span> {e.como_evitar}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── CONTEÚDO RICO: Templates e referências ── */}
+        {rico?.templates && rico.templates.length > 0 && (
+          <div className="card-solid">
+            <div className="flex items-center gap-2 mb-3">
+              <FileDown size={15} style={{ color: 'var(--orange)' }} />
+              <p className="section-label">Templates e materiais de apoio</p>
+            </div>
+            <div className="space-y-2">
+              {rico.templates.map((t, i) => (
+                <div key={i} className="flex items-start gap-3 rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <span className="text-sm shrink-0">
+                    {t.tipo === 'checklist' ? '☑' : t.tipo === 'modelo' ? '📄' : '📖'}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{t.nome}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>{t.descricao}</p>
+                  </div>
+                  <span className="shrink-0 ml-auto text-2xs px-2 py-0.5 rounded-full font-semibold uppercase"
+                    style={{ background: 'rgba(232,103,26,0.12)', color: 'var(--orange)' }}>
+                    {t.tipo}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs mt-3" style={{ color: 'var(--text3)' }}>
+              Templates completos estarão disponíveis para download ao concluir o módulo.
+            </p>
+          </div>
+        )}
 
         {/* Serviços habilitados */}
         <div className="card-solid">
