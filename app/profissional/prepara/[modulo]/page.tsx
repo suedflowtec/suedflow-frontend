@@ -529,6 +529,26 @@ export default function SuedPreparaModuloPage() {
           </div>
         )}
 
+        {/* Laboratório de Projetos Demo */}
+        {jaConcluido && (
+          <div className="card-solid space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🧪</span>
+              <p className="section-label">Laboratório de Projetos</p>
+              <span className="badge badge-orange text-2xs">Novo</span>
+            </div>
+            <p className="text-sm" style={{ color: 'var(--text2)' }}>
+              Coloque em prática o que aprendeu. 5 projetos com cenários reais simulados e avaliação automática pela SUE.
+            </p>
+            <Link
+              href={`/profissional/prepara/${modulo}/demo`}
+              className="btn btn-secondary w-full flex items-center justify-center gap-2"
+            >
+              Acessar Laboratório de Projetos →
+            </Link>
+          </div>
+        )}
+
         {/* Avaliação de conhecimento */}
         {!jaConcluido && (
           <div className="card-solid space-y-3">

@@ -231,6 +231,11 @@ export const profissional = {
   }>('/api/profissional/financeiro'),
   carga: () => request<{ svcs: Record<string, { ativas: number; cap: number | null; pontos: number; cap_pontos: number }> }>('/api/profissional/carga'),
   prepara: () => request<any>('/api/profissional/perfil'),
+  demos: (modulo: string) => request<{ demos: any[]; modulo: string }>(`/api/profissional/demos/${modulo}`),
+  demoDetalhe: (modulo: string, numero: number) => request<{ demo: any; historico: any[] }>(`/api/profissional/demos/${modulo}/${numero}`),
+  demoSubmeter: (modulo: string, numero: number, data: { art_numero: string; patologias: string; classificacao: string; analise: string; conclusao: string; cronograma: string }) =>
+    request<{ ok: boolean; demo_id: string; tentativa: number; msg: string }>(`/api/profissional/demos/${modulo}/${numero}/submeter`, { method: 'POST', body: data }),
+  demoResultado: (modulo: string, numero: number) => request<{ resultado: any }>(`/api/profissional/demos/${modulo}/${numero}/resultado`),
   concluirPrepara: (modulo: string) =>
     request<{ ok: boolean; prepara: Record<string, boolean> }>(
       `/api/profissional/prepara/${modulo}/concluir`, { method: 'POST' }
