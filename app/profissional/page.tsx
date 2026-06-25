@@ -53,6 +53,45 @@ export default function ProfissionalHome() {
         }
       />
       <main className="p-6 space-y-6">
+        {/* Banner KYC em análise */}
+        {prof.kyc_status === 'PENDENTE' && (
+          <div className="flex items-start gap-3 rounded-xl p-4"
+            style={{ background: 'rgba(155,109,255,0.10)', border: '1px solid rgba(155,109,255,0.3)' }}>
+            <span className="text-lg shrink-0">🔍</span>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--purple)' }}>
+                Cadastro em análise
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>
+                Nosso curador está verificando seus documentos e dados do conselho (CREA/CAU).
+                Você receberá uma notificação assim que a análise for concluída — geralmente em até 2 dias úteis.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Banner KYC reprovado */}
+        {prof.kyc_status === 'REPROVADO' && (
+          <div className="flex items-start gap-3 rounded-xl p-4"
+            style={{ background: 'rgba(255,77,109,0.10)', border: '1px solid rgba(255,77,109,0.3)' }}>
+            <span className="text-lg shrink-0">⚠️</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>
+                Cadastro não aprovado
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>
+                Seu cadastro não pôde ser concluído. Verifique sua situação no {prof.conselho || 'CREA'} e certifique-se
+                de que sua inscrição está ativa e regular. Após regularizar, envie novamente os documentos pelo onboarding.
+              </p>
+              <Link href="/profissional/onboarding"
+                className="inline-block mt-2 text-xs font-semibold"
+                style={{ color: 'var(--red)', textDecoration: 'underline' }}>
+                Reenviar documentos →
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Alerta SUEDPrepara M1 */}
         {!prof.prepara_m1 && (
           <Link

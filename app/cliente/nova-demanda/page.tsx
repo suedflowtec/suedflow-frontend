@@ -470,10 +470,10 @@ export default function NovaDemandaPage() {
                     <div className="mt-3 rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
                       <p className="text-2xs font-semibold mb-1" style={{ color: 'var(--text2)' }}>Faixa de pagamento</p>
                       <p className="text-xs font-mono" style={{ color: 'var(--text)' }}>
-                        {formatBRL(precoCalc.preco_cliente)} até {formatBRL(Math.ceil(precoCalc.preco_cliente * 1.15))}
+                        {formatBRL(Math.floor(precoCalc.preco_cliente * 0.85))} até {formatBRL(precoCalc.preco_cliente)}
                       </p>
                       <p className="text-2xs mt-1" style={{ color: 'var(--text3)' }}>
-                        O profissional pode aplicar acréscimo técnico de até +15% ao aceitar.
+                        O profissional pode oferecer desconto de até 15% sobre o valor calculado.
                         Você será notificado do valor final antes de pagar.
                       </p>
                     </div>
@@ -540,14 +540,14 @@ export default function NovaDemandaPage() {
                   <p className="text-4xl font-bold font-mono mb-1" style={{ color: 'var(--orange)' }}>
                     {formatBRL(precoCalc.preco_cliente)}
                   </p>
-                  <p className="text-xs mb-3" style={{ color: 'var(--text3)' }}>PIX via Pagar.me · Escrow protegido</p>
+                  <p className="text-xs mb-3" style={{ color: 'var(--text3)' }}>PIX via ASAAS · Escrow protegido</p>
                   <div className="rounded-lg px-3 py-2 text-left" style={{ background: 'rgba(255,255,255,0.06)' }}>
                     <p className="text-2xs font-semibold mb-0.5" style={{ color: 'var(--text2)' }}>Faixa de pagamento</p>
                     <p className="text-xs font-mono" style={{ color: 'var(--text)' }}>
-                      {formatBRL(precoCalc.preco_cliente)} — {formatBRL(Math.ceil(precoCalc.preco_cliente * 1.15))}
+                      {formatBRL(Math.floor(precoCalc.preco_cliente * 0.85))} — {formatBRL(precoCalc.preco_cliente)}
                     </p>
                     <p className="text-2xs mt-1" style={{ color: 'var(--text3)' }}>
-                      O profissional pode aplicar acréscimo de até +15%. Você será notificado antes de pagar.
+                      O profissional pode oferecer desconto de até 15%. Você será notificado do valor final antes de pagar.
                     </p>
                   </div>
                 </div>

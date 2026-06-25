@@ -6,6 +6,13 @@ export interface Secao {
   itens: string[]
 }
 
+export interface Template {
+  nome: string
+  descricao: string
+  tipo: 'checklist' | 'modelo' | 'referencia'
+  conteudo?: string  // conteúdo real para exibição e cópia (opcional para módulos sem conteúdo ainda)
+}
+
 export interface ModuloConteudoRico {
   // Teoria base (já existia)
   objetivos: string[]
@@ -17,7 +24,7 @@ export interface ModuloConteudoRico {
   pode_nao_pode: { pode: string[]; nao_pode: string[] }
   autoconfianca: { titulo: string; dicas: string[] }[]
   erros_comuns: { erro: string; por_que_acontece: string; como_evitar: string }[]
-  templates: { nome: string; descricao: string; tipo: 'checklist' | 'modelo' | 'referencia' }[]
+  templates: Template[]
 }
 
 export const MODULO_RICO: Record<string, ModuloConteudoRico> = {
@@ -152,9 +159,108 @@ export const MODULO_RICO: Record<string, ModuloConteudoRico> = {
       },
     ],
     templates: [
-      { nome: 'Checklist pré-visita', descricao: 'O que levar e verificar antes de ir ao imóvel', tipo: 'checklist' },
-      { nome: 'Roteiro de comunicação com cliente', descricao: 'Mensagens padrão para cada etapa da demanda', tipo: 'modelo' },
-      { nome: 'Guia de fotos obrigatórias por SVC', descricao: 'Referência visual do que fotografar em cada serviço', tipo: 'referencia' },
+      {
+        nome: 'Checklist pré-visita',
+        descricao: 'O que levar e verificar antes de ir ao imóvel',
+        tipo: 'checklist',
+        conteudo: `CHECKLIST PRÉ-VISITA — SUEDFLOW
+
+ANTES DE SAIR:
+☐ Confirmar data, hora e acesso ao imóvel com o cliente (via chat da demanda)
+☐ Verificar endereço no Google Maps — calcular deslocamento
+☐ Verificar prazo de entrega (SLA) e calcular cronograma de execução
+☐ Emitir ou verificar ART/RRT no CREA/CAU (deve estar ativa antes do início)
+☐ Carregar dispositivo fotográfico com bateria completa
+☐ Verificar espaço de armazenamento para fotos
+
+O QUE LEVAR:
+☐ Capacete (para inspeções prediais e obras)
+☐ Lanterna (subsolo, áticos, locais sem iluminação)
+☐ Trena a laser ou física
+☐ Prancheta e bloco de anotações
+☐ Régua ou escala para fotos de patologias
+☐ EPI básico (sapato fechado, colete se necessário)
+
+AO CHEGAR NO IMÓVEL:
+☐ Fazer CHECK-IN GPS na plataforma IMEDIATAMENTE (antes de qualquer foto)
+☐ Registrar ART_ATIVA no marco de execução com número do protocolo
+☐ Fotografar fachada frontal antes de entrar — prova do estado pré-execução
+☐ Confirmar com o cliente/acompanhante o escopo do serviço
+
+AO SAIR:
+☐ Registrar marco CHECK_OUT com foto do estado pós-execução
+☐ Confirmar no chat que a visita foi realizada e que o laudo está em elaboração`,
+      },
+      {
+        nome: 'Roteiro de comunicação com cliente',
+        descricao: 'Mensagens padrão para cada etapa da demanda',
+        tipo: 'modelo',
+        conteudo: `ROTEIRO DE COMUNICAÇÃO — SUEDFLOW
+(Use sempre o chat da demanda, nunca WhatsApp pessoal)
+
+── AO ACEITAR A DEMANDA ──
+"Olá, [Nome do Cliente]. Sou [Seu Nome], engenheiro(a)/arquiteto(a) responsável pela sua demanda [número OS]. Podemos confirmar o acesso ao imóvel? Sugiro [data] às [hora]. Por favor confirme pelo chat."
+
+── AO CONFIRMAR A VISITA ──
+"Confirmo presença em [endereço] no dia [data] às [hora]. Em caso de impedimento no acesso, por favor avise com antecedência pelo chat para reagendarmos sem impacto no prazo."
+
+── SE HOUVER IMPEDIMENTO TÉCNICO ──
+"Identifiquei [descreva a situação: ex. acesso negado, necessidade de ensaio adicional] que impacta o prazo de entrega. Solicito prorrogação de [X] dias para garantir a qualidade da entrega. Aguardo confirmação para prosseguir."
+
+── AO ENVIAR O ENTREGÁVEL ──
+"O [laudo/projeto/relatório] referente à demanda [número OS] está disponível para sua revisão. O documento contempla [mencione os principais pontos]. Qualquer dúvida técnica estou à disposição pelo chat."
+
+── SE O CLIENTE QUESTIONAR O LAUDO ──
+"Agradeço sua leitura atenta. O ponto que você mencionou foi avaliado conforme [cite a norma: ex. ABNT NBR 16.747]. Se desejar uma explicação mais detalhada de algum item específico, indique qual e eu esclarecerei tecnicamente."
+
+── NUNCA USE ──
+✗ "Qualquer coisa me chama no WhatsApp"
+✗ "Pode pagar diretamente para mim"
+✗ "Deixa eu ver se consigo um preço melhor fora da plataforma"`,
+      },
+      {
+        nome: 'Guia de fotos obrigatórias por SVC',
+        descricao: 'Referência do que fotografar em cada tipo de serviço',
+        tipo: 'referencia',
+        conteudo: `GUIA DE FOTOS — SUEDFLOW
+
+OBRIGATÓRIO PARA TODOS OS SVCs:
+☐ Fachada frontal completa (imóvel inteiro visível)
+☐ Fachada lateral (mínimo um lado)
+☐ Selfie de check-in com GPS ao chegar (registro na plataforma)
+☐ Foto geral de saída (estado pós-execução)
+
+POR AMBIENTE VISTORIADO:
+☐ Foto panorâmica da porta (contexto geral do ambiente)
+☐ Closeup de qualquer anomalia ou item relevante identificado
+☐ Foto com referência de escala (régua, pessoa, objeto conhecido) para patologias
+
+SVC001 — VISTORIA CAUTELAR:
+☐ Mínimo 1 foto por cômodo (panorâmica)
+☐ 2 fotos por anomalia (geral + closeup)
+☐ Foto de cada instalação visível (quadro elétrico, registros, calhas)
+☐ Fotos do entorno imediato (lote vizinho se relevante)
+
+SVC002 — AVALIAÇÃO MERCADOLÓGICA:
+☐ Mínimo 5 fotos do imóvel avaliando (frente, fundos, interior, detalhe estrutural, detalhe acabamento)
+☐ Fotos devem mostrar estado de conservação e padrão construtivo
+
+SVC003 — INSPEÇÃO PREDIAL:
+☐ Cobertura/telhado completa
+☐ Cada sistema predial (fachada, estrutura, hidráulico, elétrico, SPDA)
+☐ Tabela numérica: foto geral + foto closeup por número de referência
+
+SVC005/006/007 — PROJETOS:
+☐ Estado atual do imóvel (para reformas e ampliações)
+☐ Pontos de instalação existentes (quadro elétrico, pontos hidráulicos)
+☐ Referência de medidas no local
+
+DICAS DE QUALIDADE:
+• Use luz natural quando possível — evite contra-luz
+• Mantenha o horizonte nivelado nas fotos panorâmicas
+• Nomeie os arquivos sequencialmente: 001_sala.jpg, 002_cozinha.jpg
+• Sempre ative o GPS/metadados EXIF do dispositivo antes de fotografar`,
+      },
     ],
   },
 
@@ -280,8 +386,59 @@ export const MODULO_RICO: Record<string, ModuloConteudoRico> = {
       },
     ],
     templates: [
+      {
+        nome: 'Estrutura do PTAM SUEDFLOW',
+        descricao: 'Seções obrigatórias e ordem de apresentação',
+        tipo: 'checklist',
+        conteudo: `ESTRUTURA DO PTAM — SUEDFLOW (SVC002)
+
+1. CAPA
+   • Título: "Parecer Técnico de Avaliação Mercadológica"
+   • Endereço do imóvel avaliando
+   • Nome e CREA/CAU do avaliador
+   • Data-base da avaliação
+   • Número da ART
+
+2. OBJETIVO E FINALIDADE
+   • Para qual finalidade o laudo foi solicitado (financiamento, partilha, venda, etc.)
+   • Identificação do solicitante
+
+3. IDENTIFICAÇÃO DO IMÓVEL
+   • Endereço completo (logradouro, número, bairro, cidade, CEP)
+   • Tipo (residencial/comercial/industrial)
+   • Área construída / área do terreno
+   • Padrão construtivo
+   • Estado de conservação
+   • Ano aproximado de construção
+
+4. METODOLOGIA (NBR 14653)
+   • Método: Comparativo Direto de Dados de Mercado
+   • Grau de Fundamentação: [I / II / III] — SUEDFLOW exige mínimo Grau II
+   • Número de amostras utilizadas: [mínimo 5 para Grau II]
+
+5. PESQUISA DE MERCADO
+   Tabela com colunas: Nº | Endereço | Área (m²) | Valor Total (R$) | Valor Unitário (R$/m²) | Fonte | Data
+
+6. HOMOGENEIZAÇÃO
+   Tabela: Nº | Fator Localização | Fator Área | Fator Padrão | Fator Conservação | Valor Homogeneizado
+
+7. TRATAMENTO ESTATÍSTICO
+   • Valor médio das amostras homogeneizadas
+   • Desvio padrão
+   • Campo de arbítrio: ±15% (justificado se utilizado)
+
+8. RESULTADO E CONCLUSÃO
+   • Valor unitário conclusivo (R$/m²)
+   • Valor total conclusivo (R$) — por extenso
+   • Data-base: [data da vistoria]
+
+9. REGISTRO FOTOGRÁFICO
+   • Mínimo 5 fotos do imóvel avaliando
+
+10. ASSINATURA
+    • Nome completo, CREA/CAU, número da ART`
+      },
       { nome: 'Planilha de homogeneização (modelo)', descricao: 'Tabela de amostras com fatores e cálculo de valor médio', tipo: 'modelo' },
-      { nome: 'Estrutura do PTAM SUEDFLOW', descricao: 'Seções obrigatórias e ordem de apresentação', tipo: 'checklist' },
       { nome: 'Fatores de homogeneização NBR 14653', descricao: 'Referência rápida de fatores mais usados', tipo: 'referencia' },
     ],
   },
@@ -408,9 +565,76 @@ export const MODULO_RICO: Record<string, ModuloConteudoRico> = {
       },
     ],
     templates: [
-      { nome: 'Tabela-resumo de anomalias', descricao: 'Formato padrão para o relatório de inspeção predial', tipo: 'modelo' },
+      {
+        nome: 'Tabela-resumo de anomalias',
+        descricao: 'Formato padrão para o relatório de inspeção predial',
+        tipo: 'modelo',
+        conteudo: `TABELA-RESUMO DE ANOMALIAS — SVC003 (NBR 16.747)
+
+Nº  | Sistema       | Localização          | Descrição da Anomalia              | Grau de Risco | Recomendação                        | Prazo
+001 | Cobertura     | Telhado ala Norte    | Telhas cerâmicas trincadas (3 uds) | MODERADO      | Substituição das telhas danificadas | 30 dias
+002 | Fachada       | Parede frontal       | Fissuras diagonais na alvenaria    | MODERADO      | Selamento e investigação de causa   | 90 dias
+003 | Estrutura     | Pilar P-3 térreo     | Exposição de armadura com corrosão | CRÍTICO       | Reforço estrutural imediato         | IMEDIATO
+004 | Instalações   | Quadro elétrico      | Disjuntores sem tampa de proteção  | MODERADO      | Instalação de tampa adequada        | 30 dias
+005 | Revestimento  | Banheiro social      | Cerâmica solta (≈ 0,5 m²)         | MÍNIMO        | Reposição do revestimento           | Anual
+
+LEGENDA DE GRAU DE RISCO:
+• CRÍTICO: risco iminente à segurança — intervenção imediata obrigatória
+• MODERADO: risco à segurança/saúde — prazo máximo 30-90 dias
+• MÍNIMO: problema estético/funcional — manutenção planejada
+
+CRONOGRAMA DE INTERVENÇÃO:
+• IMEDIATO: anomalias críticas
+• ATÉ 30 DIAS: anomalias moderadas urgentes
+• ATÉ 90 DIAS: anomalias moderadas não urgentes
+• MANUTENÇÃO ANUAL: anomalias mínimas`
+      },
+      {
+        nome: 'Checklist de sistemas a inspecionar',
+        descricao: 'Lista completa de itens por sistema predial',
+        tipo: 'checklist',
+        conteudo: `CHECKLIST DE INSPEÇÃO PREDIAL — SVC003
+
+COBERTURA:
+☐ Telhado (telhas, cumeeiras, calhas, rufos)
+☐ Impermeabilização da laje (quando aplicável)
+☐ Ralos e condutores pluviais
+☐ SPDA (para-raios) — base, hastes, cabos de descida, aterramento
+
+FACHADA:
+☐ Revestimento externo (azulejo, reboco, granito, textura)
+☐ Fissuras e trincas (mapeada, diagonal, horizontal, vertical)
+☐ Manchas de eflorescência, bolor ou umidade
+☐ Esquadrias (peitoris, vergas, pingadeiras)
+☐ Juntas de dilatação
+
+ESTRUTURA:
+☐ Pilares (fissuras, exposição de ferragem, carbonatação)
+☐ Vigas (flechas, fissuras em diagonal/transversal)
+☐ Lajes (manchas, flechas, peças soltas)
+☐ Fundações (recalques, umidade ascendente)
+
+INSTALAÇÕES HIDRÁULICAS:
+☐ Caixas d'água (limpeza, tampas, estado interno)
+☐ Barrilete e cavalete
+☐ Pontos de vazamento visíveis
+☐ Ralos e esgoto (odores, refluxo)
+
+INSTALAÇÕES ELÉTRICAS:
+☐ Quadro geral (disjuntores, aterramento, organização)
+☐ Luminárias de emergência (funcionamento)
+☐ Tomadas e interruptores em área comum
+☐ PPCI: extintores (prazo), mangueiras, sinalização
+
+ÁREAS COMUNS:
+☐ Piso (desgaste, trincas, juntas)
+☐ Escadas e corrimão
+☐ Guarita e portaria
+☐ Subsolo/garagem (umidade, ventilação, piso)
+☐ Playground e área de lazer
+☐ Piscina (impermeabilização, equipamentos)`
+      },
       { nome: 'Cronograma de intervenção', descricao: 'Modelo de cronograma: imediato / 30d / 90d / anual', tipo: 'modelo' },
-      { nome: 'Checklist de sistemas a inspecionar', descricao: 'Lista completa de itens por sistema predial', tipo: 'checklist' },
     ],
   },
 

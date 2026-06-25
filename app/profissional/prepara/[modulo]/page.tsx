@@ -6,7 +6,7 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
 import { profissional as profissionalApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import { CheckCircle2, ArrowLeft, BookOpen, ClipboardCheck, ListChecks, Footprints, ShieldCheck, AlertCircle, FileDown } from 'lucide-react'
+import { CheckCircle2, ArrowLeft, BookOpen, ClipboardCheck, ListChecks, Footprints, ShieldCheck, AlertCircle, FileDown, Copy, ChevronDown, ChevronUp } from 'lucide-react'
 import Link from 'next/link'
 import { MODULO_RICO } from '@/lib/moduloContent'
 
@@ -296,6 +296,16 @@ export default function SuedPreparaModuloPage() {
 
   const [jaConcluido, setJaConcluido] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [templateAberto, setTemplateAberto] = useState<number | null>(null)
+  const [copiado, setCopiado] = useState<number | null>(null)
+
+  const copiarTemplate = async (conteudo: string, idx: number) => {
+    try {
+      await navigator.clipboard.writeText(conteudo)
+      setCopiado(idx)
+      setTimeout(() => setCopiado(null), 2000)
+    } catch { /* fallback silencioso */ }
+  }
 
   useEffect(() => {
     if (authLoading) return
@@ -487,24 +497,54 @@ export default function SuedPreparaModuloPage() {
             </div>
             <div className="space-y-2">
               {rico.templates.map((t, i) => (
-                <div key={i} className="flex items-start gap-3 rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <span className="text-sm shrink-0">
-                    {t.tipo === 'checklist' ? '☑' : t.tipo === 'modelo' ? '📄' : '📖'}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{t.nome}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>{t.descricao}</p>
-                  </div>
-                  <span className="shrink-0 ml-auto text-2xs px-2 py-0.5 rounded-full font-semibold uppercase"
-                    style={{ background: 'rgba(232,103,26,0.12)', color: 'var(--orange)' }}>
-                    {t.tipo}
-                  </span>
+                <div key={i} className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                  {/* Header clicável */}
+                  <button
+                    onClick={() => setTemplateAberto(templateAberto === i ? null : i)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-white/5"
+                    style={{ background: 'rgba(255,255,255,0.04)' }}
+                  >
+                    <span className="text-sm shrink-0">
+                      {t.tipo === 'checklist' ? '☑' : t.tipo === 'modelo' ? '📄' : '📖'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white">{t.nome}</p>
+                      <p className="text-xs" style={{ color: 'var(--text3)' }}>{t.descricao}</p>
+                    </div>
+                    <span className="shrink-0 text-2xs px-2 py-0.5 rounded-full font-semibold uppercase"
+                      style={{ background: 'rgba(232,103,26,0.12)', color: 'var(--orange)' }}>
+                      {t.tipo}
+                    </span>
+                    {templateAberto === i
+                      ? <ChevronUp size={14} style={{ color: 'var(--text3)', flexShrink: 0 }} />
+                      : <ChevronDown size={14} style={{ color: 'var(--text3)', flexShrink: 0 }} />
+                    }
+                  </button>
+                  {/* Conteúdo expandido */}
+                  {templateAberto === i && t.conteudo && (
+                    <div style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                      <pre className="text-xs leading-relaxed p-4 whitespace-pre-wrap font-mono overflow-x-auto"
+                        style={{ color: 'var(--text2)', maxHeight: 320 }}>
+                        {t.conteudo}
+                      </pre>
+                      <div className="px-3 pb-3">
+                        <button
+                          onClick={() => copiarTemplate(t.conteudo ?? '', i)}
+                          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
+                          style={{
+                            background: copiado === i ? 'rgba(0,214,143,0.15)' : 'rgba(232,103,26,0.12)',
+                            color:      copiado === i ? 'var(--green)' : 'var(--orange)',
+                          }}
+                        >
+                          <Copy size={12} />
+                          {copiado === i ? 'Copiado!' : 'Copiar template'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
-            <p className="text-xs mt-3" style={{ color: 'var(--text3)' }}>
-              Templates completos estarão disponíveis para download ao concluir o módulo.
-            </p>
           </div>
         )}
 

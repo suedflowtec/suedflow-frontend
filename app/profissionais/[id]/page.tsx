@@ -64,9 +64,26 @@ export default function PerfilPublicoPage() {
               >
                 {(data.nome || 'P').charAt(0)}
               </div>
-              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>{data.nome}</h2>
-              <p className="text-sm font-mono" style={{ color: 'var(--text3)' }}>
-                {data.conselho}-{data.uf_conselho || '—'} {data.numero_conselho || '—'}
+              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>
+                {data.nome || 'Nome não informado'}
+              </h2>
+              {data.nome_incompleto && (
+                <p className="text-xs" style={{ color: 'var(--gold)' }}>
+                  ⚠ Profissional ainda não completou o nome no perfil
+                </p>
+              )}
+              {/* Número do conselho — cliente pode verificar no CREA/CAU */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <p className="text-sm font-mono font-semibold" style={{ color: 'var(--text)' }}>
+                  {data.conselho}-{data.uf_conselho || '—'} {data.numero_conselho || '—'}
+                </p>
+              </div>
+              <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                Verifique a inscrição em{' '}
+                {data.conselho === 'CAU'
+                  ? <a href="https://transparencia.caubr.gov.br" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--orange)' }}>transparencia.caubr.gov.br ↗</a>
+                  : <a href="https://www.creanet.crea.br" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--orange)' }}>creanet.crea.br ↗</a>
+                }
               </p>
               <div className="flex justify-center gap-2 flex-wrap">
                 <Badge variant={NIVEL_VARIANT[data.nivel] || 'glass'}>{data.nivel}</Badge>
