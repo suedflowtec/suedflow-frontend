@@ -6,6 +6,7 @@ import { formatBRL } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { profissional, saques } from '@/lib/api'
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function ProfissionalFinanceiro() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function ProfissionalFinanceiro() {
   const [loading, setLoading] = useState(false)
   const [financeiro, setFinanceiro] = useState<Awaited<ReturnType<typeof profissional.financeiro>> | null>(null)
   const [carregando, setCarregando] = useState(true)
+  const [saldoVisivel, setSaldoVisivel] = useState(false)
 
   const carregarFinanceiro = () => {
     profissional.financeiro()
@@ -64,12 +66,23 @@ export default function ProfissionalFinanceiro() {
 
         {/* Saldo */}
         <div className="card-accent">
-          <p className="section-label">Saldo disponível</p>
+          <div className="flex items-center justify-between mb-1">
+            <p className="section-label">Saldo disponível</p>
+            <button
+              onClick={() => setSaldoVisivel(v => !v)}
+              className="flex items-center gap-1 text-xs rounded-lg px-2 py-1 transition-opacity hover:opacity-80"
+              style={{ background: 'rgba(255,255,255,0.07)', color: 'var(--text3)' }}
+              title={saldoVisivel ? 'Ocultar saldo' : 'Mostrar saldo'}
+            >
+              {saldoVisivel ? <EyeOff size={14} /> : <Eye size={14} />}
+              <span>{saldoVisivel ? 'Ocultar' : 'Mostrar'}</span>
+            </button>
+          </div>
           <p className="text-4xl font-black font-mono" style={{ color: 'var(--green)' }}>
-            {carregando ? '—' : formatBRL(saldo)}
+            {carregando ? '—' : saldoVisivel ? formatBRL(saldo) : '••••••'}
           </p>
           <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
-            Saldo em custódia: {formatBRL(financeiro?.em_custodia || 0)} · liberado após confirmação do cliente
+            Saldo em custódia: {saldoVisivel ? formatBRL(financeiro?.em_custodia || 0) : '••••'} · liberado após confirmação do cliente
           </p>
         </div>
 

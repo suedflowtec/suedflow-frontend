@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { tokenStorage, userStorage } from '@/lib/api'
+import { tokenStorage, userStorage, svc as svcApi } from '@/lib/api'
 import { Logo } from '@/components/ui/Logo'
 import { SueChatPublica } from '@/components/ui/SueChatPublica'
 import './landing.css'
@@ -94,6 +94,7 @@ export default function LandingPage() {
   const [audience, setAudience] = useState<Audience>('cliente')
   const [svcFilter, setSvcFilter] = useState<SvcFilter>('all')
   const [openSue, setOpenSue] = useState(false)
+  const [depoimentos, setDepoimentos] = useState<any[]>([])
   const revealRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -129,6 +130,11 @@ export default function LandingPage() {
     const cleanup = setupReveal()
     return cleanup
   }, [setupReveal, audience])
+
+  // Buscar depoimentos reais da API ao montar o componente
+  useEffect(() => {
+    svcApi.depoimentos().then(r => { if (r.depoimentos?.length) setDepoimentos(r.depoimentos) }).catch(() => {})
+  }, [])
 
   const c = COPY[audience]
   const visibleSvcs = SVCS.filter(s => s.cat.includes(svcFilter))
@@ -234,6 +240,41 @@ export default function LandingPage() {
                 SQP 842 · Pleno
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SHOWCASE — imagem em tamanho real ═══ */}
+      <section className="lp-showcase">
+        <div className="lp-wrap">
+          <div className="lp-showcase-head reveal">
+            <div className="lp-kicker">A plataforma em ação</div>
+            <h2>Tudo o que você precisa, em uma tela.</h2>
+            <p style={{ color: 'var(--lp-muted)', maxWidth: 480, margin: '0 auto' }}>
+              Da criação da demanda à confirmação do pagamento — acompanhe em tempo real, no computador ou celular.
+            </p>
+          </div>
+          <div className="lp-showcase-frame reveal">
+            <div className="lp-showcase-glow" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/marketing-hero.png"
+              alt="Interface SUEDFLOW — tela de demanda ativa com check-in, marcos e chat"
+              className="lp-showcase-img"
+            />
+            {/* Callouts flutuantes apontando para features */}
+            <div className="lp-sc-callout lp-sc-c1">
+              <span className="lp-sc-dot" />
+              <span className="lp-sc-label">Score SQP em tempo real</span>
+            </div>
+            <div className="lp-sc-callout lp-sc-c2">
+              <span className="lp-sc-dot" />
+              <span className="lp-sc-label">Pagamento em escrow</span>
+            </div>
+            <div className="lp-sc-callout lp-sc-c3">
+              <span className="lp-sc-dot" />
+              <span className="lp-sc-label">Chat com o profissional</span>
+            </div>
           </div>
         </div>
       </section>
@@ -391,7 +432,7 @@ export default function LandingPage() {
                 <div className="lp-trust-icon t3">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                 </div>
-                <h3>Diagnóstico assistido por IA</h3>
+                <h3>Diagnóstico assistido pela SUE</h3>
                 <p>A SUE entende sua necessidade em linguagem natural e direciona para o serviço técnico correto antes do orçamento.</p>
               </div>
             </div>
@@ -429,60 +470,86 @@ export default function LandingPage() {
           <div className="lp-section-head reveal">
             <div className="lp-kicker">Quem já usou</div>
             <h2>{c.testiTitle}</h2>
+            {depoimentos.length > 0 && (
+              <p style={{ color: 'var(--lp-muted)', fontSize: '0.85rem', marginTop: 4 }}>
+                Avaliações reais de usuários verificados · atualizadas automaticamente após cada demanda concluída
+              </p>
+            )}
           </div>
 
-          {audience === 'cliente' ? (
+          {/* Depoimentos REAIS da API — substituem os simulados quando disponíveis */}
+          {depoimentos.length > 0 ? (
+            <div className="lp-testi-grid reveal-stagger">
+              {depoimentos.slice(0, 3).map((d, i) => {
+                const cores = [
+                  'linear-gradient(135deg,#E8671A,#FF8A3D)',
+                  'linear-gradient(135deg,#2C6FB0,#5A9BD8)',
+                  'linear-gradient(135deg,#059669,#34D399)',
+                  'linear-gradient(135deg,#7C3AED,#A78BFA)',
+                  'linear-gradient(135deg,#0E7490,#22D3EE)',
+                  'linear-gradient(135deg,#1C4663,#0E2A3D)',
+                ]
+                return (
+                  <div key={d.id} className="lp-testi-card">
+                    <div className="lp-testi-stars">{'★'.repeat(Math.round(d.nota))}{'☆'.repeat(5 - Math.round(d.nota))}</div>
+                    <p>"{d.comentario}"</p>
+                    <div className="lp-testi-who">
+                      <div className="lp-avatar" style={{ background: cores[i % cores.length] }}>{d.iniciais}</div>
+                      <div>
+                        <div className="name">{d.nome_cliente}</div>
+                        <div className="role">{d.svc_nome}{d.cidade ? ` · ${d.cidade}/${d.estado}` : ''}</div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : audience === 'cliente' ? (
             <div className="lp-testi-grid reveal-stagger">
               <div className="lp-testi-card">
                 <div className="lp-testi-stars">★★★★★</div>
-                <p>"Pedi uma inspeção predial pelo app e em dois dias já tinha o laudo com ART. O pagamento só saiu da minha conta depois que aprovei o relatório — exatamente como deveria ser."</p>
+                <p>"Pedi uma inspeção predial e em dois dias já tinha o laudo com ART. O pagamento só saiu da minha conta depois que aprovei o relatório — exatamente como deveria ser."</p>
                 <div className="lp-testi-who">
                   <div className="lp-avatar" style={{ background: 'linear-gradient(135deg,#E8671A,#FF8A3D)' }}>MC</div>
-                  <div><div className="name">Marina Castro</div><div className="role">Síndica · Edifício Atlântico, João Pessoa</div></div>
+                  <div><div className="name">Marina C.</div><div className="role">Síndica · João Pessoa/PB</div></div>
                 </div>
               </div>
               <div className="lp-testi-card">
                 <div className="lp-testi-stars">★★★★★</div>
-                <p>"Precisava de um projeto elétrico rápido para regularizar um galpão. A SUE sugeriu o serviço certo, o orçamento veio na hora e em 5 dias recebi o projeto assinado com ART."</p>
+                <p>"A SUE sugeriu o serviço certo, o orçamento veio na hora e em 5 dias recebi o projeto assinado com ART. Zero complicação."</p>
                 <div className="lp-testi-who">
                   <div className="lp-avatar" style={{ background: 'linear-gradient(135deg,#2C6FB0,#5A9BD8)' }}>JL</div>
-                  <div><div className="name">João Lacerda</div><div className="role">Proprietário · Galpão Industrial, Campina Grande</div></div>
+                  <div><div className="name">João L.</div><div className="role">Proprietário · Campina Grande/PB</div></div>
                 </div>
               </div>
-              <div className="lp-testi-card">
-                <div className="lp-testi-stars">★★★★★</div>
-                <p>"Meu banco exigia um laudo estrutural para liberar o financiamento. No SUEDFLOW encontrei o engenheiro, paguei com PIX e em 3 dias o laudo estava pronto para o banco."</p>
-                <div className="lp-testi-who">
-                  <div className="lp-avatar" style={{ background: 'linear-gradient(135deg,#0E7490,#22D3EE)' }}>PS</div>
-                  <div><div className="name">Paula Souza</div><div className="role">Compradora de imóvel · Recife, PE</div></div>
-                </div>
+              <div className="lp-testi-card lp-testi-placeholder">
+                <p style={{ color: 'var(--lp-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '16px 0' }}>
+                  Esta seção exibirá avaliações reais dos usuários assim que as primeiras demandas forem concluídas.
+                </p>
               </div>
             </div>
           ) : (
             <div className="lp-testi-grid reveal-stagger">
               <div className="lp-testi-card">
                 <div className="lp-testi-stars">★★★★★</div>
-                <p>"Como engenheiro recém-formado, comecei no nível Candidato. Em 4 meses cheguei ao Pleno e a comissão caiu de 22% para 19%. Cada laudo entregue no prazo conta no Score."</p>
+                <p>"Comecei no nível Candidato. Em 4 meses cheguei ao Pleno e a comissão caiu de 22% para 19%. Cada laudo entregue no prazo conta no Score."</p>
                 <div className="lp-testi-who">
                   <div className="lp-avatar" style={{ background: 'linear-gradient(135deg,#1C4663,#0E2A3D)' }}>RC</div>
-                  <div><div className="name">Rafael Castro</div><div className="role">Eng. Civil · CREA-PB 28471</div></div>
+                  <div><div className="name">Rafael C.</div><div className="role">Eng. Civil · CREA-PB</div></div>
                 </div>
               </div>
               <div className="lp-testi-card">
                 <div className="lp-testi-stars">★★★★★</div>
-                <p>"Recebo demandas de projeto com escopo já definido e prazo real. Sem negociação de preço com cliente, sem risco de calote — o dinheiro cai no meu saldo assim que o laudo é aprovado."</p>
+                <p>"Sem negociação de preço com cliente, sem risco de calote — o dinheiro cai no meu saldo assim que o laudo é aprovado."</p>
                 <div className="lp-testi-who">
                   <div className="lp-avatar" style={{ background: 'linear-gradient(135deg,#7C3AED,#A78BFA)' }}>AL</div>
-                  <div><div className="name">Ana Lima</div><div className="role">Arquiteta · CAU-PB A156890</div></div>
+                  <div><div className="name">Ana L.</div><div className="role">Arquiteta · CAU-PB</div></div>
                 </div>
               </div>
-              <div className="lp-testi-card">
-                <div className="lp-testi-stars">★★★★★</div>
-                <p>"Cadastrei meu CREA e em 3 dias já havia aceitado minha primeira demanda de projeto elétrico. O checklist de QA da SUE me ajudou a entregar dentro do padrão logo na estreia."</p>
-                <div className="lp-testi-who">
-                  <div className="lp-avatar" style={{ background: 'linear-gradient(135deg,#059669,#34D399)' }}>MB</div>
-                  <div><div className="name">Marcos Bezerra</div><div className="role">Eng. Eletricista · CREA-PB 31205</div></div>
-                </div>
+              <div className="lp-testi-card lp-testi-placeholder">
+                <p style={{ color: 'var(--lp-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '16px 0' }}>
+                  As avaliações reais dos profissionais aparecerão aqui automaticamente após as primeiras demandas.
+                </p>
               </div>
             </div>
           )}
@@ -548,7 +615,7 @@ export default function LandingPage() {
               <h4>Para clientes</h4>
               <Link href="/auth/cadastro?tipo=CLIENTE">Solicitar serviço</Link>
               <Link href="/auth/login">Acompanhar demanda</Link>
-              <a href="#">Central de ajuda</a>
+              <a href="mailto:suporte@suedflow.com.br">Central de ajuda</a>
             </div>
             <div className="lp-footer-col">
               <h4>Para profissionais</h4>
@@ -557,16 +624,16 @@ export default function LandingPage() {
               <a href="#confianca" onClick={() => setAudience('profissional')}>Níveis e comissões</a>
             </div>
             <div className="lp-footer-col">
-              <h4>Legal</h4>
-              <a href="#">Termos de uso</a>
-              <a href="#">Privacidade (LGPD)</a>
-              <a href="#">ART/RRT &amp; conselhos</a>
-              <a href="#">Contato</a>
+              <h4>Legal &amp; Contato</h4>
+              <Link href="/termos">Termos de uso</Link>
+              <Link href="/privacidade">Privacidade (LGPD)</Link>
+              <a href="mailto:suporte@suedflow.com.br">suporte@suedflow.com.br</a>
+              <a href="mailto:contato@suedflow.com.br">Fale conosco</a>
             </div>
           </div>
           <div className="lp-footer-bottom">
-            <span>© 2026 SUEDFLOW Tecnologia Ltda. · João Pessoa, PB</span>
-            <span>Fase de validação · Pagamentos via Pagar.me</span>
+            <span>© 2026 SUEDFLOW TECNOLOGIA INOVA SIMPLES (I.S.) · CNPJ 67.671.499/0001-30 · João Pessoa, PB</span>
+            <span>Fase de validação · Pagamentos via ASAAS</span>
           </div>
         </div>
       </footer>

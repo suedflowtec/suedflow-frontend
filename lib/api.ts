@@ -72,6 +72,7 @@ export const auth = {
 export const svc = {
   listar: () => request<any[]>('/api/servicos', { auth: false }),
   buscar: (codigo: string) => request<any>(`/api/servicos/${codigo}`, { auth: false }),
+  depoimentos: () => request<{ depoimentos: any[]; total: number }>('/api/servicos/depoimentos/recentes', { auth: false }),
 }
 
 export const sue = {

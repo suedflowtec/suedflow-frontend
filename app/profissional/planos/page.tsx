@@ -3,8 +3,8 @@ import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { useEffect } from 'react'
-import { Check, X, Zap, Star, Shield } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Check, X, Zap, Star, Shield, Copy, QrCode } from 'lucide-react'
 
 type Plano = 'GRATIS' | 'PRO' | 'ELITE'
 
@@ -111,16 +111,71 @@ export default function PlanosPage() {
   const planoAtual: Plano = (prof.plano as Plano) || 'GRATIS'
   const nivelAtual: string = prof.nivel || 'CANDIDATO'
 
+  const [planoEscolhido, setPlanoEscolhido] = useState<Plano | null>(null)
+
+  const PRECO_PLANO: Record<string, number> = { PRO: 79, ELITE: 149 }
+
   const handleAssinar = (plano: Plano) => {
     if (plano === planoAtual) return
     if (plano === 'GRATIS') {
-      toast('Para fazer downgrade para Grátis, entre em contato com o suporte.', 'error')
+      toast('Para fazer downgrade para Grátis, entre em contato com suporte@suedflow.com.br', 'info')
       return
     }
-    toast('Assinatura em implementação — contate suporte@suedflow.com.br', 'error')
+    setPlanoEscolhido(plano)
+  }
+
+  // ── Modal de assinatura provisória via PIX ──────────────────
+  const PIX_KEY = '67671499000130'  // CNPJ como chave PIX da SUEDFLOW
+  const [copiado, setCopiado] = useState(false)
+  const copiarPix = async () => {
+    try { await navigator.clipboard.writeText(PIX_KEY); setCopiado(true); setTimeout(() => setCopiado(false), 2500) } catch {}
   }
 
   return (
+    <>
+    {/* Modal de assinatura PIX */}
+    {planoEscolhido && (
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+        style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
+        onClick={() => setPlanoEscolhido(null)}>
+        <div className="w-full max-w-md rounded-2xl p-6 space-y-4"
+          style={{ background: 'var(--navy2)', border: '1px solid rgba(232,103,26,0.3)' }}
+          onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-white">Assinar Plano {planoEscolhido}</h3>
+            <button onClick={() => setPlanoEscolhido(null)} style={{ color: 'var(--text3)' }}>✕</button>
+          </div>
+          <p className="text-sm" style={{ color: 'var(--text2)' }}>
+            Valor mensal: <strong className="text-white font-mono">R$ {PRECO_PLANO[planoEscolhido]},00</strong>
+          </p>
+          <div className="rounded-xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text3)' }}>Pague via PIX</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-sm font-mono text-white bg-transparent">{PIX_KEY}</code>
+              <button onClick={copiarPix} className="btn btn-sm flex items-center gap-1"
+                style={{ background: copiado ? 'rgba(0,214,143,0.15)' : 'rgba(232,103,26,0.15)', color: copiado ? 'var(--green)' : 'var(--orange)' }}>
+                <Copy size={12} />{copiado ? 'Copiado!' : 'Copiar'}
+              </button>
+            </div>
+            <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+              Chave PIX: CNPJ da SUEDFLOW TECNOLOGIA INOVA SIMPLES (I.S.)
+            </p>
+          </div>
+          <div className="rounded-xl p-3 text-xs space-y-1" style={{ background: 'rgba(232,103,26,0.08)', color: 'var(--text2)' }}>
+            <p>1. Faça o PIX de <strong>R$ {PRECO_PLANO[planoEscolhido]},00</strong> para a chave acima</p>
+            <p>2. Envie o comprovante para <strong>suporte@suedflow.com.br</strong> com o assunto "Plano {planoEscolhido}"</p>
+            <p>3. Seu plano será ativado em até <strong>1 dia útil</strong></p>
+          </div>
+          <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+            Em breve: pagamento automático com ASAAS. Por enquanto, o processo é manual mas seguro.
+          </p>
+          <a href={`mailto:suporte@suedflow.com.br?subject=Plano ${planoEscolhido} - Comprovante PIX`}
+            className="btn btn-primary w-full flex items-center justify-center gap-2">
+            Enviar comprovante por e-mail →
+          </a>
+        </div>
+      </div>
+    )}
     <Shell>
       <Topbar
         title="Meu plano"
@@ -321,5 +376,6 @@ export default function PlanosPage() {
 
       </main>
     </Shell>
+    </>
   )
 }
