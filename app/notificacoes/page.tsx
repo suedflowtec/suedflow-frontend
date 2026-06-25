@@ -2,96 +2,205 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
-import { notificacoes } from '@/lib/api'
+import { notificacoes as notifApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { ClipboardList, Wallet, CheckCircle2, Settings, AlertTriangle, Bell } from 'lucide-react'
+import {
+  ShieldCheck, UserCheck, Wallet, ClipboardList, Settings,
+  Bell, AlertTriangle, CheckCircle2, Info, XCircle,
+} from 'lucide-react'
 
-function TipoIcon({ tipo }: { tipo: string }) {
-  const props = { size: 18, strokeWidth: 1.6 }
-  if (tipo === 'DEMANDA')   return <ClipboardList {...props} />
-  if (tipo === 'PAGAMENTO') return <Wallet {...props} />
-  if (tipo === 'QA')        return <CheckCircle2 {...props} />
-  if (tipo === 'SISTEMA')   return <Settings {...props} />
-  if (tipo === 'ALERTA')    return <AlertTriangle {...props} />
-  return <Bell {...props} />
+// ── Configuração visual por categoria ────────────────────────
+
+type Categoria = 'TODAS' | 'SEGURANCA' | 'CADASTRO' | 'FINANCEIRO' | 'DEMANDA' | 'SISTEMA'
+
+const CAT_CONFIG: Record<Categoria, { label: string; icon: React.FC<any>; color: string; bg: string }> = {
+  TODAS:     { label: 'Todas',     icon: Bell,          color: 'var(--text2)',   bg: 'rgba(255,255,255,0.06)' },
+  SEGURANCA: { label: 'Segurança', icon: ShieldCheck,   color: '#60a5fa',        bg: 'rgba(96,165,250,0.10)' },
+  CADASTRO:  { label: 'Cadastro',  icon: UserCheck,     color: 'var(--purple)',  bg: 'rgba(155,109,255,0.10)' },
+  FINANCEIRO:{ label: 'Financeiro',icon: Wallet,        color: 'var(--green)',   bg: 'rgba(0,214,143,0.10)' },
+  DEMANDA:   { label: 'Demandas',  icon: ClipboardList, color: 'var(--orange)',  bg: 'rgba(232,103,26,0.10)' },
+  SISTEMA:   { label: 'Sistema',   icon: Settings,      color: 'var(--text3)',   bg: 'rgba(255,255,255,0.04)' },
+}
+
+const TIPO_ICON: Record<string, React.FC<any>> = {
+  SUCESSO: CheckCircle2,
+  ALERTA:  AlertTriangle,
+  ERRO:    XCircle,
+  INFO:    Info,
+}
+
+const TIPO_COLOR: Record<string, string> = {
+  SUCESSO: 'var(--green)',
+  ALERTA:  'var(--gold)',
+  ERRO:    'var(--red)',
+  INFO:    'var(--text3)',
 }
 
 export default function NotificacoesPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
-  const [itens, setItens] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [lidas, setLidas] = useState<Set<string>>(new Set())
+
+  const [itens, setItens]         = useState<any[]>([])
+  const [naoLidas, setNaoLidas]   = useState(0)
+  const [loading, setLoading]     = useState(true)
+  const [catAtiva, setCatAtiva]   = useState<Categoria>('TODAS')
+  const [marcando, setMarcando]   = useState(false)
+
+  const carregar = (cat?: Categoria) => {
+    setLoading(true)
+    const params = cat && cat !== 'TODAS' ? { categoria: cat } : {}
+    notifApi.listar(params)
+      .then(d => { setItens(d.notificacoes || []); setNaoLidas(d.nao_lidas || 0) })
+      .catch(() => toast('Erro ao carregar notificações', 'error'))
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
     if (authLoading) return
     if (!user) { router.push('/auth/login'); return }
-    notificacoes.listar()
-      .then((d: any) => setItens(Array.isArray(d) ? d : (d?.notificacoes || [])))
-      .catch(() => toast('Erro ao carregar notificações', 'error'))
-      .finally(() => setLoading(false))
-  }, [user, authLoading, router, toast])
+    carregar(catAtiva)
+  }, [user, authLoading])
+
+  const trocarCategoria = (cat: Categoria) => {
+    setCatAtiva(cat)
+    carregar(cat)
+  }
+
+  const marcarTodasLidas = async () => {
+    setMarcando(true)
+    try {
+      await notifApi.marcarLidas()
+      setItens(prev => prev.map(n => ({ ...n, lida: true })))
+      setNaoLidas(0)
+      toast('Todas marcadas como lidas', 'success')
+    } catch { toast('Erro ao marcar como lidas', 'error') }
+    finally { setMarcando(false) }
+  }
 
   if (authLoading || !user) return null
 
-  const marcarTodasComoLidas = () => {
-    // TODO: integrar com endpoint de marcação em lote quando disponível no backend
-    setLidas(new Set(itens.map(n => n.id)))
-    toast('Notificações marcadas como lidas', 'success')
-  }
+  const CATEGORIAS: Categoria[] = ['TODAS','SEGURANCA','CADASTRO','FINANCEIRO','DEMANDA','SISTEMA']
 
   return (
     <Shell>
       <Topbar
         title="Notificações"
+        subtitle={naoLidas > 0 ? `${naoLidas} não lida${naoLidas !== 1 ? 's' : ''}` : 'Em dia'}
         actions={
-          itens.length > 0 ? (
-            <button onClick={marcarTodasComoLidas} className="btn btn-secondary btn-sm">
-              Marcar todas como lidas
+          naoLidas > 0 ? (
+            <button onClick={marcarTodasLidas} disabled={marcando} className="btn btn-secondary btn-sm">
+              {marcando ? '...' : 'Marcar todas como lidas'}
             </button>
           ) : undefined
         }
       />
 
-      <main className="p-6 max-w-2xl space-y-3">
+      <main className="p-6 max-w-2xl space-y-4">
+
+        {/* Filtro por categoria */}
+        <div className="flex gap-1.5 flex-wrap">
+          {CATEGORIAS.map(cat => {
+            const cfg = CAT_CONFIG[cat]
+            const Icon = cfg.icon
+            const ativa = catAtiva === cat
+            return (
+              <button
+                key={cat}
+                onClick={() => trocarCategoria(cat)}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
+                style={{
+                  background:  ativa ? cfg.bg : 'rgba(255,255,255,0.04)',
+                  color:       ativa ? cfg.color : 'var(--text3)',
+                  border:      `1px solid ${ativa ? cfg.color + '40' : 'rgba(255,255,255,0.07)'}`,
+                }}
+              >
+                <Icon size={13} />
+                {cfg.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Lista de notificações */}
         {loading ? (
           <p className="text-sm py-10 text-center" style={{ color: 'var(--text3)' }}>Carregando...</p>
         ) : itens.length === 0 ? (
-          <div className="card text-center py-10">
-            <p className="text-sm" style={{ color: 'var(--text3)' }}>Você não tem notificações.</p>
+          <div className="card-solid text-center py-12 space-y-2">
+            <Bell size={32} className="mx-auto opacity-30" />
+            <p className="text-sm" style={{ color: 'var(--text3)' }}>
+              {catAtiva === 'TODAS'
+                ? 'Você não tem notificações.'
+                : `Nenhuma notificação de ${CAT_CONFIG[catAtiva].label.toLowerCase()}.`}
+            </p>
           </div>
         ) : (
-          itens.map(n => {
-            const lida = n.lida || lidas.has(n.id)
-            return (
-              <div
-                key={n.id}
-                onClick={() => n.demanda_id && router.push(`/cliente/demandas/${n.demanda_id}`)}
-                className="card flex gap-3 items-start"
-                style={{
-                  cursor: n.demanda_id ? 'pointer' : 'default',
-                  borderColor: lida ? 'var(--border)' : 'rgba(232,103,26,0.35)',
-                  background: lida ? 'var(--glass)' : 'rgba(232,103,26,0.06)',
-                }}
-              >
-                <div className="shrink-0" style={{ color: 'var(--text3)' }}><TipoIcon tipo={n.tipo} /></div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-semibold text-white text-sm">{n.titulo || n.tipo}</p>
-                    {!lida && <span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--orange)' }} />}
+          <div className="space-y-2">
+            {itens.map(n => {
+              const catCfg  = CAT_CONFIG[(n.categoria || 'SISTEMA') as Categoria] || CAT_CONFIG.SISTEMA
+              const TipoIco = TIPO_ICON[n.tipo] || Info
+              const tipoCor = TIPO_COLOR[n.tipo] || 'var(--text3)'
+              const CatIco  = catCfg.icon
+              const isLida  = n.lida
+
+              return (
+                <div
+                  key={n.id}
+                  onClick={() => {
+                    if (n.demanda_id) {
+                      const role = user.profissional ? 'profissional' : 'cliente'
+                      router.push(`/${role}/demandas/${n.demanda_id}`)
+                    }
+                  }}
+                  className="rounded-xl p-4 flex gap-3 items-start transition-all"
+                  style={{
+                    background:  isLida ? 'rgba(255,255,255,0.03)' : catCfg.bg,
+                    border:      `1px solid ${isLida ? 'rgba(255,255,255,0.06)' : catCfg.color + '30'}`,
+                    cursor:      n.demanda_id ? 'pointer' : 'default',
+                    opacity:     isLida ? 0.75 : 1,
+                  }}
+                >
+                  {/* Ícone de categoria */}
+                  <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ background: catCfg.bg, color: catCfg.color }}>
+                    <CatIco size={16} />
                   </div>
-                  {n.corpo && (
-                    <p className="text-sm mt-0.5" style={{ color: 'var(--text2)' }}>{n.corpo}</p>
-                  )}
-                  <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
-                    {n.created_at ? new Date(n.created_at).toLocaleString('pt-BR') : ''}
-                  </p>
+
+                  <div className="flex-1 min-w-0">
+                    {/* Header: título + badge não-lida + tipo */}
+                    <div className="flex items-start justify-between gap-2 mb-0.5">
+                      <p className="font-semibold text-sm text-white leading-snug">{n.titulo}</p>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {!isLida && (
+                          <span className="w-2 h-2 rounded-full" style={{ background: catCfg.color }} />
+                        )}
+                        <TipoIco size={13} style={{ color: tipoCor }} />
+                      </div>
+                    </div>
+
+                    {/* Corpo */}
+                    {n.corpo && (
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text2)' }}>{n.corpo}</p>
+                    )}
+
+                    {/* Footer: categoria + data */}
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-2xs px-1.5 py-0.5 rounded font-semibold uppercase"
+                        style={{ background: catCfg.bg, color: catCfg.color }}>
+                        {catCfg.label}
+                      </span>
+                      <span className="text-2xs" style={{ color: 'var(--text3)' }}>
+                        {n.created_at
+                          ? new Date(n.created_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                          : ''}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )
-          })
+              )
+            })}
+          </div>
         )}
       </main>
     </Shell>

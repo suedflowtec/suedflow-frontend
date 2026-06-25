@@ -178,7 +178,14 @@ export const admin = {
 }
 
 export const notificacoes = {
-  listar: () => request<any>('/api/notificacoes'),
+  listar: (params?: { categoria?: string; nao_lida?: boolean; limit?: number }) => {
+    const qs = new URLSearchParams()
+    if (params?.categoria) qs.set('categoria', params.categoria)
+    if (params?.nao_lida)  qs.set('nao_lida', 'true')
+    if (params?.limit)     qs.set('limit', String(params.limit))
+    return request<{ notificacoes: any[]; total: number; nao_lidas: number }>(`/api/notificacoes${qs.toString() ? `?${qs}` : ''}`)
+  },
+  marcarLidas: () => request<{ ok: boolean; atualizadas: number }>('/api/notificacoes/marcar-lidas', { method: 'PATCH' }),
 }
 
 export const imovel = {
