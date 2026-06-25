@@ -32,7 +32,7 @@ const COPY = {
   },
   profissional: {
     navCta: 'Cadastrar como profissional',
-    heroTitle: <>Receba demandas qualificadas e <span className="lp-highlight">suba de nível</span> a cada entrega.</>,
+    heroTitle: <>Receba demandas qualificadas e <span className="lp-highlight">suba de nível</span> com suas entregas.</>,
     heroLede: 'Trabalhe com escopo, checklist de QA e ART/RRT já definidos — e veja sua comissão cair conforme seu SQP sobe.',
     heroCtaPrimary: 'Cadastrar como profissional',
     heroCtaSecondary: 'Entender o Score SQP',
