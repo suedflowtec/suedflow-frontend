@@ -213,13 +213,71 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* coluna visual */}
+          {/* coluna visual — painel de demanda ao vivo */}
           <div className="lp-hero-visual">
-            <div className="lp-hero-img-frame">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/marketing-hero.png" alt="SUEDFLOW — engenheiros, arquitetos e profissionais técnicos" />
+
+            {/* ── Live demand card — substituiu marketing-hero.png ── */}
+            <div className="lp-live-card">
+              {/* Header: badge + OS */}
+              <div className="lp-lc-header">
+                <span className="lp-lc-live-badge">
+                  <span className="lp-lc-dot" />
+                  Ao vivo
+                </span>
+                <span className="lp-lc-os">SF-2026-0019</span>
+              </div>
+
+              {/* Serviço e localização */}
+              <div className="lp-lc-service">Avaliação Mercadológica NBR 14653</div>
+              <div className="lp-lc-location">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{width:12,height:12}}>
+                  <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                120m² · Tambaú, João Pessoa/PB
+              </div>
+
+              {/* Pipeline animado de status */}
+              <div className="lp-lc-pipeline">
+                {[
+                  { label: 'Aceite',    done: true,  active: false },
+                  { label: 'Pago',      done: true,  active: false },
+                  { label: 'Execução',  done: false, active: true  },
+                  { label: 'QA',        done: false, active: false },
+                ].map((s, i) => (
+                  <div key={s.label} className="lp-lc-step">
+                    <div className={`lp-lc-step-dot ${s.done ? 'done' : s.active ? 'active' : ''}`} style={{ animationDelay: `${i * 0.4}s` }} />
+                    {i < 3 && <div className={`lp-lc-step-line ${s.done ? 'done' : ''}`} />}
+                    <span className={`lp-lc-step-label ${s.done || s.active ? 'lit' : ''}`}>{s.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Profissional + Valor */}
+              <div className="lp-lc-footer">
+                <div className="lp-lc-foot-item">
+                  <span className="lp-lc-foot-label">Profissional</span>
+                  <span className="lp-lc-foot-value">
+                    CREA-PB 28.471
+                    <span className="lp-lc-verified">✓</span>
+                  </span>
+                </div>
+                <div className="lp-lc-foot-divider" />
+                <div className="lp-lc-foot-item">
+                  <span className="lp-lc-foot-label">Valor em escrow</span>
+                  <span className="lp-lc-foot-value lp-lc-green">R$ 1.620,00</span>
+                </div>
+              </div>
+
+              {/* Rodapé ART */}
+              <div className="lp-lc-art">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{width:11,height:11}}>
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                ART/RRT vinculada · pagamento protegido pela SUEDFLOW
+              </div>
             </div>
 
+            {/* Chips flutuantes mantidos */}
             <div className="lp-float-chip lp-chip-1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/>
