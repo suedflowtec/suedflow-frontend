@@ -216,64 +216,99 @@ export default function LandingPage() {
           {/* coluna visual — painel de demanda ao vivo */}
           <div className="lp-hero-visual">
 
-            {/* ── Live demand card — substituiu marketing-hero.png ── */}
-            <div className="lp-live-card">
-              {/* Header: badge + OS */}
-              <div className="lp-lc-header">
-                <span className="lp-lc-live-badge">
-                  <span className="lp-lc-dot" />
-                  Ao vivo
-                </span>
+            {/* ── Dashboard ao vivo — v2 ── */}
+            <div className="lp-dash">
+
+              {/* Topo: título + dot ao vivo */}
+              <div className="lp-dash-top">
+                <div className="lp-dash-brand">
+                  <span className="lp-dash-brand-name">SUEDFLOW</span>
+                  <span className="lp-dash-live"><span className="lp-lc-dot" />Ao vivo</span>
+                </div>
                 <span className="lp-lc-os">SF-2026-0019</span>
               </div>
 
-              {/* Serviço e localização */}
-              <div className="lp-lc-service">Avaliação Mercadológica NBR 14653</div>
-              <div className="lp-lc-location">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{width:12,height:12}}>
-                  <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                </svg>
-                120m² · Tambaú, João Pessoa/PB
+              {/* KPIs coloridos */}
+              <div className="lp-dash-kpis">
+                <div className="lp-dash-kpi lp-kpi-orange">
+                  <span className="lp-kpi-num">47</span>
+                  <span className="lp-kpi-lbl">Demandas<br/>ativas</span>
+                </div>
+                <div className="lp-dash-kpi lp-kpi-green">
+                  <span className="lp-kpi-num">12</span>
+                  <span className="lp-kpi-lbl">Concluídas<br/>este mês</span>
+                </div>
+                <div className="lp-dash-kpi lp-kpi-purple">
+                  <span className="lp-kpi-num">842</span>
+                  <span className="lp-kpi-lbl">Score SQP<br/>· Pleno</span>
+                </div>
               </div>
 
-              {/* Pipeline animado de status */}
-              <div className="lp-lc-pipeline">
-                {[
-                  { label: 'Aceite',    done: true,  active: false },
-                  { label: 'Pago',      done: true,  active: false },
-                  { label: 'Execução',  done: false, active: true  },
-                  { label: 'QA',        done: false, active: false },
-                ].map((s, i) => (
-                  <div key={s.label} className="lp-lc-step">
-                    <div className={`lp-lc-step-dot ${s.done ? 'done' : s.active ? 'active' : ''}`} style={{ animationDelay: `${i * 0.4}s` }} />
-                    {i < 3 && <div className={`lp-lc-step-line ${s.done ? 'done' : ''}`} />}
-                    <span className={`lp-lc-step-label ${s.done || s.active ? 'lit' : ''}`}>{s.label}</span>
+              {/* Demanda em andamento */}
+              <div className="lp-dash-demand">
+                <div className="lp-dd-header">
+                  <span className="lp-dd-svc">Avaliação Mercadológica NBR 14653</span>
+                  <span className="lp-dd-badge-exec">● EM EXECUÇÃO</span>
+                </div>
+                <div className="lp-dd-meta">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{width:11,height:11,flexShrink:0}}>
+                    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  120m² · Tambaú, João Pessoa/PB
+                </div>
+
+                {/* Status pills */}
+                <div className="lp-dd-pills">
+                  <span className="lp-pill lp-pill-done">✓ Aceite</span>
+                  <span className="lp-pill-arrow">→</span>
+                  <span className="lp-pill lp-pill-done">✓ Pago</span>
+                  <span className="lp-pill-arrow">→</span>
+                  <span className="lp-pill lp-pill-active">⬤ Execução</span>
+                  <span className="lp-pill-arrow">→</span>
+                  <span className="lp-pill lp-pill-pending">QA</span>
+                </div>
+
+                {/* Profissional + Escrow */}
+                <div className="lp-dd-row">
+                  <div className="lp-dd-prof">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{width:13,height:13}}>
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>CREA-PB 28.471</span>
+                    <span className="lp-dd-check">✓ ativo</span>
                   </div>
-                ))}
-              </div>
-
-              {/* Profissional + Valor */}
-              <div className="lp-lc-footer">
-                <div className="lp-lc-foot-item">
-                  <span className="lp-lc-foot-label">Profissional</span>
-                  <span className="lp-lc-foot-value">
-                    CREA-PB 28.471
-                    <span className="lp-lc-verified">✓</span>
-                  </span>
-                </div>
-                <div className="lp-lc-foot-divider" />
-                <div className="lp-lc-foot-item">
-                  <span className="lp-lc-foot-label">Valor em escrow</span>
-                  <span className="lp-lc-foot-value lp-lc-green">R$ 1.620,00</span>
+                  <div className="lp-dd-escrow">
+                    <span className="lp-dd-escrow-lbl">escrow</span>
+                    <span className="lp-dd-escrow-val">R$ 1.620</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Rodapé ART */}
-              <div className="lp-lc-art">
+              {/* Feed de atividade recente */}
+              <div className="lp-dash-feed">
+                <div className="lp-feed-item lp-feed-green">
+                  <span className="lp-feed-dot" style={{background:'#00D68F'}} />
+                  <span>Laudo SF-0017 aprovado pelo curador</span>
+                  <span className="lp-feed-time">2 min</span>
+                </div>
+                <div className="lp-feed-item lp-feed-orange">
+                  <span className="lp-feed-dot" style={{background:'#E8671A'}} />
+                  <span>R$ 2.340 liberados para Carlos M.</span>
+                  <span className="lp-feed-time">8 min</span>
+                </div>
+                <div className="lp-feed-item lp-feed-purple">
+                  <span className="lp-feed-dot" style={{background:'#9B6DFF'}} />
+                  <span>KYC aprovado · CREA-PB 31.205</span>
+                  <span className="lp-feed-time">15 min</span>
+                </div>
+              </div>
+
+              {/* Rodapé */}
+              <div className="lp-dash-footer">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{width:11,height:11}}>
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
-                ART/RRT vinculada · pagamento protegido pela SUEDFLOW
+                ART/RRT obrigatória · escrow protegido · curadoria de qualidade
               </div>
             </div>
 
