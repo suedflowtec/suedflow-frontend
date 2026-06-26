@@ -10,9 +10,31 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const stored = userStorage.get()
-    if (stored) setUser(stored)
-    setLoading(false)
+    // SEC: Carrega dados do servidor em vez de confiar apenas no localStorage
+    // Evita que o usuário manipule o localStorage via F12 para ganhar permissões
+    const token = tokenStorage.get()
+    if (!token) {
+      setLoading(false)
+      return
+    }
+
+    // Tentativa rápida: usa localStorage como valor inicial (UX)
+    const cached = userStorage.get()
+    if (cached) setUser(cached)
+
+    // Verificação real no servidor — atualiza e sobrescreve qualquer manipulação
+    authApi.me()
+      .then((freshUser) => {
+        userStorage.set(freshUser)
+        setUser(freshUser)
+      })
+      .catch(() => {
+        // Token inválido ou expirado → limpa tudo
+        tokenStorage.clear()
+        userStorage.clear()
+        setUser(null)
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   const updateUser = useCallback((partial: Record<string, any>) => {
