@@ -245,7 +245,7 @@ export const profissional = {
     fd.append('arquivo', arquivo)
     return request<{ ok: boolean; tipo: string; url: string }>('/api/profissional/kyc/documento', { method: 'POST', formData: fd })
   },
-  onboarding: (data: { conselho: string; numero_conselho: string; uf_conselho: string; svcs_habilitados: string[]; aceita_termos: boolean }) =>
+  onboarding: (data: { conselho: string; numero_conselho: string; uf_conselho: string; svcs_habilitados: string[]; aceita_termos: boolean; pix_key_padrao?: string }) =>
     request<{ ok: boolean; msg: string }>('/api/profissional/onboarding', { method: 'POST', body: data }),
   meuScore: () => request<{
     score: number; nivel: string

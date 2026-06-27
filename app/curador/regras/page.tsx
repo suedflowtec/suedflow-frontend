@@ -63,7 +63,7 @@ export default function CuradorRegrasPage() {
               { label: 'Supervisionar e orientar Curadores Suporte', senior: true },
             ].filter(item => item.both || (isSenior && item.senior)).map((item, i) => (
               <div key={i} className="flex items-center gap-2">
-                <CheckCircle2 size={14} style={{ color: 'var(--green)', shrink: 0 }} />
+                <CheckCircle2 size={14} style={{ color: 'var(--green)', flexShrink: 0 }} />
                 <span className="text-sm" style={{ color: 'var(--text2)' }}>{item.label}</span>
                 {item.senior && <span className="badge badge-gold text-2xs">Sênior</span>}
               </div>
