@@ -1,9 +1,13 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { health } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function AdminHealth() {
+  const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const [status, setStatus] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +21,12 @@ export default function AdminHealth() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { checar() }, [])
+  useEffect(() => {
+    if (authLoading) return
+    if (!user) { router.push('/auth/login'); return }
+    if (!['ADMIN', 'MODERADOR'].includes(user.tipo)) { router.push('/curador'); return }
+    checar()
+  }, [user, authLoading, router])
 
   return (
     <Shell>

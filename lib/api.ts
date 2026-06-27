@@ -276,6 +276,9 @@ export const curador = {
     request<{ ok: boolean }>(`/api/curador/especial/${demandaId}`, { method: 'POST', body: dados }),
   resolverDisputa: (casoId: string, dados: { acao: 'REEMBOLSAR_CLIENTE' | 'LIBERAR_PROFISSIONAL' | 'RETOMAR_EXECUCAO'; obs?: string }) =>
     request<{ ok: boolean }>(`/api/curador/disputa/${casoId}/resolver`, { method: 'POST', body: dados }),
+  profissionaisKyc: () => request<{ profissionais: any[] }>('/api/curador/profissionais'),
+  aprovarKycCurador: (id: string, aprovado: boolean, motivo?: string) =>
+    request<{ ok: boolean }>(`/api/curador/profissionais/${id}/kyc`, { method: 'PATCH', body: { aprovado, motivo } }),
 }
 
 export const chat = {

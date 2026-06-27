@@ -1,7 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Shell, Topbar } from '@/components/layout/Shell'
+import { useRouter } from 'next/navigation'
 import { admin } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 
 type Param = { chave: string; valor: string; descricao?: string }
@@ -18,6 +20,8 @@ const PARAM_META: Record<string, { label: string; descricao: string; tipo: 'nume
 }
 
 export default function AdminParametrosPage() {
+  const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const [params, setParams] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
@@ -25,6 +29,9 @@ export default function AdminParametrosPage() {
   const [editados, setEditados] = useState<Record<string, string>>({})
 
   useEffect(() => {
+    if (authLoading) return
+    if (!user) { router.push('/auth/login'); return }
+    if (!['ADMIN', 'MODERADOR'].includes(user.tipo)) { router.push('/curador'); return }
     admin.paramsGlobais()
       .then(r => {
         setParams(r.params || {})
@@ -32,7 +39,7 @@ export default function AdminParametrosPage() {
       })
       .catch(() => toast('Erro ao carregar parâmetros', 'error'))
       .finally(() => setLoading(false))
-  }, [toast])
+  }, [user, authLoading, router, toast])
 
   const salvar = async (chave: string) => {
     const valor = editados[chave] ?? params[chave]

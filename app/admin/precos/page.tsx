@@ -5,9 +5,13 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/Button'
 import { SvcConfigTable } from '@/components/admin/SvcConfigTable'
 import { admin } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { useRouter } from 'next/navigation'
 
 export default function AdminPrecosPage() {
+  const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
 
   const [svcs, setSvcs] = useState<any[]>([])
@@ -17,8 +21,10 @@ export default function AdminPrecosPage() {
   const [savingParams, setSavingParams] = useState(false)
 
   useEffect(() => {
-    Promise.all([admin.svcsConfig(), admin.paramsGlobais()])
-      .then(([{ svcs }, params]) => {
+    if (authLoading) return
+    if (!user) { router.push('/auth/login'); return }
+    if (!['ADMIN', 'MODERADOR'].includes(user.tipo)) { router.push('/curador'); return }
+    Promise.all([admin.svcsConfig(), admin.paramsGlobais()]).then(([{ svcs }, params]) => {
         setSvcs(svcs)
         setPnr(String(params.pnr))
         setFe(String(params.fe))

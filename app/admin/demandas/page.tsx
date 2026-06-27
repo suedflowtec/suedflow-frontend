@@ -7,21 +7,26 @@ import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { admin } from '@/lib/api'
 import { formatBRL, statusLabel } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 
 export default function AdminDemandas() {
   const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState('')
 
   useEffect(() => {
+    if (authLoading) return
+    if (!user) { router.push('/auth/login'); return }
+    if (!['ADMIN', 'MODERADOR'].includes(user.tipo)) { router.push('/curador'); return }
     admin.demandas()
       .then(setData)
       .catch(() => toast('Erro ao carregar', 'error'))
       .finally(() => setLoading(false))
-  }, [toast])
+  }, [user, authLoading, router, toast])
 
   const lista: any[] = Array.isArray(data) ? data : (data?.demandas || [])
   const filtradas = lista.filter(d =>

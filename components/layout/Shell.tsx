@@ -50,8 +50,9 @@ const NAV = {
     { href: '/curador/fila',        Icon: List,         label: 'Fila de casos' },
   ],
   CURADOR: [
-    { href: '/curador',      Icon: LayoutGrid, label: 'Painel' },
-    { href: '/curador/fila', Icon: List,       label: 'Fila de casos' },
+    { href: '/curador',              Icon: LayoutGrid,  label: 'Painel' },
+    { href: '/curador/fila',         Icon: List,        label: 'Fila de casos' },
+    { href: '/curador/profissionais',Icon: User,        label: 'KYC Profissionais' },
   ],
 }
 

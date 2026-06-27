@@ -6,20 +6,25 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { admin } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 
 export default function AdminProfissionais() {
   const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (authLoading) return
+    if (!user) { router.push('/auth/login'); return }
+    if (!['ADMIN', 'MODERADOR'].includes(user.tipo)) { router.push('/curador'); return }
     admin.profissionais()
       .then(setData)
       .catch(() => toast('Erro ao carregar', 'error'))
       .finally(() => setLoading(false))
-  }, [toast])
+  }, [user, authLoading, router, toast])
 
   const aprovar = async (id: string) => {
     try {
