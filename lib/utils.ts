@@ -5,30 +5,26 @@ import { twMerge } from 'tailwind-merge'
 export function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)) }
 
 /**
- * Transforma URL do Cloudinary para forçar abertura inline no navegador (não download).
- * Adiciona `fl_inline` para image/upload (PDFs) ou `fl_attachment:false` para raw/upload.
- * Imagens e outros arquivos que o browser abre nativamente são retornados sem alteração.
+ * Retorna URL para abrir arquivo inline no navegador (sem forçar download).
+ *
+ * Usa proxy interno /api/ver?url=... para garantir Content-Disposition: inline.
+ * O Cloudinary não suporta fl_inline no plano atual — o proxy resolve isso.
+ *
+ * Arquivos binários (DWG, ZIP, DOCX, etc.) que o browser não exibe são
+ * retornados sem modificação → o botão de olho não deve aparecer para eles.
  */
 export function getInlineUrl(url: string): string {
-  if (!url || !url.includes('cloudinary.com')) return url
+  if (!url) return url
 
-  const isPdf  = /\.pdf($|\?)/i.test(url) || url.includes('/raw/')
-  const isBin  = /\.(dwg|zip|docx?|xlsx?|pptx?)($|\?)/i.test(url)
-
-  // Arquivos binários (DWG, ZIP, etc.) → deixa baixar normalmente
+  // Arquivos binários → browser não consegue exibir, não usar inline
+  const isBin = /\.(dwg|zip|rar|docx?|xlsx?|pptx?)($|\?)/i.test(url)
   if (isBin) return url
 
-  // PDF em raw/upload → fl_attachment:false
-  if (url.includes('/raw/upload/')) {
-    return url.replace('/raw/upload/', '/raw/upload/fl_attachment:false/')
+  // Para arquivos Cloudinary do projeto → proxy via rota Next.js interna
+  if (url.includes('cloudinary.com') && url.includes('/suedflow/')) {
+    return `/api/ver?url=${encodeURIComponent(url)}`
   }
 
-  // PDF em image/upload → fl_inline
-  if (isPdf && url.includes('/image/upload/')) {
-    return url.replace('/image/upload/', '/image/upload/fl_inline/')
-  }
-
-  // Imagens → browser abre nativamente, sem transformação necessária
   return url
 }
 
