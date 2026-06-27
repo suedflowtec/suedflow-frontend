@@ -191,7 +191,7 @@ export default function CadastroClient() {
             <li>✓ Pagamento protegido em escrow</li>
           </ul>
         </div>
-        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>SUEDFLOW Tecnologia Ltda. · João Pessoa/PB</p>
+        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>SUEDFLOW TECNOLOGIA INOVA SIMPLES (I.S.) · CNPJ 67.671.499/0001-30 · João Pessoa/PB</p>
       </div>
 
       {/* Formulário */}

@@ -125,7 +125,7 @@ export default function LoginPage() {
             </>
           )}
         </div>
-        <p className="text-white/25 text-xs">SUEDFLOW Tecnologia Ltda. · João Pessoa/PB</p>
+        <p className="text-white/25 text-xs">SUEDFLOW TECNOLOGIA INOVA SIMPLES (I.S.) · CNPJ 67.671.499/0001-30 · João Pessoa/PB</p>
       </div>
 
       {/* Formulário */}
