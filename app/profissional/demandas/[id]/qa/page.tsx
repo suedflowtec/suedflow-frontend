@@ -9,8 +9,8 @@ import { MessageSquareWarning } from 'lucide-react'
 import { SueDisclaimer } from '@/components/ui/SueDisclaimer'
 
 const TIER_COLOR: Record<string, string> = {
-  CANDIDATO: 'var(--text3)', JUNIOR: 'var(--blue)',
-  PLENO: 'var(--teal, #00D68F)', SENIOR: 'var(--purple)',
+  CANDIDATO: 'var(--text3)', JUNIOR: '#4A9BD4',
+  PLENO: '#00D68F', SENIOR: 'var(--purple)',
   ELITE: 'var(--gold)',
 }
 

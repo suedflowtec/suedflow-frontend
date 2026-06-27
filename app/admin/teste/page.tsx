@@ -8,8 +8,21 @@ import { Input, Field } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { admin, tokenStorage, userStorage } from '@/lib/api'
 import { useToast } from '@/hooks/useToast'
+import { useAuth } from '@/hooks/useAuth'
+import { useEffect } from 'react'
 
 export default function AdminTeste() {
+  const router = useRouter()
+  const { user, loading } = useAuth()
+
+  useEffect(() => {
+    if (!loading && user && user.tipo !== 'ADMIN') {
+      router.replace('/admin')
+    }
+  }, [user, loading, router])
+
+  if (loading || !user || user.tipo !== 'ADMIN') return null
+
   return (
     <Shell>
       <Topbar title="Ferramentas de Teste" />
