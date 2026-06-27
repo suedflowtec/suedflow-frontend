@@ -41,14 +41,43 @@ export default function AdminParametrosPage() {
       .finally(() => setLoading(false))
   }, [user, authLoading, router, toast])
 
+  // Valores padrão por fase — ao mudar a FASE, esses valores são aplicados automaticamente
+  const FASE_DEFAULTS: Record<string, { PNR_UTS: string; FE: string }> = {
+    VALIDACAO: { PNR_UTS: '210', FE: '0.85' },
+    TRACAO:    { PNR_UTS: '270', FE: '0.92' },
+    MATURIDADE:{ PNR_UTS: '375', FE: '1.00' },
+  }
+
   const salvar = async (chave: string) => {
     const valor = editados[chave] ?? params[chave]
     if (valor === params[chave]) return
     setSaving(chave)
     try {
-      await admin.atualizarParamsGlobais({ [chave.toLowerCase()]: valor } as any)
-      setParams(p => ({ ...p, [chave]: valor }))
-      toast(`${PARAM_META[chave]?.label || chave} atualizado`, 'success')
+      // Quando FASE muda: atualiza também PNR_UTS e FE automaticamente
+      if (chave === 'FASE' && FASE_DEFAULTS[valor]) {
+        const defaults = FASE_DEFAULTS[valor]
+        const confirmar = window.confirm(
+          `Mudar para fase ${valor} irá redefinir:\n• PNR-UTS: R$ ${defaults.PNR_UTS}\n• FE: ${defaults.FE}\n\nConfirmar?`
+        )
+        if (!confirmar) {
+          setEditados(e => ({ ...e, [chave]: params[chave] }))
+          setSaving(null)
+          return
+        }
+        // Salva FASE + PNR_UTS + FE em paralelo
+        await Promise.all([
+          admin.atualizarParamsGlobais({ fase: valor } as any),
+          admin.atualizarParamsGlobais({ pnr: Number(defaults.PNR_UTS) } as any),
+          admin.atualizarParamsGlobais({ fe: Number(defaults.FE) } as any),
+        ])
+        setParams(p => ({ ...p, FASE: valor, PNR_UTS: defaults.PNR_UTS, FE: defaults.FE }))
+        setEditados(e => ({ ...e, FASE: valor, PNR_UTS: defaults.PNR_UTS, FE: defaults.FE }))
+        toast(`Fase alterada para ${valor} — PNR-UTS e FE atualizados automaticamente`, 'success')
+      } else {
+        await admin.atualizarParamsGlobais({ [chave.toLowerCase()]: valor } as any)
+        setParams(p => ({ ...p, [chave]: valor }))
+        toast(`${PARAM_META[chave]?.label || chave} atualizado`, 'success')
+      }
     } catch (err: any) {
       toast(err.message || 'Erro ao salvar', 'error')
       setEditados(e => ({ ...e, [chave]: params[chave] }))

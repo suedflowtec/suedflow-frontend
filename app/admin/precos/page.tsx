@@ -24,14 +24,15 @@ export default function AdminPrecosPage() {
     if (authLoading) return
     if (!user) { router.push('/auth/login'); return }
     if (!['ADMIN', 'MODERADOR'].includes(user.tipo)) { router.push('/curador'); return }
-    Promise.all([admin.svcsConfig(), admin.paramsGlobais()]).then(([{ svcs }, params]) => {
+    Promise.all([admin.svcsConfig(), admin.paramsGlobais()])
+      .then(([{ svcs }, params]) => {
         setSvcs(svcs)
         setPnr(String(params.pnr))
         setFe(String(params.fe))
       })
       .catch(() => toast('Erro ao carregar configuração de preços', 'error'))
       .finally(() => setLoading(false))
-  }, [toast])
+  }, [user, authLoading, router, toast])
 
   const salvarParams = async () => {
     setSavingParams(true)

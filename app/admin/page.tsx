@@ -1,6 +1,6 @@
 // app/admin/page.tsx
 'use client'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
@@ -9,6 +9,7 @@ import { admin } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { formatBRL } from '@/lib/utils'
+import { ClipboardList, Users, Settings, SlidersHorizontal, FlaskConical, Eye, EyeOff } from 'lucide-react'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function AdminDashboard() {
   const { toast } = useToast()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [receitaVisivel, setReceitaVisivel] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -40,21 +42,38 @@ export default function AdminDashboard() {
           <div className="text-center py-10 text-sm" style={{ color: 'var(--text3)' }}>Carregando dashboard...</div>
         ) : (
           <>
-            {/* KPIs */}
-            <div className="grid grid-cols-4 gap-4">
+            {/* KPIs — grid responsivo 2 colunas mobile, 4 desktop */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="kpi-card">
                 <p className="kpi-value">{stats.demandas_hoje ?? 0}</p>
                 <p className="kpi-label">Demandas hoje</p>
-                {stats.trend_demandas_hoje && <p className="text-2xs text-green mt-1">▲ {stats.trend_demandas_hoje}</p>}
+                {stats.trend_demandas_hoje && <p className="text-2xs mt-1" style={{ color: 'var(--green)' }}>▲ {stats.trend_demandas_hoje}</p>}
               </div>
               <div className="kpi-card">
                 <p className="kpi-value">{stats.em_execucao ?? 0}</p>
                 <p className="kpi-label">Em execução</p>
               </div>
-              <div className="kpi-card">
-                <p className="kpi-value">{formatBRL(stats.receita_mes ?? 0)}</p>
-                <p className="kpi-label">Receita do mês</p>
-                {stats.trend_receita && <p className="text-2xs text-green mt-1">▲ {stats.trend_receita}</p>}
+              {/* Receita com toggle de visibilidade */}
+              <div className="kpi-card" style={{ position: 'relative' }}>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="kpi-value truncate" style={{ fontSize: receitaVisivel ? undefined : '1.5rem' }}>
+                      {receitaVisivel ? formatBRL(stats.receita_mes ?? 0) : '••••••'}
+                    </p>
+                    <p className="kpi-label">Receita do mês</p>
+                    {receitaVisivel && stats.trend_receita && (
+                      <p className="text-2xs mt-1" style={{ color: 'var(--green)' }}>▲ {stats.trend_receita}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setReceitaVisivel(v => !v)}
+                    className="shrink-0 ml-1 mt-0.5 p-1 rounded transition-opacity hover:opacity-80"
+                    style={{ color: 'var(--text3)' }}
+                    title={receitaVisivel ? 'Ocultar receita' : 'Mostrar receita'}
+                  >
+                    {receitaVisivel ? <EyeOff size={13} /> : <Eye size={13} />}
+                  </button>
+                </div>
               </div>
               <div className="kpi-card">
                 <p className="kpi-value">{stats.sqp_medio ?? 0}</p>
@@ -62,15 +81,15 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Atalhos admin */}
+            {/* Atalhos admin — ícones Lucide, sem emojis */}
             <div className="card p-4">
               <h2 className="text-sm font-semibold text-white mb-3">Acesso rápido</h2>
-              <div className="grid grid-cols-5 gap-2">
-                <AdminLink href="/admin/demandas"    icon="📋" label="Demandas" />
-                <AdminLink href="/admin/profissionais" icon="👷" label="Profissionais" />
-                <AdminLink href="/admin/precos"        icon="💰" label="Motor UTS" />
-                <AdminLink href="/admin/parametros"    icon="⚙️" label="Parâmetros" />
-                <AdminLink href="/admin/teste"         icon="🧪" label="Ferramentas" highlight />
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                <AdminLink href="/admin/demandas"      Icon={ClipboardList}   label="Demandas" />
+                <AdminLink href="/admin/profissionais"  Icon={Users}           label="Profissionais" />
+                <AdminLink href="/admin/precos"         Icon={Settings}        label="Motor UTS" />
+                <AdminLink href="/admin/parametros"     Icon={SlidersHorizontal} label="Parâmetros" />
+                <AdminLink href="/admin/teste"          Icon={FlaskConical}    label="Ferramentas" highlight />
               </div>
             </div>
 
@@ -114,19 +133,19 @@ export default function AdminDashboard() {
   )
 }
 
-function AdminLink({ href, icon, label, highlight }: { href: string; icon: string; label: string; highlight?: boolean }) {
+function AdminLink({ href, Icon, label, highlight }: { href: string; Icon: React.FC<any>; label: string; highlight?: boolean }) {
   return (
     <Link
       href={href}
-      className="rounded-xl p-3 flex flex-col items-center gap-1 text-center border transition-opacity hover:opacity-80"
+      className="rounded-xl p-3 flex flex-col items-center gap-2 text-center border transition-all hover:opacity-90"
       style={{
-        background:   highlight ? 'rgba(232,103,26,0.12)' : 'rgba(255,255,255,0.04)',
-        borderColor:  highlight ? 'rgba(232,103,26,0.35)' : 'rgba(255,255,255,0.08)',
+        background:     highlight ? 'rgba(232,103,26,0.12)' : 'rgba(255,255,255,0.04)',
+        borderColor:    highlight ? 'rgba(232,103,26,0.35)' : 'rgba(255,255,255,0.08)',
         textDecoration: 'none',
       }}
     >
-      <span className="text-2xl">{icon}</span>
-      <span className="text-xs font-semibold" style={{ color: 'var(--text2)' }}>{label}</span>
+      <Icon size={20} style={{ color: highlight ? 'var(--orange)' : 'var(--text2)' }} />
+      <span className="text-xs font-semibold leading-tight" style={{ color: 'var(--text2)' }}>{label}</span>
     </Link>
   )
 }

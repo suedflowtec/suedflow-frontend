@@ -23,7 +23,12 @@ const STATUS_BADGE: Record<string, { text: string; variant: any }> = {
 }
 
 function isImagem(url: string) {
-  return /\.(jpe?g|png|gif|webp)(\?|$)/i.test(url)
+  // Extensão explícita de imagem
+  if (/\.(jpe?g|png|gif|webp|heic|avif)(\?|$)/i.test(url)) return true
+  // URL Cloudinary /image/upload/ sem extensão de documento → assume imagem
+  if (url.includes('cloudinary.com') && url.includes('/image/upload/') &&
+      !url.match(/\.(pdf|doc|docx|zip|dwg|xls|xlsx|ppt)(\?|$)/i)) return true
+  return false
 }
 
 export default function AdminProfissionalDetalhePage() {
@@ -143,7 +148,20 @@ export default function AdminProfissionalDetalhePage() {
                     </div>
                     {isImagem(doc.url_arquivo) ? (
                       <a href={getInlineUrl(doc.url_arquivo)} target="_blank" rel="noreferrer">
-                        <img src={doc.url_arquivo} alt={doc.tipo} className="w-full rounded-lg" style={{ maxHeight: 180, objectFit: 'cover' }} />
+                        <img
+                          src={doc.url_arquivo}
+                          alt={doc.tipo}
+                          className="w-full rounded-lg"
+                          style={{ maxHeight: 180, objectFit: 'cover' }}
+                          onError={(e) => {
+                            // Fallback se imagem não carregar — mostra como link
+                            const el = e.currentTarget
+                            const parent = el.parentElement
+                            if (parent) {
+                              parent.innerHTML = `<a href="${getInlineUrl(doc.url_arquivo)}" target="_blank" rel="noreferrer" style="color:var(--orange);font-size:13px;">Abrir documento ↗</a>`
+                            }
+                          }}
+                        />
                       </a>
                     ) : (
                       <a href={getInlineUrl(doc.url_arquivo)} target="_blank" rel="noreferrer" className="text-sm" style={{ color: 'var(--orange)' }}>
