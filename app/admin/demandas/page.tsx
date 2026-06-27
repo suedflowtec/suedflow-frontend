@@ -68,7 +68,7 @@ export default function AdminDemandas() {
                       <td>{d.svc_codigo}</td>
                       <td>{d.profissional?.nome || 'Sem prof.'}</td>
                       <td><span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span></td>
-                      <td className="text-right font-mono font-semibold" style={{ color: 'var(--green)' }}>{formatBRL(d.preco_cliente || 0)}</td>
+                      <td className="text-right font-mono font-semibold" style={{ color: 'var(--green)' }}>{formatBRL(d.valor_total || d.preco_final || d.preco_servico || 0)}</td>
                     </tr>
                   )
                 })}

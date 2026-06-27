@@ -145,7 +145,7 @@ export default function SuedPreparaHomePage() {
         <div className="space-y-3">
           {MODULOS.map((m, idx) => {
             const concluido = prepara[m.id] ?? false
-            const bloqueado = idx > 0 && !m1Concluido && !loading
+            const bloqueado = idx > 0 && (loading || !m1Concluido)
 
             return (
               <button

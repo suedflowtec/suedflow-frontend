@@ -295,17 +295,39 @@ export default function CuradorCasoDetalhePage() {
               </div>
             )}
 
-            {/* Análise SUE com disclaimer obrigatório */}
+            {/* Verificação SUE — exibição estruturada */}
             {analise_sue && (
               <div className="card-solid space-y-3">
-                <p className="section-label">Verificação SUE (Motor QA)</p>
+                <div className="flex items-center justify-between">
+                  <p className="section-label">Verificação SUE (Motor QA)</p>
+                  <div className="flex gap-1.5">
+                    {analise_sue.tem_inconsistencia && <span className="badge badge-red">Inconsistências</span>}
+                    {analise_sue.tem_atencao && !analise_sue.tem_inconsistencia && <span className="badge badge-yellow">Atenções</span>}
+                    {!analise_sue.tem_inconsistencia && !analise_sue.tem_atencao && <span className="badge badge-green">Conforme</span>}
+                  </div>
+                </div>
                 <p className="text-2xs flex items-start gap-1.5 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text3)' }}>
                   <span style={{ flexShrink: 0 }}>⚠</span>
-                  A SUE é uma assistente de IA e pode cometer erros. Este relatório é informativo e apoia a análise do curador — não substitui o julgamento técnico do profissional responsável pela ART/RRT.
+                  A SUE é uma assistente de IA e pode cometer erros. Este relatório é informativo — a decisão final é do curador.
                 </p>
-                <pre className="text-xs p-3 rounded-xl overflow-auto" style={{ background: 'var(--navy3)', color: 'var(--text2)' }}>
-                  {JSON.stringify(analise_sue, null, 2)}
-                </pre>
+                {analise_sue.resumo && (
+                  <p className="text-sm" style={{ color: 'var(--text2)' }}>{analise_sue.resumo}</p>
+                )}
+                {Array.isArray(analise_sue.itens) && analise_sue.itens.length > 0 && (
+                  <ul className="space-y-2">
+                    {analise_sue.itens.map((item: any, i: number) => (
+                      <li key={i} className="flex items-start gap-2 text-xs">
+                        <span className={`badge shrink-0 ${item.classe === 'INCONSISTENCIA' ? 'badge-red' : item.classe === 'ATENCAO' ? 'badge-yellow' : 'badge-green'}`}>
+                          {item.classe}
+                        </span>
+                        <span style={{ color: 'var(--text2)' }}>
+                          {item.descricao}
+                          {item.nbr && <span style={{ color: 'var(--text3)' }}> · {item.nbr}</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
 

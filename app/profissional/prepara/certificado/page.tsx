@@ -42,7 +42,8 @@ export default function CertificadoPage() {
   const tudo = modulosConcluidos.length === total
 
   const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
-  const certNum = `SUED-${new Date().getFullYear()}-${String(user.profissional?.id || '').slice(-6).toUpperCase()}`
+  // Número único: ano + primeiros 8 chars do UUID profissional (sem hífens)
+  const certNum = `SUED-${new Date().getFullYear()}-${String(user.profissional?.id || '').replace(/-/g,'').slice(0, 8).toUpperCase()}`
 
   return (
     <Shell>
@@ -120,7 +121,7 @@ export default function CertificadoPage() {
               {/* Logo/Título */}
               <div className="space-y-1">
                 <p className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: 'var(--orange)' }}>
-                  SUEDFLOW Tecnologia Ltda
+                  SUEDFLOW TECNOLOGIA INOVA SIMPLES (I.S.)
                 </p>
                 <p className="text-3xl font-black text-white">SUEDPrepara</p>
                 <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--text3)' }}>
