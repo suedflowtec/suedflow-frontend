@@ -6,8 +6,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { profissional } from '@/lib/api'
 
 const TIER_COLOR: Record<string, string> = {
-  CANDIDATO: 'var(--text3)', JUNIOR: 'var(--blue)',
-  PLENO: 'var(--teal, #00D68F)', SENIOR: 'var(--purple)',
+  CANDIDATO: 'var(--text3)', JUNIOR: '#4A9BD4',
+  PLENO: '#00D68F', SENIOR: 'var(--purple)',
   ELITE: 'var(--gold)',
 }
 
@@ -70,16 +70,14 @@ export default function ProfissionalScore() {
       <Topbar
         title="Score SQP"
         subtitle="Score de Qualificação Profissional · 0–1000 pts"
-        actions={prof.id && (
+        actions={
           <a
-            href={`/profissionais/${prof.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/profissional/perfil"
             className="btn btn-secondary btn-sm"
           >
-            Ver perfil público →
+            Meu perfil →
           </a>
-        )}
+        }
       />
       <main className="p-6 max-w-2xl space-y-5">
 

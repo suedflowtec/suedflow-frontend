@@ -141,7 +141,7 @@ export default function PagamentoPixPage() {
       />
 
       <main className="p-6 max-w-5xl">
-        {demanda.status === 'PAGA' || demanda.status === 'EM_EXECUCAO' || demanda.status === 'CONCLUIDA' ? (
+        {['PAGA','EM_EXECUCAO','AGUARDANDO_QA','QA_REPROVADO','AGUARDANDO_CONFIRMACAO','CONCLUIDA'].includes(demanda.status) ? (
           <div className="card-solid max-w-md text-center space-y-3">
             <p className="text-3xl">✅</p>
             <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Pagamento confirmado</p>

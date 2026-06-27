@@ -6,11 +6,10 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { curador as curadorApi } from '@/lib/api'
-import { formatBRL, formatDate } from '@/lib/utils'
+import { formatBRL, formatDate, getInlineUrl, podeAbrirInline } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { CheckCircle2, XCircle, AlertTriangle, User, Briefcase, ArrowUpCircle, Eye, FileText, Image, Download } from 'lucide-react'
-import { getInlineUrl, podeAbrirInline } from '@/lib/utils'
 
 const TIPO_BADGE: Record<string, { text: string; variant: any }> = {
   QA_REPROVADO:     { text: 'QA reprovado', variant: 'gold' },

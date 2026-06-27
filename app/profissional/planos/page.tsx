@@ -4,14 +4,16 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { useEffect, useState } from 'react'
-import { Check, X, Zap, Star, Shield, Copy, QrCode } from 'lucide-react'
+import { Check, X, Zap, Star, Shield, Copy } from 'lucide-react'
 
 type Plano = 'GRATIS' | 'PRO' | 'ELITE'
 
+// Matriz oficial de comissões: base SQP × plano (SQP.md, DECISÃO #004)
+// GRATIS=base, PRO=base-2pp, ELITE(sub)=base-4pp
 const COMISSAO: Record<Plano, Record<string, number>> = {
-  GRATIS: { CANDIDATO: 22, JUNIOR: 21, PLENO: 20, SENIOR: 19, ELITE: 18 },
-  PRO:    { CANDIDATO: 20, JUNIOR: 19, PLENO: 18, SENIOR: 17, ELITE: 16 },
-  ELITE:  { CANDIDATO: 18, JUNIOR: 17, PLENO: 16, SENIOR: 15, ELITE: 15 },
+  GRATIS: { CANDIDATO: 22, JUNIOR: 21, PLENO: 19, SENIOR: 17, ELITE: 15 },
+  PRO:    { CANDIDATO: 20, JUNIOR: 19, PLENO: 17, SENIOR: 15, ELITE: 13 },
+  ELITE:  { CANDIDATO: 18, JUNIOR: 17, PLENO: 15, SENIOR: 13, ELITE: 11 },
 }
 
 const NIVEIS = ['CANDIDATO', 'JUNIOR', 'PLENO', 'SENIOR', 'ELITE']
@@ -98,6 +100,9 @@ export default function PlanosPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
+  // Todos os hooks antes de qualquer return condicional (Rules of Hooks)
+  const [planoEscolhido, setPlanoEscolhido] = useState<Plano | null>(null)
+  const [copiado, setCopiado] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -111,14 +116,12 @@ export default function PlanosPage() {
   const planoAtual: Plano = (prof.plano as Plano) || 'GRATIS'
   const nivelAtual: string = prof.nivel || 'CANDIDATO'
 
-  const [planoEscolhido, setPlanoEscolhido] = useState<Plano | null>(null)
-
   const PRECO_PLANO: Record<string, number> = { PRO: 79, ELITE: 149 }
 
   const handleAssinar = (plano: Plano) => {
     if (plano === planoAtual) return
     if (plano === 'GRATIS') {
-      toast('Para fazer downgrade para Grátis, entre em contato com suporte@suedflow.com.br', 'info')
+      toast('Para fazer downgrade para Grátis, entre em contato com suedflowtecnologia@gmail.com', 'info')
       return
     }
     setPlanoEscolhido(plano)
@@ -126,7 +129,6 @@ export default function PlanosPage() {
 
   // ── Modal de assinatura provisória via PIX ──────────────────
   const PIX_KEY = '67671499000130'  // CNPJ como chave PIX da SUEDFLOW
-  const [copiado, setCopiado] = useState(false)
   const copiarPix = async () => {
     try { await navigator.clipboard.writeText(PIX_KEY); setCopiado(true); setTimeout(() => setCopiado(false), 2500) } catch {}
   }
@@ -163,13 +165,13 @@ export default function PlanosPage() {
           </div>
           <div className="rounded-xl p-3 text-xs space-y-1" style={{ background: 'rgba(232,103,26,0.08)', color: 'var(--text2)' }}>
             <p>1. Faça o PIX de <strong>R$ {PRECO_PLANO[planoEscolhido]},00</strong> para a chave acima</p>
-            <p>2. Envie o comprovante para <strong>suporte@suedflow.com.br</strong> com o assunto "Plano {planoEscolhido}"</p>
+            <p>2. Envie o comprovante para <strong>suedflowtecnologia@gmail.com</strong> com o assunto "Plano {planoEscolhido}"</p>
             <p>3. Seu plano será ativado em até <strong>1 dia útil</strong></p>
           </div>
           <p className="text-2xs" style={{ color: 'var(--text3)' }}>
             Em breve: pagamento automático com ASAAS. Por enquanto, o processo é manual mas seguro.
           </p>
-          <a href={`mailto:suporte@suedflow.com.br?subject=Plano ${planoEscolhido} - Comprovante PIX`}
+          <a href={`mailto:suedflowtecnologia@gmail.com?subject=Plano ${planoEscolhido} - Comprovante PIX`}
             className="btn btn-primary w-full flex items-center justify-center gap-2">
             Enviar comprovante por e-mail →
           </a>
