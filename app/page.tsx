@@ -440,7 +440,7 @@ export default function LandingPage() {
                 <>
                   <div className="lp-flow-step"><div className="lp-flow-num">1</div><h3>Descreva a necessidade</h3><p>Converse com a SUE e receba o serviço técnico ideal indicado para o seu caso.</p></div>
                   <div className="lp-flow-step"><div className="lp-flow-num">2</div><h3>Receba o orçamento</h3><p>Preço calculado automaticamente pela área, complexidade e urgência do imóvel.</p></div>
-                  <div className="lp-flow-step"><div className="lp-flow-num">3</div><h3>Pague com segurança</h3><p>Valor retido em escrow via Pagar.me até a aprovação do serviço executado.</p></div>
+                  <div className="lp-flow-step"><div className="lp-flow-num">3</div><h3>Pague com segurança</h3><p>Valor retido em escrow até a aprovação do serviço executado.</p></div>
                   <div className="lp-flow-step"><div className="lp-flow-num">4</div><h3>Acompanhe a execução</h3><p>Chat direto com o profissional e atualizações de status em tempo real.</p></div>
                   <div className="lp-flow-step"><div className="lp-flow-num">5</div><h3>Receba o laudo</h3><p>PDF entregue com ART/RRT vinculada, pronto para uso oficial e registros.</p></div>
                 </>
@@ -512,7 +512,7 @@ export default function LandingPage() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
                 </div>
                 <h3>Pagamento em escrow</h3>
-                <p>O valor é retido pela plataforma via Pagar.me e só é liberado ao profissional após você confirmar o recebimento do serviço.</p>
+                <p>O valor é retido em custódia (escrow) pela plataforma e só é liberado ao profissional após você confirmar o recebimento do serviço.</p>
               </div>
               <div className="lp-trust-card">
                 <div className="lp-trust-icon t2">

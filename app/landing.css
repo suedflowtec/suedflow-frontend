@@ -1211,3 +1211,72 @@
   .landing-page .lp-footer-grid { grid-template-columns: 1fr; gap: 28px; }
   .landing-page .lp-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ══ DASHBOARD CARD — TEMA CLARO ════════════════════════════════
+   O card vivia no dark-theme do app. Na landing clara (#FAFAF7)
+   criava um peso visual incompatível com o tom de convite da página.
+   Estes overrides o integram ao mundo claro sem perder a identidade:
+   KPIs vibrantes ficam ainda mais expressivos sobre branco.
+════════════════════════════════════════════════════════════════ */
+
+/* Fundo: navy escuro → branco com leve calor (conecta ao #FAFAF7 da página) */
+.landing-page .lp-dash {
+  background: linear-gradient(160deg, #FFFFFF 0%, #FEFCF9 100%);
+  border: 1px solid rgba(14, 42, 61, 0.09);
+  box-shadow:
+    0 2px 8px rgba(14, 42, 61, 0.05),
+    0 12px 40px rgba(14, 42, 61, 0.09);
+}
+
+/* Faixa laranja no topo: 3px → 4px para manter presença no fundo claro */
+.landing-page .lp-dash::before {
+  height: 4px;
+  background: linear-gradient(90deg, var(--lp-accent), #FF8A3D 60%, transparent);
+}
+
+/* Brand: branco → marinho */
+.landing-page .lp-dash-brand-name { color: #0E2A3D; }
+
+/* KPI labels: tintas vibrantes ajustadas para contraste sobre branco */
+.landing-page .lp-kpi-orange .lp-kpi-lbl { color: rgba(185,  80, 10, 0.80); }
+.landing-page .lp-kpi-green  .lp-kpi-lbl { color: rgba(  0, 128, 85, 0.80); }
+.landing-page .lp-kpi-purple .lp-kpi-lbl { color: rgba(100,  60, 200, 0.80); }
+
+/* Card interno de demanda: fundo translúcido branco → translúcido azul-escuro */
+.landing-page .lp-dash-demand {
+  background: rgba(14, 42, 61, 0.03);
+  border-color: rgba(14, 42, 61, 0.09);
+}
+
+/* Nome do serviço: branco → marinho */
+.landing-page .lp-dd-svc { color: #0E2A3D; }
+
+/* Separador interno da linha profissional/escrow */
+.landing-page .lp-dd-row { border-top-color: rgba(14, 42, 61, 0.08); }
+
+/* Profissional: texto branco → texto escuro discreto */
+.landing-page .lp-dd-prof { color: rgba(14, 42, 61, 0.58); }
+
+/* Pill "QA" (pendente): invisível sobre branco sem ajuste */
+.landing-page .lp-pill-pending {
+  background: rgba(14, 42, 61, 0.06);
+  border-color: rgba(14, 42, 61, 0.14);
+  color: #5A7184;
+}
+
+/* Setas entre pills */
+.landing-page .lp-pill-arrow { color: rgba(14, 42, 61, 0.22); }
+
+/* Feed de atividade: fundo escuro → fundo levíssimo */
+.landing-page .lp-feed-item {
+  color: rgba(14, 42, 61, 0.68);
+  background: rgba(14, 42, 61, 0.025);
+  border-color: rgba(14, 42, 61, 0.07);
+}
+
+/* Chips flutuantes: reforçar sombra para se destacar do card agora branco */
+.landing-page .lp-float-chip {
+  box-shadow:
+    0 2px 8px rgba(14, 42, 61, 0.12),
+    0 8px 24px rgba(14, 42, 61, 0.10);
+}
