@@ -225,8 +225,13 @@ export function SueChatPublica({ forceOpen }: { forceOpen?: boolean }) {
             <div ref={bottomRef} />
           </div>
 
+          {/* Disclaimer AI */}
+          <p className="px-3 py-1 text-center shrink-0" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            ⚠ A SUE é uma assistente de IA e pode cometer erros — confira sempre as informações.
+          </p>
+
           {/* Input */}
-          <div className="px-3 pb-3 pt-2 flex gap-2 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="px-3 pb-3 pt-2 flex gap-2 shrink-0">
             <input
               ref={inputRef}
               value={input}

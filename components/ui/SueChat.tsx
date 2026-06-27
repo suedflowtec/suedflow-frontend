@@ -199,8 +199,9 @@ export function SueChat() {
           </div>
 
           {/* Aviso legal */}
-          <div className="px-3 py-1.5 shrink-0 text-center" style={{ borderTop: '1px solid var(--border)' }}>
+          <div className="px-3 py-1.5 shrink-0 text-center space-y-0.5" style={{ borderTop: '1px solid var(--border)' }}>
             <p className="text-[10px]" style={{ color: 'var(--text3)' }}>SUE monitora este chat. Comunicações fora da plataforma violam SUED-TU-001.</p>
+            <p className="text-[10px]" style={{ color: 'var(--text3)', opacity: 0.75 }}>⚠ A SUE é uma IA e pode cometer erros — sempre confira as informações.</p>
           </div>
 
           {/* Input */}

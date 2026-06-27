@@ -423,6 +423,10 @@ export default function ProfissionalDemandaDetalhePage() {
         {jaEnviouEntregavel && (
           <div className="card space-y-3">
             <p className="section-label">Verificação SUE (AVC)</p>
+            <p className="text-2xs flex items-start gap-1.5" style={{ color: 'var(--text3)' }}>
+              <span style={{ flexShrink: 0 }}>⚠️</span>
+              A SUE é uma assistente de IA e pode cometer erros. Este resultado é informativo — a responsabilidade técnica é exclusivamente do profissional detentor da ART/RRT.
+            </p>
             <button onClick={verResultadoQa} disabled={carregandoAvc} className="btn btn-secondary btn-sm">
               {carregandoAvc ? 'Consultando...' : 'Ver resultado QA'}
             </button>

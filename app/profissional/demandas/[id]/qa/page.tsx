@@ -6,6 +6,7 @@ import { orders } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { MessageSquareWarning } from 'lucide-react'
+import { SueDisclaimer } from '@/components/ui/SueDisclaimer'
 
 const TIER_COLOR: Record<string, string> = {
   CANDIDATO: 'var(--text3)', JUNIOR: 'var(--blue)',
@@ -71,6 +72,9 @@ export default function ResultadoQaPage() {
       />
 
       <main className="p-6 space-y-6 max-w-3xl">
+        {/* Disclaimer obrigatório — topo da tela */}
+        <SueDisclaimer />
+
         {!avc ? (
           <div className="card">
             <p className="text-sm" style={{ color: 'var(--text3)' }}>
