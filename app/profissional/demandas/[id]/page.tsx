@@ -35,7 +35,7 @@ export default function ProfissionalDemandaDetalhePage() {
   const [registrando, setRegistrando] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [vtcResult, setVtcResult] = useState<any>(null)
-  const [carregandoVtc, setCarregandoAvc] = useState(false)
+  const [carregandoVtc, setCarregandoVtc] = useState(false)
   const [disputaAberta, setDisputaAberta] = useState(false)
   const [motivoDisputa, setMotivoDisputa] = useState('')
   const [enviandoDisputa, setEnviandoDisputa] = useState(false)
@@ -176,14 +176,14 @@ export default function ProfissionalDemandaDetalhePage() {
   }
 
   const verResultadoQa = async () => {
-    setCarregandoAvc(true)
+    setCarregandoVtc(true)
     try {
       const r = await orders.vtc(id)
       setVtcResult(r)
     } catch (err: any) {
       toast(err.message || 'Erro ao consultar Verificação SUE', 'error')
     } finally {
-      setCarregandoAvc(false)
+      setCarregandoVtc(false)
     }
   }
 
