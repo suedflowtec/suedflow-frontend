@@ -53,7 +53,7 @@ export default function ResultadoQaPage() {
     <Shell><Topbar title="Resultado do QA" /><main className="p-6"><p style={{ color: 'var(--text3)' }}>Carregando...</p></main></Shell>
   )
 
-  const avc = dados?.avc
+  const vtc = dados?.vtc
   const scoreAtual = dados?.score_atual
   const scoreAntes = dados?.score_antes
   const penalidade = dados?.penalidade
@@ -63,7 +63,7 @@ export default function ResultadoQaPage() {
     <Shell>
       <Topbar
         title="Resultado do QA"
-        subtitle={dados?.demanda?.numero ? `OS ${dados.demanda.numero} · ${dados.demanda.svc_nome || ''}` : 'Verificação SUE (AVC)'}
+        subtitle={dados?.demanda?.numero ? `OS ${dados.demanda.numero} · ${dados.demanda.svc_nome || ''}` : 'Verificação SUE'}
         actions={
           <button className="btn btn-secondary btn-sm" onClick={() => router.push(`/profissional/demandas/${id}`)}>
             ← Voltar à demanda
@@ -75,7 +75,7 @@ export default function ResultadoQaPage() {
         {/* Disclaimer obrigatório — topo da tela */}
         <SueDisclaimer />
 
-        {!avc ? (
+        {!vtc ? (
           <div className="card">
             <p className="text-sm" style={{ color: 'var(--text3)' }}>
               {dados?.msg || 'A SUE ainda não concluiu a verificação deste entregável.'}
@@ -83,14 +83,14 @@ export default function ResultadoQaPage() {
           </div>
         ) : (
           <>
-            {/* Resumo do AVC */}
+            {/* Resumo da Verificação SUE */}
             <div className="card-accent space-y-3">
-              <p className="section-label">Aviso de Verificação de Conformidade (AVC)</p>
-              <p className="text-sm" style={{ color: 'var(--text2)' }}>{avc.resumo}</p>
+              <p className="section-label">Verificação SUE</p>
+              <p className="text-sm" style={{ color: 'var(--text2)' }}>{vtc.resumo}</p>
               <div className="flex gap-2">
-                {avc.tem_inconsistencia
+                {vtc.tem_inconsistencia
                   ? <span className="badge badge-red">Inconsistências encontradas</span>
-                  : avc.tem_atencao
+                  : vtc.tem_atencao
                     ? <span className="badge badge-yellow">Pontos de atenção</span>
                     : <span className="badge badge-green">Conforme</span>}
                 {dados.revisado_em && (
@@ -102,11 +102,11 @@ export default function ResultadoQaPage() {
             </div>
 
             {/* Itens verificados */}
-            {Array.isArray(avc.itens) && avc.itens.length > 0 && (
+            {Array.isArray(vtc.itens) && vtc.itens.length > 0 && (
               <div className="card-solid space-y-3">
                 <p className="section-label">Itens verificados</p>
                 <ul className="space-y-3">
-                  {avc.itens.map((item: any, i: number) => (
+                  {vtc.itens.map((item: any, i: number) => (
                     <li key={i} className="flex items-start gap-3">
                       <span className={`badge ${CLASSE_BADGE[item.classe] || 'badge-gray'} shrink-0`}>
                         {CLASSE_LABEL[item.classe] || item.classe}
@@ -123,11 +123,11 @@ export default function ResultadoQaPage() {
             )}
 
             {/* Sugestões */}
-            {Array.isArray(avc.sugestoes) && avc.sugestoes.length > 0 && (
+            {Array.isArray(vtc.sugestoes) && vtc.sugestoes.length > 0 && (
               <div className="card-solid space-y-2">
                 <p className="section-label">Sugestões da SUE</p>
                 <ul className="space-y-1">
-                  {avc.sugestoes.map((s: any, i: number) => (
+                  {vtc.sugestoes.map((s: any, i: number) => (
                     <li key={i} className="text-sm" style={{ color: 'var(--text2)' }}>• {typeof s === 'string' ? s : s.descricao}</li>
                   ))}
                 </ul>
@@ -136,13 +136,13 @@ export default function ResultadoQaPage() {
           </>
         )}
 
-        {/* Contestação do AVC — Art. 13.1 */}
-        {avc?.tem_inconsistencia && !justificado && (
+        {/* Contestação da Verificação SUE — Art. 13.1 */}
+        {vtc?.tem_inconsistencia && !justificado && (
           <div className="card-solid space-y-3" style={{ borderColor: 'rgba(255,193,7,0.3)' }}>
             <div className="flex items-start gap-2">
               <MessageSquareWarning size={16} className="shrink-0 mt-0.5" style={{ color: 'var(--gold)' }} />
               <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>Contestar resultado do AVC</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--gold)' }}>Contestar Verificação SUE</p>
                 <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
                   Se você discordar das inconsistências apontadas, justifique tecnicamente e prossiga com a entrega.
                   A justificativa fica registrada para o curador analisar junto com o entregável (Art. 13.1).
@@ -152,7 +152,7 @@ export default function ResultadoQaPage() {
             <textarea
               className="input"
               rows={3}
-              placeholder="Descreva tecnicamente por que sua entrega está correta apesar do AVC (mínimo 20 caracteres)"
+              placeholder="Descreva tecnicamente por que sua entrega está correta apesar da Verificação SUE (mínimo 20 caracteres)"
               value={justificativa}
               onChange={e => setJustificativa(e.target.value)}
             />
@@ -164,7 +164,7 @@ export default function ResultadoQaPage() {
                 }
                 setJustificando(true)
                 try {
-                  await orders.justificarAvc(id, justificativa.trim())
+                  await orders.justificarVtc(id, justificativa.trim())
                   setJustificado(true)
                   toast('Contestação registrada. O curador irá analisá-la junto com o entregável.', 'success')
                 } catch (err: any) {

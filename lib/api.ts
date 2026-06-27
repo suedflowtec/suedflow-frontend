@@ -103,8 +103,8 @@ export const orders = {
   pagarBoleto: (id: string) => request<{
     boleto_url: string; boleto_codigo: string; valor: number; vencimento: string
   }>(`/api/orders/${id}/pagar/boleto`, { method: 'POST' }),
-  justificarAvc: (id: string, justificativa: string) =>
-    request<{ ok: boolean }>(`/api/orders/${id}/avc/justificar`, { method: 'POST', body: { justificativa } }),
+  justificarVtc: (id: string, justificativa: string) =>
+    request<{ ok: boolean }>(`/api/orders/${id}/vtc/justificar`, { method: 'POST', body: { justificativa } }),
   mockConfirmarPagamento: (id: string) =>
     request<any>(`/api/orders/${id}/mock-confirmar-pagamento`, { method: 'POST' }),
   confirmarEntrega: (id: string) =>
@@ -130,7 +130,7 @@ export const orders = {
     fd.append('entregavel', arquivo)
     return request<any>(`/api/orders/${id}/submeter-qa`, { method: 'POST', formData: fd })
   },
-  avc: (id: string) => request<any>(`/api/orders/${id}/avc`),
+  vtc: (id: string) => request<any>(`/api/orders/${id}/vtc`),
   qaResultado: (id: string) => request<any>(`/api/orders/${id}/qa-resultado`),
   listarDocumentos: (id: string) => request<{ documentos: any[] }>(`/api/orders/${id}/documentos`),
   uploadDocumento: (id: string, arquivo: File, tipo: string, descricao?: string) => {
@@ -160,9 +160,9 @@ export const admin = {
   atualizarParamsGlobais: (data: { pnr?: number; fe?: number }) =>
     request<{ ok: boolean }>('/api/admin/params-globais', { method: 'PATCH', body: data }),
   verificarSue: (demandaId: string) =>
-    request<{ ok: boolean; demanda_id: string; avc: any; latencia_ms: number }>(`/api/admin/teste/qa/verificar/${demandaId}`, { method: 'POST' }),
+    request<{ ok: boolean; demanda_id: string; vtc: any; latencia_ms: number }>(`/api/admin/teste/qa/verificar/${demandaId}`, { method: 'POST' }),
   simularEntregavel: (url_pdf: string, demanda_id?: string) =>
-    request<{ ok: boolean; demanda_id: string; avc: any }>('/api/admin/teste/qa/simular-entregavel', { method: 'POST', body: { url_pdf, demanda_id } }),
+    request<{ ok: boolean; demanda_id: string; vtc: any }>('/api/admin/teste/qa/simular-entregavel', { method: 'POST', body: { url_pdf, demanda_id } }),
   teste: {
     criarProfissionalCompleto: (data: any) =>
       request<any>('/api/admin/teste/criar-profissional-completo', { method: 'POST', body: data }),

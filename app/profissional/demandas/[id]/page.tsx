@@ -34,8 +34,8 @@ export default function ProfissionalDemandaDetalhePage() {
   const [obsMarco, setObsMarco] = useState('')
   const [registrando, setRegistrando] = useState(false)
   const [enviando, setEnviando] = useState(false)
-  const [avc, setAvc] = useState<any>(null)
-  const [carregandoAvc, setCarregandoAvc] = useState(false)
+  const [vtcResult, setVtcResult] = useState<any>(null)
+  const [carregandoVtc, setCarregandoAvc] = useState(false)
   const [disputaAberta, setDisputaAberta] = useState(false)
   const [motivoDisputa, setMotivoDisputa] = useState('')
   const [enviandoDisputa, setEnviandoDisputa] = useState(false)
@@ -178,10 +178,10 @@ export default function ProfissionalDemandaDetalhePage() {
   const verResultadoQa = async () => {
     setCarregandoAvc(true)
     try {
-      const r = await orders.avc(id)
-      setAvc(r)
+      const r = await orders.vtc(id)
+      setVtcResult(r)
     } catch (err: any) {
-      toast(err.message || 'Erro ao consultar AVC', 'error')
+      toast(err.message || 'Erro ao consultar Verificação SUE', 'error')
     } finally {
       setCarregandoAvc(false)
     }
@@ -419,20 +419,20 @@ export default function ProfissionalDemandaDetalhePage() {
           </div>
         )}
 
-        {/* Resultado QA / AVC */}
+        {/* Resultado QA / Verificação SUE */}
         {jaEnviouEntregavel && (
           <div className="card space-y-3">
-            <p className="section-label">Verificação SUE (AVC)</p>
+            <p className="section-label">Verificação SUE</p>
             <p className="text-2xs flex items-start gap-1.5" style={{ color: 'var(--text3)' }}>
               <span style={{ flexShrink: 0 }}>⚠️</span>
               A SUE é uma assistente de IA e pode cometer erros. Este resultado é informativo — a responsabilidade técnica é exclusivamente do profissional detentor da ART/RRT.
             </p>
-            <button onClick={verResultadoQa} disabled={carregandoAvc} className="btn btn-secondary btn-sm">
-              {carregandoAvc ? 'Consultando...' : 'Ver resultado QA'}
+            <button onClick={verResultadoQa} disabled={carregandoVtc} className="btn btn-secondary btn-sm">
+              {carregandoVtc ? 'Consultando...' : 'Ver resultado QA'}
             </button>
 
-            {avc && (
-              avc.avc ? (
+            {vtcResult && (
+              vtcResult.vtc ? (
                 <button
                   className="btn btn-primary btn-sm"
                   onClick={() => router.push(`/profissional/demandas/${id}/qa`)}
@@ -440,7 +440,7 @@ export default function ProfissionalDemandaDetalhePage() {
                   Ver resultado completo e impacto no Score SQP →
                 </button>
               ) : (
-                <p className="text-sm" style={{ color: 'var(--text3)' }}>{avc.msg || 'A SUE ainda não concluiu a verificação.'}</p>
+                <p className="text-sm" style={{ color: 'var(--text3)' }}>{vtcResult.msg || 'A SUE ainda não concluiu a verificação.'}</p>
               )
             )}
           </div>

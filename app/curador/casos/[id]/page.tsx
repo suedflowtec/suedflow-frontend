@@ -299,7 +299,7 @@ export default function CuradorCasoDetalhePage() {
             {/* Análise SUE com disclaimer obrigatório */}
             {analise_sue && (
               <div className="card-solid space-y-3">
-                <p className="section-label">Análise AVC (Motor QA — SUE)</p>
+                <p className="section-label">Verificação SUE (Motor QA)</p>
                 <p className="text-2xs flex items-start gap-1.5 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text3)' }}>
                   <span style={{ flexShrink: 0 }}>⚠</span>
                   A SUE é uma assistente de IA e pode cometer erros. Este relatório é informativo e apoia a análise do curador — não substitui o julgamento técnico do profissional responsável pela ART/RRT.

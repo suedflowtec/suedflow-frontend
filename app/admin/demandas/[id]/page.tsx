@@ -281,12 +281,12 @@ export default function AdminDemandaDetalhePage() {
               </Button>
             </div>
 
-            {/* Verificação SUE (AVC) */}
+            {/* Verificação SUE */}
             {demanda.url_entregavel && (
               <div className="card-solid space-y-2">
-                <p className="section-label">Verificação SUE (AVC)</p>
+                <p className="section-label">Verificação SUE</p>
                 <p className="text-2xs" style={{ color: 'var(--text3)' }}>
-                  Dispara a análise de conformidade do entregável pela IA. Resultado disponível no campo AVC da demanda.
+                  Dispara a análise de conformidade do entregável pela IA. Resultado disponível no campo VTC da demanda.
                 </p>
                 <Button
                   variant="ghost"
@@ -296,13 +296,13 @@ export default function AdminDemandaDetalhePage() {
                     setIntervindo(true)
                     try {
                       const r = await admin.verificarSue(id)
-                      toast(`AVC concluído em ${r.latencia_ms}ms — resultado registrado`, 'success')
+                      toast(`Verificação SUE concluída em ${r.latencia_ms}ms — resultado registrado`, 'success')
                       carregar()
                     } catch (err: any) { toast(err.message || 'Erro na verificação SUE', 'error') }
                     finally { setIntervindo(false) }
                   }}
                 >
-                  🤖 Verificar AVC com SUE
+                  🤖 Verificar com SUE
                 </Button>
               </div>
             )}

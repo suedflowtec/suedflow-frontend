@@ -103,7 +103,7 @@ export const MODULO_RICO: Record<string, ModuloConteudoRico> = {
         'Pedir documentos adicionais ao cliente pelo chat da demanda',
         'Rejeitar uma demanda antes de aceitar (simplesmente não aceite)',
         'Comunicar paralisação se houver impedimento técnico real (ex: acesso negado)',
-        'Contestar o resultado do AVC com justificativa técnica antes de reenviar',
+        'Contestar a Verificação SUE com justificativa técnica antes de reenviar',
       ],
       nao_pode: [
         'Solicitar pagamento, Pix ou transferência fora da plataforma — é motivo de banimento',
