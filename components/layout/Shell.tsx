@@ -11,6 +11,7 @@ import {
 import { Logo } from '@/components/ui/Logo'
 import { Avatar } from '@/components/ui/Avatar'
 import { SueChat } from '@/components/ui/SueChat'
+import { NotificacaoBell } from '@/components/ui/NotificacaoBell'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -56,12 +57,22 @@ const NAV = {
   ],
 }
 
+// Salva/lê o último modo ativo para manter contexto em /configuracoes
+function salvarModo(modo: 'profissional' | 'cliente') {
+  if (typeof window !== 'undefined') localStorage.setItem('ultimo_modo', modo)
+}
+function lerModo(): string {
+  if (typeof window !== 'undefined') return localStorage.getItem('ultimo_modo') || 'cliente'
+  return 'cliente'
+}
+
 function getNav(user: any, pathname: string) {
   const tipo = user?.tipo
   if (tipo === 'ADMIN' || tipo === 'MODERADOR') return NAV.ADMIN
   if (tipo === 'CURADOR_SUPORTE' || tipo === 'CURADOR_SENIOR') return NAV.CURADOR
   if (user?.cliente && user?.profissional) {
-    return pathname.startsWith('/profissional') ? NAV.PROFISSIONAL : NAV.CLIENTE
+    const emProf = pathname.startsWith('/profissional') || lerModo() === 'profissional'
+    return emProf ? NAV.PROFISSIONAL : NAV.CLIENTE
   }
   if (user?.profissional) return NAV.PROFISSIONAL
   return NAV.CLIENTE
@@ -103,6 +114,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const nav = getNav(user, pathname)
   const temAmbosPerfis = !!(user?.cliente && user?.profissional)
   const emModoProfissional = pathname.startsWith('/profissional')
+
+  // Sincroniza modo salvo ao mudar de área
+  useEffect(() => {
+    if (!temAmbosPerfis) return
+    if (pathname.startsWith('/profissional')) salvarModo('profissional')
+    else if (pathname.startsWith('/cliente')) salvarModo('cliente')
+  }, [pathname, temAmbosPerfis])
 
   const TIPO_LABEL: Record<string, string> = {
     CLIENTE: 'Cliente', PROFISSIONAL: 'Profissional',
@@ -303,7 +321,10 @@ export function Topbar({ title, actions, subtitle }: {
         <h1 className="page-title truncate">{title}</h1>
         {subtitle && <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text3)' }}>{subtitle}</p>}
       </div>
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+      <div className="flex items-center gap-2 shrink-0">
+        {actions}
+        <NotificacaoBell />
+      </div>
     </header>
   )
 }

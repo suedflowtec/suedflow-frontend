@@ -88,7 +88,7 @@ export const sue = {
 }
 
 export const orders = {
-  calcularPreco: (data: any) => request<any>('/api/orders/calcular-preco', { method: 'POST', body: data, auth: false }),
+  calcularPreco: (data: any) => request<any>('/api/orders/calcular-preco', { method: 'POST', body: data }),
   criar: (data: any) => request<any>('/api/orders', { method: 'POST', body: data }),
   listarMinhas: (contexto?: 'cliente' | 'profissional') =>
     request<any[]>(`/api/orders${contexto ? `?contexto=${contexto}` : ''}`),
@@ -194,6 +194,8 @@ export const notificacoes = {
     return request<{ notificacoes: any[]; total: number; nao_lidas: number }>(`/api/notificacoes${qs.toString() ? `?${qs}` : ''}`)
   },
   marcarLidas: () => request<{ ok: boolean; atualizadas: number }>('/api/notificacoes/marcar-lidas', { method: 'PATCH' }),
+  marcarLida:  (id: string) => request<{ ok: boolean }>(`/api/notificacoes/${id}/lida`, { method: 'PATCH' }),
+  deletar:     (id: string) => request<{ ok: boolean }>(`/api/notificacoes/${id}`, { method: 'DELETE' }),
 }
 
 export const imovel = {

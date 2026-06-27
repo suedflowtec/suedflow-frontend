@@ -7,7 +7,7 @@ import { orders, auth as authApi } from '@/lib/api'
 import { formatBRL, statusLabel } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { Radar, Wallet, Star, CreditCard, GraduationCap } from 'lucide-react'
+import { Radar, Wallet, Star, CreditCard, GraduationCap, Eye, EyeOff } from 'lucide-react'
 
 const STATUS_BADGE: Record<string, string> = {
   AGUARDANDO: 'badge badge-yellow', PAGA: 'badge badge-blue',
@@ -23,6 +23,7 @@ export default function ProfissionalHome() {
   const { toast } = useToast()
   const [demandas, setDemandas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [saldoVisivel, setSaldoVisivel] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -121,8 +122,17 @@ export default function ProfissionalHome() {
             <p className="kpi-value">{concluidas.length}</p>
             <p className="kpi-label">Concluídas</p>
           </div>
-          <div className="kpi-card">
-            <p className="kpi-value" style={{ color: 'var(--green)' }}>{formatBRL(prof.saldo_disponivel || 0)}</p>
+          <div className="kpi-card" style={{ position: 'relative' }}>
+            <button
+              onClick={() => setSaldoVisivel(v => !v)}
+              style={{ position: 'absolute', top: 8, right: 8, color: 'var(--text3)', background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}
+              title={saldoVisivel ? 'Ocultar saldo' : 'Mostrar saldo'}
+            >
+              {saldoVisivel ? <EyeOff size={13} /> : <Eye size={13} />}
+            </button>
+            <p className="kpi-value" style={{ color: 'var(--green)' }}>
+              {saldoVisivel ? formatBRL(prof.saldo_disponivel || 0) : '••••••'}
+            </p>
             <p className="kpi-label">Saldo disponível</p>
           </div>
           <div className="kpi-card">

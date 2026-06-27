@@ -56,6 +56,7 @@ export default function DemandaDetailPage() {
   const [comentario, setComentario] = useState('')
   const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
   const [disputaAberta, setDisputaAberta] = useState(false)
+  const [mediacao, setMediacao] = useState({ etapa: 0, leu: false })
   const [motivoDisputa, setMotivoDisputa] = useState('')
   const [enviandoDisputa, setEnviandoDisputa] = useState(false)
   const [agora, setAgora] = useState(() => Date.now())
@@ -405,24 +406,73 @@ export default function DemandaDetailPage() {
               )}
             </div>
 
-            {/* Disputa */}
+            {/* Disputa — mediação SUE obrigatória antes de abrir */}
             {!['CONCLUIDA', 'CANCELADA', 'EM_DISPUTA'].includes(demanda.status) && (
-              <div className="card-solid space-y-2">
+              <div className="card-solid space-y-3">
                 {!disputaAberta ? (
-                  <Button variant="ghost" onClick={() => setDisputaAberta(true)}><AlertTriangle size={14} />Abrir disputa</Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" className="text-xs" onClick={() => setDisputaAberta(true)}>
+                      <AlertTriangle size={13} />Há um problema com esta demanda
+                    </Button>
+                  </div>
+                ) : mediacao.etapa === 0 ? (
+                  /* Etapa 0 — SUE mostra o que foi contratado */
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold"
+                        style={{ background: 'linear-gradient(135deg,var(--orange),var(--orange2))' }}>S</span>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Antes de abrir disputa, veja o que foi contratado</p>
+                    </div>
+                    <div className="rounded-xl p-3 space-y-1.5 text-sm" style={{ background: 'var(--glass)', border: '1px solid var(--border)' }}>
+                      <div className="flex justify-between"><span style={{ color: 'var(--text3)' }}>Serviço</span><span style={{ color: 'var(--text)' }}>{demanda.servico?.nome || demanda.svc_codigo}</span></div>
+                      <div className="flex justify-between"><span style={{ color: 'var(--text3)' }}>Imóvel</span><span style={{ color: 'var(--text)' }}>{demanda.tipo_imovel} · {demanda.area_m2}m²</span></div>
+                      <div className="flex justify-between"><span style={{ color: 'var(--text3)' }}>Urgência</span><span style={{ color: 'var(--text)' }}>{demanda.urgencia === 'NORMAL' ? 'Normal' : demanda.urgencia === 'PRIORITARIO' ? 'Prioritário' : 'Urgente'}</span></div>
+                      <div className="flex justify-between"><span style={{ color: 'var(--text3)' }}>Valor total</span><span className="font-semibold" style={{ color: 'var(--orange)' }}>{formatBRL(demanda.valor_total || 0)}</span></div>
+                      {demanda.descricao && <div><span style={{ color: 'var(--text3)' }}>Descrição: </span><span style={{ color: 'var(--text2)' }}>{demanda.descricao}</span></div>}
+                    </div>
+                    {demanda.resultado_qa && (() => {
+                      try {
+                        const vtc = JSON.parse(demanda.resultado_qa)
+                        return !vtc.tem_inconsistencia ? (
+                          <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(0,214,143,0.08)', border: '1px solid rgba(0,214,143,0.25)' }}>
+                            <CheckCircle2 size={14} className="shrink-0 mt-0.5" style={{ color: 'var(--green)' }} />
+                            <p className="text-xs" style={{ color: 'var(--text2)' }}>
+                              A Verificação SUE analisou o entregável e não encontrou inconsistências com o escopo contratado. O laudo foi revisado e está compatível com o serviço solicitado.
+                            </p>
+                          </div>
+                        ) : null
+                      } catch { return null }
+                    })()}
+                    <p className="text-xs" style={{ color: 'var(--text3)' }}>
+                      Muitos problemas podem ser resolvidos diretamente no chat com o profissional. Tente isso antes de acionar a disputa.
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      <Button className="flex-1" onClick={() => setMediacao({ etapa: 1, leu: false })}>
+                        Li e ainda preciso abrir disputa →
+                      </Button>
+                      <Button variant="ghost" onClick={() => { setDisputaAberta(false); setMediacao({ etapa: 0, leu: false }) }}>Cancelar</Button>
+                    </div>
+                  </div>
                 ) : (
+                  /* Etapa 1 — formulário de disputa */
                   <div className="space-y-2">
-                    <p className="section-label">Motivo da disputa</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertTriangle size={14} style={{ color: 'var(--gold)' }} />
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Abrir disputa</p>
+                    </div>
+                    <p className="text-xs" style={{ color: 'var(--text3)' }}>
+                      Um curador da SUEDFLOW irá analisar o caso e os entregáveis em até 5 dias úteis. Descreva o problema com clareza.
+                    </p>
                     <textarea
                       className="input"
                       rows={3}
-                      placeholder="Descreva o problema (mínimo 10 caracteres)"
+                      placeholder="Descreva o problema de forma clara e objetiva (mínimo 10 caracteres)"
                       value={motivoDisputa}
                       onChange={e => setMotivoDisputa(e.target.value)}
                     />
                     <div className="flex gap-2">
-                      <Button variant="orange" className="flex-1" onClick={enviarDisputa} loading={enviandoDisputa}>Enviar disputa</Button>
-                      <Button variant="ghost" onClick={() => setDisputaAberta(false)}>Cancelar</Button>
+                      <Button variant="orange" className="flex-1" onClick={enviarDisputa} loading={enviandoDisputa}>Enviar para curador</Button>
+                      <Button variant="ghost" onClick={() => { setDisputaAberta(false); setMediacao({ etapa: 0, leu: false }) }}>Cancelar</Button>
                     </div>
                   </div>
                 )}

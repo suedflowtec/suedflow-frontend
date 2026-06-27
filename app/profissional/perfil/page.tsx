@@ -111,9 +111,12 @@ export default function ProfissionalPerfilPage() {
           {(perfil?.svcs_habilitados || []).length === 0 ? (
             <p className="text-sm" style={{ color: 'var(--text3)' }}>Nenhum serviço habilitado ainda.</p>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col gap-2">
               {perfil.svcs_habilitados.map((s: any) => (
-                <Badge key={s.codigo_svc} variant="glass">{s.codigo_svc}</Badge>
+                <div key={s.codigo_svc} className="flex items-center gap-2 py-1.5 px-2 rounded-xl" style={{ background: 'var(--glass)', border: '1px solid var(--border)' }}>
+                  <span className="text-xs font-mono font-bold" style={{ color: 'var(--orange)', minWidth: 56 }}>{s.codigo_svc}</span>
+                  <span className="text-xs" style={{ color: 'var(--text2)' }}>{s.servico?.nome || s.nome || s.codigo_svc}</span>
+                </div>
               ))}
             </div>
           )}

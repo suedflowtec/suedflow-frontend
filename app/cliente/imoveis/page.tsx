@@ -6,7 +6,7 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { imovel as imovelApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { Home, MapPin, ChevronRight } from 'lucide-react'
+import { Home, MapPin, ChevronRight, Search, X } from 'lucide-react'
 
 const TIPO_LABEL: Record<string, string> = {
   RESIDENCIAL: 'Residencial',
@@ -20,6 +20,8 @@ export default function MeusImoveisPage() {
   const { toast } = useToast()
   const [imoveis, setImoveis] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [busca, setBusca] = useState('')
+  const [tipoFiltro, setTipoFiltro] = useState<'' | 'RESIDENCIAL' | 'COMERCIAL' | 'INDUSTRIAL'>('')
 
   useEffect(() => {
     if (authLoading) return
@@ -36,6 +38,15 @@ export default function MeusImoveisPage() {
     const partes = [im.logradouro, im.numero, im.bairro].filter(Boolean)
     return partes.length ? partes.join(', ') : `${im.cidade}, ${im.estado}`
   }
+
+  const imoveisFiltrados = imoveis.filter(im => {
+    const q = busca.toLowerCase()
+    const matchBusca = !q || [
+      im.logradouro, im.numero, im.bairro, im.cidade, im.estado, im.cep,
+    ].some(v => v?.toLowerCase().includes(q))
+    const matchTipo = !tipoFiltro || im.tipo === tipoFiltro
+    return matchBusca && matchTipo
+  })
 
   return (
     <Shell>
@@ -68,6 +79,39 @@ export default function MeusImoveisPage() {
             </Link>
           </div>
         ) : (
+          <>
+            {/* Busca e filtro */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text3)' }} />
+                <input
+                  className="input pl-9"
+                  placeholder="Buscar por endereço, bairro, cidade..."
+                  value={busca}
+                  onChange={e => setBusca(e.target.value)}
+                />
+                {busca && (
+                  <button className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text3)' }} onClick={() => setBusca('')}>
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+              <select
+                className="input sm:w-44"
+                value={tipoFiltro}
+                onChange={e => setTipoFiltro(e.target.value as typeof tipoFiltro)}
+              >
+                <option value="">Todos os tipos</option>
+                <option value="RESIDENCIAL">Residencial</option>
+                <option value="COMERCIAL">Comercial</option>
+                <option value="INDUSTRIAL">Industrial</option>
+              </select>
+            </div>
+            {imoveisFiltrados.length === 0 && (
+              <p className="text-sm text-center py-8" style={{ color: 'var(--text3)' }}>
+                Nenhum imóvel encontrado para "{busca}"{tipoFiltro ? ` · ${TIPO_LABEL[tipoFiltro]}` : ''}.
+              </p>
+            )}
           <div className="card">
             <table className="data-table">
               <thead>
@@ -82,7 +126,7 @@ export default function MeusImoveisPage() {
                 </tr>
               </thead>
               <tbody>
-                {imoveis.map(im => (
+                {imoveisFiltrados.map(im => (
                   <tr
                     key={im.id}
                     className="cursor-pointer"
@@ -122,6 +166,7 @@ export default function MeusImoveisPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         <p className="text-xs text-center" style={{ color: 'var(--text3)' }}>

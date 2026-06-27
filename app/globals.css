@@ -86,6 +86,96 @@
   border-color: rgba(0,0,0,0.12);
 }
 
+/* ── Correções de contraste globais no tema claro ──────────────
+   Textos com color fixo em branco/claro que ficam invisíveis
+   no tema light — mapeados por classes e componentes.
+────────────────────────────────────────────────────────────── */
+
+/* Inputs/textareas ficam legíveis */
+[data-theme="light"] .input {
+  background: rgba(255,255,255,0.9);
+  border-color: rgba(0,0,0,0.12);
+  color: #0E2A3D;
+}
+[data-theme="light"] .input:focus {
+  background: #FFFFFF;
+  border-color: var(--orange);
+}
+[data-theme="light"] .input::placeholder { color: #7A9BB0; }
+
+/* section-label visível */
+[data-theme="light"] .section-label { color: #4A6878; }
+
+/* kpi-card no tema claro */
+[data-theme="light"] .kpi-card {
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+[data-theme="light"] .kpi-label { color: #4A6878; }
+
+/* card-accent mais suave */
+[data-theme="light"] .card-accent {
+  background: linear-gradient(135deg, rgba(232,103,26,0.09), rgba(232,103,26,0.03));
+  border-color: rgba(232,103,26,0.25);
+}
+
+/* Botões secundários legíveis */
+[data-theme="light"] .btn-secondary {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.12);
+  color: #0E2A3D;
+}
+[data-theme="light"] .btn-secondary:hover {
+  background: rgba(0,0,0,0.09);
+}
+[data-theme="light"] .btn-ghost { color: #2E4A5C; }
+[data-theme="light"] .btn-ghost:hover {
+  background: rgba(0,0,0,0.05);
+  color: #0E2A3D;
+}
+
+/* nav-item (sidebar usa dark sempre, mas tema claro pode vazar) */
+[data-theme="light"] .nav-item { color: #A8BDCC; }
+[data-theme="light"] .nav-item.active { color: #FFFFFF; }
+
+/* data-table: texto das células visível */
+[data-theme="light"] .data-table td { color: #0E2A3D; }
+[data-theme="light"] .data-table th { color: #4A6878; }
+[data-theme="light"] .data-table .mono { color: #0E2A3D; }
+[data-theme="light"] .data-table .bold { color: #0E2A3D; }
+
+/* Badges coloridos: manter legíveis no light */
+[data-theme="light"] .badge-yellow { color: #B87800; background: rgba(245,166,35,0.15); }
+[data-theme="light"] .badge-teal   { color: #007A55; background: rgba(0,214,143,0.12); }
+[data-theme="light"] .badge-green  { color: #007A55; background: rgba(0,214,143,0.12); }
+[data-theme="light"] .badge-blue   { color: #1A5CB5; background: rgba(77,159,255,0.12); }
+[data-theme="light"] .badge-indigo { color: #4338CA; background: rgba(99,102,241,0.12); }
+
+/* Textos genéricos brancos/semi-brancos usados inline: regra conservadora */
+[data-theme="light"] p,
+[data-theme="light"] span,
+[data-theme="light"] div {
+  /* não forçar aqui — usar variáveis CSS (--text, --text2, --text3) */
+}
+
+/* Scrollbar discreta no light */
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
+
+/* toast visível no tema claro */
+[data-theme="light"] .toast-success { background: #ECFDF5; border-color: #00D68F; color: #065F46; }
+[data-theme="light"] .toast-error   { background: #FFF1F2; border-color: #FF4D6D; color: #9B1C1C; }
+[data-theme="light"] .toast-info    { background: #F0F9FF; border-color: #4D9FFF; color: #1E40AF; }
+
+/* Planos: nomes de tier ficam visíveis */
+[data-theme="light"] .text-white { color: #0E2A3D !important; }
+
+/* SUEDPrepara: módulos e perguntas de quiz */
+[data-theme="light"] .prepara-modulo-title { color: #0E2A3D; }
+[data-theme="light"] .prepara-modulo-body  { color: #2E4A5C; }
+[data-theme="light"] .quiz-question        { color: #0E2A3D; }
+[data-theme="light"] .quiz-option          { color: #2E4A5C; background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.10); }
+[data-theme="light"] .quiz-option:hover    { background: rgba(232,103,26,0.08); }
+
 @keyframes sue-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.1); }

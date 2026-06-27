@@ -6,6 +6,7 @@ import { orders } from '@/lib/api'
 import { formatBRL, statusLabel } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
+import { Search, X } from 'lucide-react'
 
 const STATUS_BADGE: Record<string, string> = {
   AGUARDANDO: 'badge badge-yellow', PAGA: 'badge badge-blue',
@@ -30,6 +31,7 @@ export default function ProfissionalDemandasPage() {
   const [demandas, setDemandas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<Filtro>('TODAS')
+  const [busca, setBusca] = useState('')
 
   useEffect(() => {
     if (authLoading) return
@@ -43,9 +45,14 @@ export default function ProfissionalDemandasPage() {
   if (authLoading || !user) return null
 
   const filtradas = demandas.filter(d => {
-    if (filtro === 'TODAS') return true
-    if (filtro === 'CONCLUIDAS') return d.status === 'CONCLUIDA'
-    return !['CONCLUIDA', 'CANCELADA'].includes(d.status)
+    if (filtro === 'CONCLUIDAS' && d.status !== 'CONCLUIDA') return false
+    if (filtro === 'EM_ANDAMENTO' && ['CONCLUIDA', 'CANCELADA'].includes(d.status)) return false
+    if (busca) {
+      const q = busca.toLowerCase()
+      const campos = [d.numero, d.servico?.nome, d.svc_codigo, d.cidade, d.estado]
+      if (!campos.some(c => c?.toLowerCase().includes(q))) return false
+    }
+    return true
   })
 
   return (
@@ -53,16 +60,32 @@ export default function ProfissionalDemandasPage() {
       <Topbar title="Minhas demandas" subtitle="Acompanhe a execução das suas ordens de serviço" />
 
       <main className="p-6 space-y-4">
-        <div className="flex gap-2">
-          {FILTROS.map(f => (
-            <button
-              key={f.key}
-              onClick={() => setFiltro(f.key)}
-              className={filtro === f.key ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text3)' }} />
+            <input
+              className="input pl-9"
+              placeholder="Buscar por OS, serviço, cidade..."
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+            />
+            {busca && (
+              <button className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text3)' }} onClick={() => setBusca('')}>
+                <X size={13} />
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {FILTROS.map(f => (
+              <button
+                key={f.key}
+                onClick={() => setFiltro(f.key)}
+                className={filtro === f.key ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="card-solid">
