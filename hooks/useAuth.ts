@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { auth as authApi, tokenStorage, userStorage } from '@/lib/api'
+import { destroySocket } from '@/lib/socket'
 
 export function useAuth() {
   const router = useRouter()
@@ -54,6 +55,7 @@ export function useAuth() {
   }, [])
 
   const logout = useCallback(() => {
+    destroySocket()   // desconecta socket antes de limpar o token
     tokenStorage.clear()
     userStorage.clear()
     setUser(null)

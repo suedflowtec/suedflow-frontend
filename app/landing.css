@@ -10,6 +10,7 @@
   --lp-ink:      #0E2A3D;
   --lp-ink-soft: #5A7184;
   --lp-ink-faint:#9AAAB6;
+  --lp-muted:    #9AAAB6; /* alias de lp-ink-faint usado em textos secundários */
   --lp-accent:   #E8671A;
   --lp-accent-2: #FF8A3D;
   --lp-accent-soft: #FFF1E6;
