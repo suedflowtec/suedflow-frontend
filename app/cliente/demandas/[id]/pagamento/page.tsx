@@ -289,26 +289,37 @@ export default function PagamentoPixPage() {
               )}
             </div>
 
-            {/* Resumo */}
+            {/* Resumo do pedido — composição do valor */}
             <div className="card-solid space-y-2">
-              <p className="section-label mb-1">Resumo do pedido</p>
+              <p className="section-label mb-1">Composição do valor</p>
               <div className="flex justify-between text-sm">
-                <span style={{ color: 'var(--text3)' }}>Serviço</span>
-                <span style={{ color: 'var(--text)' }}>{demanda.servico?.nome || demanda.svc_codigo}</span>
+                <span style={{ color: 'var(--text3)' }}>Serviço técnico</span>
+                <span className="font-mono" style={{ color: 'var(--text)' }}>{formatBRL(demanda.preco_final || demanda.preco_servico || 0)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span style={{ color: 'var(--text3)' }}>Área</span>
-                <span style={{ color: 'var(--text)' }}>{demanda.area_m2}m²</span>
-              </div>
-              <div className="divider" />
+              {demanda.art_fee > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--text3)' }}>
+                    Responsabilidade Técnica
+                    <span className="block text-2xs" style={{ color: 'var(--text3)', opacity: 0.7 }}>ART/RRT · repasse integral ao profissional para registro no CREA/CAU</span>
+                  </span>
+                  <span className="font-mono" style={{ color: 'var(--text)' }}>{formatBRL(demanda.art_fee)}</span>
+                </div>
+              )}
+              {demanda.ajuste_pct && demanda.ajuste_pct < 0 && (
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--text3)' }}>Desconto do profissional</span>
+                  <span className="font-mono" style={{ color: 'var(--green)' }}>{demanda.ajuste_pct}%</span>
+                </div>
+              )}
+              <div className="my-1" style={{ borderTop: '1px solid var(--border)' }} />
               <div className="flex justify-between">
-                <span style={{ color: 'var(--text3)' }}>Total</span>
+                <span className="font-semibold" style={{ color: 'var(--text)' }}>Total a pagar</span>
                 <span className="font-bold text-lg font-mono" style={{ color: 'var(--orange)' }}>
                   {formatBRL(demanda.valor_total || demanda.preco_final || demanda.preco_servico || 0)}
                 </span>
               </div>
               <p className="text-2xs pt-1" style={{ color: 'var(--text3)' }}>
-                O valor fica retido em escrow na plataforma SUEDFLOW até a confirmação da entrega.
+                O valor fica em custódia (escrow) na plataforma até a confirmação da entrega. A Responsabilidade Técnica é repassada integralmente ao profissional para custear o registro da ART/RRT.
               </p>
             </div>
           </div>

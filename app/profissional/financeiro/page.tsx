@@ -173,9 +173,9 @@ export default function ProfissionalFinanceiro() {
               <span className="badge badge-orange">{prof.nivel || 'CANDIDATO'}</span>
               <p className="text-xs font-mono font-bold mt-1" style={{ color: 'var(--green)' }}>
                 {({
-                  GRATIS: { CANDIDATO:22, JUNIOR:21, PLENO:19, SENIOR:17, ELITE:15 },
-                  PRO:    { CANDIDATO:20, JUNIOR:19, PLENO:17, SENIOR:15, ELITE:13 },
-                  ELITE:  { CANDIDATO:18, JUNIOR:17, PLENO:15, SENIOR:13, ELITE:11 },
+                  GRATIS: { CANDIDATO:22, JUNIOR:21, PLENO:20, SENIOR:19, ELITE:18 },
+                  PRO:    { CANDIDATO:20, JUNIOR:19, PLENO:18, SENIOR:17, ELITE:16 },
+                  ELITE:  { CANDIDATO:18, JUNIOR:17, PLENO:16, SENIOR:15, ELITE:15 },
                 } as Record<string, Record<string, number>>)[prof.plano || 'GRATIS']?.[prof.nivel || 'CANDIDATO'] ?? 22}% comissão
               </p>
             </div>

@@ -462,7 +462,10 @@ export default function NovaDemandaPage() {
                         <span className="font-mono">{formatBRL(precoCalc.preco_servico || 0)}</span>
                       </div>
                       <div className="flex justify-between" style={{ color: 'var(--text2)' }}>
-                        <span>ART/RRT</span>
+                        <span>
+                          Responsabilidade Técnica
+                          <span className="block text-2xs" style={{ color: 'var(--text3)' }}>ART/RRT · repasse ao CREA/CAU</span>
+                        </span>
                         <span className="font-mono">{formatBRL(precoCalc.art_fee || 0)}</span>
                       </div>
                       <div className="my-3" style={{ borderTop: '1px solid var(--border)' }} />

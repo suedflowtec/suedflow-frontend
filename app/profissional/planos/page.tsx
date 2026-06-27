@@ -8,12 +8,12 @@ import { Check, X, Zap, Star, Shield, Copy } from 'lucide-react'
 
 type Plano = 'GRATIS' | 'PRO' | 'ELITE'
 
-// Matriz oficial de comissões: base SQP × plano (SQP.md, DECISÃO #004)
-// GRATIS=base, PRO=base-2pp, ELITE(sub)=base-4pp
+// Matriz oficial de comissões — DECISÃO #004 (23/06/2026)
+// GRÁTIS: 22%→18% (por tier), PRO: GRÁTIS -2pp, ELITE sub: GRÁTIS -4pp, piso absoluto 15%
 const COMISSAO: Record<Plano, Record<string, number>> = {
-  GRATIS: { CANDIDATO: 22, JUNIOR: 21, PLENO: 19, SENIOR: 17, ELITE: 15 },
-  PRO:    { CANDIDATO: 20, JUNIOR: 19, PLENO: 17, SENIOR: 15, ELITE: 13 },
-  ELITE:  { CANDIDATO: 18, JUNIOR: 17, PLENO: 15, SENIOR: 13, ELITE: 11 },
+  GRATIS: { CANDIDATO: 22, JUNIOR: 21, PLENO: 20, SENIOR: 19, ELITE: 18 },
+  PRO:    { CANDIDATO: 20, JUNIOR: 19, PLENO: 18, SENIOR: 17, ELITE: 16 },
+  ELITE:  { CANDIDATO: 18, JUNIOR: 17, PLENO: 16, SENIOR: 15, ELITE: 15 }, // ELITE SQP+ELITE sub = piso 15%
 }
 
 const NIVEIS = ['CANDIDATO', 'JUNIOR', 'PLENO', 'SENIOR', 'ELITE']
