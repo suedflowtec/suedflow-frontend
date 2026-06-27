@@ -190,6 +190,47 @@ export default function ProfissionalDemandaDetalhePage() {
       />
 
       <main className="p-6 space-y-6 max-w-3xl">
+
+        {/* Projeto Escola — banner quando ativo */}
+        {demanda.is_escola && (
+          <div className="rounded-xl p-3 flex items-center gap-3"
+            style={{ background: 'rgba(0,214,143,0.08)', border: '1px solid rgba(0,214,143,0.25)' }}>
+            <span className="text-lg">🏫</span>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--green)' }}>Projeto Escola ativo</p>
+              <p className="text-xs" style={{ color: 'var(--text3)' }}>
+                {demanda.escola_curador_id
+                  ? 'Um Curador Suporte está supervisionando esta demanda. Você receberá 70% do líquido na conclusão.'
+                  : 'Aguardando Curador Suporte assumir a supervisão. Fique atento à notificação.'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Solicitar Escola — só para CANDIDATO/JUNIOR em demandas ACEITAS sem escola ainda */}
+        {!demanda.is_escola && ['ACEITA', 'PAGA', 'EM_EXECUCAO'].includes(demanda.status) &&
+         ['CANDIDATO', 'JUNIOR'].includes(user.profissional?.nivel || '') && (
+          <div className="card space-y-2">
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>🏫 Precisa de orientação?</p>
+            <p className="text-xs" style={{ color: 'var(--text3)' }}>
+              Solicite supervisão de um Curador Suporte (Projeto Escola). Você executa e assina a ART/RRT;
+              o curador orienta tecnicamente. Você receberá 70% do líquido (em vez de 100%) — a diferença remunera o curador.
+            </p>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={async () => {
+                try {
+                  await orders.solicitarEscola(id)
+                  toast('Projeto Escola solicitado! Aguarde um curador assumir a supervisão.', 'success')
+                  carregar()
+                } catch (err: any) { toast(err.message || 'Erro', 'error') }
+              }}
+            >
+              Solicitar Projeto Escola →
+            </button>
+          </div>
+        )}
+
         {/* Resumo */}
         <div className="card grid grid-cols-3 gap-4">
           <div>

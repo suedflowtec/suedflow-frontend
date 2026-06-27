@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutGrid, List, Plus, Home, Radar, Wallet, Star,
   User, Settings, FlaskConical, HeartPulse, ArrowLeftRight, SlidersHorizontal,
-  LogOut, Sun, Moon, ChevronLeft, ChevronRight, Menu, X, ShieldCheck, CreditCard, GraduationCap,
+  LogOut, Sun, Moon, ChevronLeft, ChevronRight, Menu, X, ShieldCheck, CreditCard, GraduationCap, Database,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { Avatar } from '@/components/ui/Avatar'
@@ -46,14 +46,17 @@ const NAV = {
     { href: '/admin/precos',        Icon: Settings,          label: 'Motor UTS' },
     { href: '/admin/parametros',    Icon: SlidersHorizontal, label: 'Parâmetros' },
     { href: '/admin/teste',         Icon: FlaskConical,      label: 'Ferramentas' },
+    { href: '/admin/banco-estrategico', Icon: Database,  label: 'Banco Estratégico' },
     { href: '/admin/health',        Icon: HeartPulse,   label: 'Saúde do sistema' },
     { href: '/curador',             Icon: ShieldCheck,  label: 'Curadoria' },
     { href: '/curador/fila',        Icon: List,         label: 'Fila de casos' },
   ],
   CURADOR: [
-    { href: '/curador',              Icon: LayoutGrid,  label: 'Painel' },
-    { href: '/curador/fila',         Icon: List,        label: 'Fila de casos' },
-    { href: '/curador/profissionais',Icon: User,        label: 'KYC Profissionais' },
+    { href: '/curador',              Icon: LayoutGrid,    label: 'Painel' },
+    { href: '/curador/fila',         Icon: List,          label: 'Fila de casos' },
+    { href: '/curador/escola',       Icon: GraduationCap, label: 'Projeto Escola' },
+    { href: '/curador/profissionais',Icon: User,          label: 'KYC Profissionais' },
+    { href: '/curador/regras',       Icon: ShieldCheck,   label: 'Minhas regras' },
   ],
 }
 

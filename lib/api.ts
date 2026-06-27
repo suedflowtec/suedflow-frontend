@@ -139,6 +139,7 @@ export const orders = {
     return request<any>(`/api/orders/${id}/submeter-qa`, { method: 'POST', formData: fd })
   },
   vtc: (id: string) => request<any>(`/api/orders/${id}/vtc`),
+  solicitarEscola: (id: string) => request<{ ok: boolean }>(`/api/orders/${id}/solicitar-escola`, { method: 'POST' }),
   qaResultado: (id: string) => request<any>(`/api/orders/${id}/qa-resultado`),
   listarDocumentos: (id: string) => request<{ documentos: any[] }>(`/api/orders/${id}/documentos`),
   uploadDocumento: (id: string, arquivo: File, tipo: string, descricao?: string) => {
@@ -169,6 +170,14 @@ export const admin = {
     request<{ ok: boolean }>('/api/admin/params-globais', { method: 'PATCH', body: data }),
   verificarSue: (demandaId: string) =>
     request<{ ok: boolean; demanda_id: string; vtc: any; latencia_ms: number }>(`/api/admin/teste/qa/verificar/${demandaId}`, { method: 'POST' }),
+  bancoEstrategico: (status?: string) => {
+    const qs = status ? `?status=${status}` : ''
+    return request<{ registros: any[]; total: number; stats: any[] }>(`/api/admin/banco-estrategico${qs}`)
+  },
+  atualizarBancoEstrategico: (id: string, status: 'APROVADO' | 'EXCLUIDO') =>
+    request<{ ok: boolean }>(`/api/admin/banco-estrategico/${id}`, { method: 'PATCH', body: { status } }),
+  concederPioneer: (profId: string, conceder: boolean) =>
+    request<{ ok: boolean }>(`/api/admin/profissionais/${profId}/pioneer`, { method: 'PATCH', body: { conceder } }),
   simularEntregavel: (url_pdf: string, demanda_id?: string) =>
     request<{ ok: boolean; demanda_id: string; vtc: any }>('/api/admin/teste/qa/simular-entregavel', { method: 'POST', body: { url_pdf, demanda_id } }),
   teste: {
@@ -287,6 +296,8 @@ export const curador = {
   resolverDisputa: (casoId: string, dados: { acao: 'REEMBOLSAR_CLIENTE' | 'LIBERAR_PROFISSIONAL' | 'RETOMAR_EXECUCAO'; obs?: string }) =>
     request<{ ok: boolean }>(`/api/curador/disputa/${casoId}/resolver`, { method: 'POST', body: dados }),
   profissionaisKyc: () => request<{ profissionais: any[] }>('/api/curador/profissionais'),
+  escola: () => request<{ demandas: any[] }>('/api/curador/escola'),
+  assumirEscola: (demandaId: string) => request<{ ok: boolean }>(`/api/curador/escola/${demandaId}/assumir`, { method: 'POST' }),
   aprovarKycCurador: (id: string, aprovado: boolean, motivo?: string) =>
     request<{ ok: boolean }>(`/api/curador/profissionais/${id}/kyc`, { method: 'PATCH', body: { aprovado, motivo } }),
 }
