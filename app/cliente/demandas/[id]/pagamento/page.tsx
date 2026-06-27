@@ -89,10 +89,21 @@ export default function PagamentoPixPage() {
     }
   }
 
-  // Gera PIX automaticamente ao entrar, se a demanda estiver ACEITA e metodo=PIX
+  // Gera PIX automaticamente ao entrar, se a demanda estiver ACEITA e metodo=PIX.
+  // Se já existe pix_code no banco (sessão anterior), recupera sem criar nova cobrança.
   useEffect(() => {
     if (demanda?.status === 'ACEITA' && metodo === 'PIX' && !pix && !gerando) {
-      gerarPix()
+      if (demanda.pix_code) {
+        // PIX já gerado — reconstituir do dado persistido para não duplicar cobranças no ASAAS
+        setPix({
+          pix_code:  demanda.pix_code,
+          pix_qr:    demanda.pix_qr_url || null,
+          valor:     demanda.valor_total,
+          expira_em: '',
+        })
+      } else {
+        gerarPix()
+      }
     }
   }, [demanda, metodo])
 

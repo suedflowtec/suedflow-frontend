@@ -31,7 +31,15 @@ export function ChatPanel({ demandaId, currentUserId }: ChatPanelProps) {
 
     const onNova = (msg: any) => {
       if (msg.demanda_id !== demandaId) return
-      setMensagens(prev => [...prev, msg])
+      setMensagens(prev => {
+        // Remove mensagem otimista equivalente (mesmo remetente + conteúdo + recente)
+        const filtered = prev.filter(m => {
+          if (!m._pending) return true
+          if (m.remetente_id !== msg.remetente_id || m.conteudo !== msg.conteudo) return true
+          return Math.abs(new Date(msg.created_at).getTime() - new Date(m.created_at).getTime()) > 10000
+        })
+        return [...filtered, msg]
+      })
     }
     socket.on('nova_mensagem', onNova)
     return () => { socket.off('nova_mensagem', onNova) }
@@ -46,9 +54,21 @@ export function ChatPanel({ demandaId, currentUserId }: ChatPanelProps) {
     if (!conteudo || enviando) return
     setEnviando(true)
     setTexto('')
+    const tempId = `_pending_${Date.now()}`
+    // Adicionar localmente antes da resposta do servidor (otimista)
+    setMensagens(prev => [...prev, {
+      id: tempId,
+      demanda_id: demandaId,
+      remetente_id: currentUserId,
+      conteudo,
+      created_at: new Date().toISOString(),
+      _pending: true,
+    }])
     try {
       await chat.enviar(demandaId, conteudo)
+      // Socket.io removerá o _pending e adicionará a versão real via onNova
     } catch {
+      setMensagens(prev => prev.filter(m => m.id !== tempId))
       toast('Erro ao enviar mensagem', 'error')
     } finally {
       setEnviando(false)

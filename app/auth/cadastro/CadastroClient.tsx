@@ -55,7 +55,14 @@ export default function CadastroClient() {
     if (!aceito) { setError('Aceite os termos para continuar.'); return }
     setError(null); setLoading(true)
     try {
-      const result = await authApi.registrar({ ...form, tipo, termo_ids: termosIds })
+      // Para CLIENTE, detectar CPF (11 dígitos) ou CNPJ (14 dígitos) pelo campo unificado
+      const docLimpo = form.cpf.replace(/\D/g, '')
+      const payload = { ...form, tipo, termo_ids: termosIds }
+      if (tipo === 'CLIENTE' && docLimpo.length === 14) {
+        payload.cnpj = form.cpf
+        payload.cpf = ''
+      }
+      const result = await authApi.registrar(payload)
 
       if (result.step === 'verify') {
         // Novo usuário — aguarda verificação por OTP
@@ -235,7 +242,13 @@ export default function CadastroClient() {
             </div>
             <div>
               <label className="label">{tipo === 'CLIENTE' ? 'CPF ou CNPJ' : 'CPF'}</label>
-              <input className="input" value={form.cpf} onChange={e => update('cpf', e.target.value)} placeholder="000.000.000-00" required />
+              <input
+                className="input"
+                value={form.cpf}
+                onChange={e => update('cpf', e.target.value)}
+                placeholder={tipo === 'CLIENTE' ? 'CPF (000.000.000-00) ou CNPJ (00.000.000/0000-00)' : '000.000.000-00'}
+                required
+              />
             </div>
             <div>
               <label className="label">E-mail</label>
