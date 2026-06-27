@@ -6,7 +6,7 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { admin } from '@/lib/api'
-import { formatDate } from '@/lib/utils'
+import { formatDate, getInlineUrl } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 
 const DOC_LABELS: Record<string, string> = {
@@ -142,12 +142,12 @@ export default function AdminProfissionalDetalhePage() {
                       <Badge variant={status.variant}>{status.text}</Badge>
                     </div>
                     {isImagem(doc.url_arquivo) ? (
-                      <a href={doc.url_arquivo} target="_blank" rel="noreferrer">
+                      <a href={getInlineUrl(doc.url_arquivo)} target="_blank" rel="noreferrer">
                         <img src={doc.url_arquivo} alt={doc.tipo} className="w-full rounded-lg" style={{ maxHeight: 180, objectFit: 'cover' }} />
                       </a>
                     ) : (
-                      <a href={doc.url_arquivo} target="_blank" rel="noreferrer" className="text-sm" style={{ color: 'var(--orange)' }}>
-                        Abrir documento ↗
+                      <a href={getInlineUrl(doc.url_arquivo)} target="_blank" rel="noreferrer" className="text-sm" style={{ color: 'var(--orange)' }}>
+                        Abrir no navegador ↗
                       </a>
                     )}
                     <p className="text-2xs mt-2" style={{ color: 'var(--text3)' }}>Enviado em {formatDate(doc.created_at)}</p>

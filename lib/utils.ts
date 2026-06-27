@@ -4,6 +4,45 @@ import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)) }
 
+/**
+ * Transforma URL do Cloudinary para forçar abertura inline no navegador (não download).
+ * Adiciona `fl_inline` para image/upload (PDFs) ou `fl_attachment:false` para raw/upload.
+ * Imagens e outros arquivos que o browser abre nativamente são retornados sem alteração.
+ */
+export function getInlineUrl(url: string): string {
+  if (!url || !url.includes('cloudinary.com')) return url
+
+  const isPdf  = /\.pdf($|\?)/i.test(url) || url.includes('/raw/')
+  const isBin  = /\.(dwg|zip|docx?|xlsx?|pptx?)($|\?)/i.test(url)
+
+  // Arquivos binários (DWG, ZIP, etc.) → deixa baixar normalmente
+  if (isBin) return url
+
+  // PDF em raw/upload → fl_attachment:false
+  if (url.includes('/raw/upload/')) {
+    return url.replace('/raw/upload/', '/raw/upload/fl_attachment:false/')
+  }
+
+  // PDF em image/upload → fl_inline
+  if (isPdf && url.includes('/image/upload/')) {
+    return url.replace('/image/upload/', '/image/upload/fl_inline/')
+  }
+
+  // Imagens → browser abre nativamente, sem transformação necessária
+  return url
+}
+
+/**
+ * Detecta se a URL aponta para um arquivo que o browser consegue exibir inline.
+ * Binários específicos (DWG, ZIP, DOC) precisam ser baixados.
+ */
+export function podeAbrirInline(url: string): boolean {
+  if (!url) return false
+  const ext = url.split('?')[0].split('.').pop()?.toLowerCase() || ''
+  const naoAbrem = ['dwg', 'zip', 'rar', 'docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt', 'dxf']
+  return !naoAbrem.includes(ext)
+}
+
 export function formatBRL(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0)
 }

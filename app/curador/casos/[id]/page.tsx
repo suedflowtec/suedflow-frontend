@@ -9,7 +9,8 @@ import { curador as curadorApi } from '@/lib/api'
 import { formatBRL, formatDate } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { CheckCircle2, XCircle, AlertTriangle, User, Briefcase, ArrowUpCircle, Eye, FileText, Image } from 'lucide-react'
+import { CheckCircle2, XCircle, AlertTriangle, User, Briefcase, ArrowUpCircle, Eye, FileText, Image, Download } from 'lucide-react'
+import { getInlineUrl, podeAbrirInline } from '@/lib/utils'
 
 const TIPO_BADGE: Record<string, { text: string; variant: any }> = {
   QA_REPROVADO:     { text: 'QA reprovado', variant: 'gold' },
@@ -428,25 +429,37 @@ export default function CuradorCasoDetalhePage() {
 }
 
 function ArquivoLink({ url, nome, tipo }: { url: string; nome: string; tipo?: string }) {
-  const isPdf = tipo?.toLowerCase().includes('pdf') || url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/')
-  const isImage = /\.(jpe?g|png|gif|webp)/i.test(url) || url.includes('/image/')
-  const Icon = isImage ? Image : FileText
+  const isPdf    = tipo?.toLowerCase().includes('pdf') || url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/')
+  const isImage  = /\.(jpe?g|png|gif|webp)/i.test(url) || url.includes('/image/')
+  const podeVer  = podeAbrirInline(url)
+  const viewUrl  = getInlineUrl(url)
+  const Icon     = isImage ? Image : FileText
 
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 transition-opacity hover:opacity-80 group"
-      style={{ background: 'rgba(255,255,255,0.05)', textDecoration: 'none' }}
-    >
-      <div className="flex items-center gap-2 min-w-0">
-        <Icon size={15} className="shrink-0" style={{ color: 'var(--orange)' }} />
-        <span className="text-sm truncate" style={{ color: 'var(--text2)' }}>{nome}</span>
-        {isPdf && <span className="shrink-0 text-2xs font-mono px-1 rounded" style={{ background: 'rgba(232,103,26,0.15)', color: 'var(--orange)' }}>PDF</span>}
+    <div className="flex items-center gap-2 rounded-lg px-3 py-2.5 group"
+      style={{ background: 'rgba(255,255,255,0.05)' }}>
+      <Icon size={15} className="shrink-0" style={{ color: 'var(--orange)' }} />
+      <span className="text-sm truncate flex-1" style={{ color: 'var(--text2)' }}>{nome}</span>
+      {isPdf && <span className="shrink-0 text-2xs font-mono px-1 rounded" style={{ background: 'rgba(232,103,26,0.15)', color: 'var(--orange)' }}>PDF</span>}
+      <div className="flex items-center gap-1 shrink-0">
+        {/* Olho = abrir inline no navegador */}
+        {podeVer && (
+          <a href={viewUrl} target="_blank" rel="noopener noreferrer"
+            title="Abrir no navegador"
+            className="p-1 rounded hover:bg-white/10 transition-colors"
+            style={{ color: 'var(--text3)' }}>
+            <Eye size={13} />
+          </a>
+        )}
+        {/* Seta = baixar o arquivo */}
+        <a href={url} download={nome || true}
+          title="Baixar arquivo"
+          className="p-1 rounded hover:bg-white/10 transition-colors"
+          style={{ color: 'var(--text3)' }}>
+          <Download size={13} />
+        </a>
       </div>
-      <Eye size={14} className="shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--text3)' }} />
-    </a>
+    </div>
   )
 }
 
