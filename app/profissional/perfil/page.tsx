@@ -69,6 +69,36 @@ export default function ProfissionalPerfilPage() {
       />
 
       <main className="p-6 max-w-3xl space-y-4">
+
+        {/* Selo PIONEER — aparece sempre quando concedido */}
+        {perfil?.is_pioneer && (
+          <div className="rounded-2xl p-4 flex items-start gap-4"
+            style={{ background: 'linear-gradient(135deg,rgba(245,166,35,0.15),rgba(232,103,26,0.08))', border: '1px solid rgba(245,166,35,0.4)' }}>
+            <span className="text-3xl shrink-0">🏅</span>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-bold text-sm" style={{ color: 'var(--gold)' }}>PIONEER · Fundador da SUEDFLOW</p>
+                <span className="badge badge-yellow text-2xs">Top 100</span>
+              </div>
+              <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
+                Você faz parte dos primeiros 100 profissionais aprovados na plataforma.
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-1 text-xs" style={{ color: 'var(--text2)' }}>
+                <span>✓ Badge permanente no perfil</span>
+                <span>✓ Comissão reduzida por 90 dias</span>
+                <span>✓ Acesso vitalício ao SUEDPrepara</span>
+                <span>✓ Prioridade no feed por 1 ano</span>
+                <span>✓ Página de Fundadores permanente</span>
+              </div>
+              {perfil.pioneer_desde && (
+                <p className="text-2xs mt-2" style={{ color: 'var(--text3)' }}>
+                  Concedido em {new Date(perfil.pioneer_desde).toLocaleDateString('pt-BR')}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Dados profissionais */}
         <div className="card-solid">
           <p className="section-label mb-3">Dados profissionais</p>

@@ -159,6 +159,36 @@ export default function ProfissionalScore() {
               </div>
             )}
 
+            {/* Candidatura a Curador Suporte — só para ELITE */}
+            {nivel === 'ELITE' && (
+              <div className="card-accent space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🏆</span>
+                  <div>
+                    <p className="font-bold text-sm" style={{ color: 'var(--gold)' }}>Elite — você está elegível para se candidatar a Curador Suporte</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>
+                      Curadores são remunerados por supervisionar Projetos Escola e orientar profissionais em formação.
+                    </p>
+                  </div>
+                </div>
+                <div className="text-xs space-y-1" style={{ color: 'var(--text2)' }}>
+                  <p>• Requisito: score ELITE ativo (900+ pts) por ≥ 90 dias</p>
+                  <p>• Remuneração: 30% do líquido em cada Projeto Escola supervisionado</p>
+                  <p>• Responsabilidade: orientação técnica — o profissional mantém a ART/RRT</p>
+                </div>
+                <a
+                  href="mailto:suedflowtecnologia@gmail.com?subject=Candidatura%20a%20Curador%20Suporte%20SUEDFLOW"
+                  className="btn btn-primary btn-sm inline-flex"
+                  target="_blank" rel="noopener noreferrer"
+                >
+                  Candidatar-me a Curador Suporte →
+                </a>
+                <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                  Ao clicar, você será redirecionado para enviar uma candidatura por e-mail à equipe SUEDFLOW.
+                </p>
+              </div>
+            )}
+
             {/* Tabela de níveis */}
             <div className="card-solid">
               <p className="section-label">Níveis e comissões</p>

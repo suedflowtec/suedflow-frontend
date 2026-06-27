@@ -256,8 +256,13 @@ export default function DemandaDetailPage() {
                   Profissionais habilitados na sua região serão notificados automaticamente e poderão aceitar esta demanda.
                 </div>
 
+                {/* Cancelamento só antes do pagamento */}
                 <div className="mt-5">
-                  {!cancelando ? (
+                  {!['AGUARDANDO', 'ACEITA'].includes(demanda.status) ? (
+                    <p className="text-xs" style={{ color: 'var(--text3)' }}>
+                      Pagamento já realizado — para resolver problemas use "Há um problema com esta demanda" abaixo.
+                    </p>
+                  ) : !cancelando ? (
                     <Button variant="ghost" size="sm" onClick={() => setCancelando(true)}>Cancelar demanda</Button>
                   ) : (
                     <div className="max-w-md mx-auto text-left space-y-2">
@@ -454,25 +459,59 @@ export default function DemandaDetailPage() {
                     </div>
                   </div>
                 ) : (
-                  /* Etapa 1 — formulário de disputa */
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 mb-1">
+                  /* Etapa 1 — múltipla escolha + texto opcional */
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
                       <AlertTriangle size={14} style={{ color: 'var(--gold)' }} />
-                      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Abrir disputa</p>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Qual é o motivo da disputa?</p>
                     </div>
                     <p className="text-xs" style={{ color: 'var(--text3)' }}>
-                      Um curador da SUEDFLOW irá analisar o caso e os entregáveis em até 5 dias úteis. Descreva o problema com clareza.
+                      Selecione o motivo principal. Um curador irá analisar em até 5 dias úteis.
                     </p>
-                    <textarea
-                      className="input"
-                      rows={3}
-                      placeholder="Descreva o problema de forma clara e objetiva (mínimo 10 caracteres)"
-                      value={motivoDisputa}
-                      onChange={e => setMotivoDisputa(e.target.value)}
-                    />
-                    <div className="flex gap-2">
-                      <Button variant="orange" className="flex-1" onClick={enviarDisputa} loading={enviandoDisputa}>Enviar para curador</Button>
-                      <Button variant="ghost" onClick={() => { setDisputaAberta(false); setMediacao({ etapa: 0, leu: false }) }}>Cancelar</Button>
+                    {/* Motivos pré-definidos */}
+                    <div className="space-y-2">
+                      {[
+                        { id: 'escopo', label: 'Entregável incompleto ou fora do escopo contratado' },
+                        { id: 'erro_tecnico', label: 'Erro técnico grave no laudo/projeto' },
+                        { id: 'prazo', label: 'Prazo não cumprido sem acordo prévio' },
+                        { id: 'outro', label: 'Outro motivo (descreva abaixo)' },
+                      ].map(op => {
+                        const sel = motivoDisputa.startsWith(`[${op.id}]`)
+                        return (
+                          <label key={op.id} className="flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer transition-colors"
+                            style={{ background: sel ? 'rgba(232,103,26,0.1)' : 'var(--glass)', border: `1px solid ${sel ? 'rgba(232,103,26,0.4)' : 'var(--border)'}` }}>
+                            <input type="radio" name="motivo_disputa" className="mt-0.5 shrink-0" checked={sel}
+                              onChange={() => setMotivoDisputa(op.id === 'outro' ? `[${op.id}] ` : `[${op.id}] ${op.label}`)}
+                              style={{ accentColor: 'var(--orange)' }} />
+                            <span className="text-sm" style={{ color: 'var(--text2)' }}>{op.label}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                    {/* Caixa de texto habilitada se escolher "outro" */}
+                    {motivoDisputa.startsWith('[outro]') && (
+                      <textarea
+                        className="input"
+                        rows={3}
+                        placeholder="Descreva o problema com clareza (mínimo 10 caracteres)"
+                        value={motivoDisputa.replace('[outro] ', '')}
+                        onChange={e => setMotivoDisputa(`[outro] ${e.target.value}`)}
+                        autoFocus
+                      />
+                    )}
+                    <div className="flex gap-2 flex-wrap">
+                      <Button
+                        variant="orange"
+                        className="flex-1"
+                        onClick={enviarDisputa}
+                        loading={enviandoDisputa}
+                        disabled={!motivoDisputa.replace(/\[.*?\]\s?/, '').trim()}
+                      >
+                        Enviar para curador
+                      </Button>
+                      <Button variant="ghost" onClick={() => { setDisputaAberta(false); setMediacao({ etapa: 0, leu: false }); setMotivoDisputa('') }}>
+                        Cancelar
+                      </Button>
                     </div>
                   </div>
                 )}

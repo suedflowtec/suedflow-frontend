@@ -160,7 +160,7 @@ export default function ProfissionalFinanceiro() {
         </div>
 
         {/* Plano e comissão */}
-        <div className="card-solid">
+        <div className="card-solid space-y-3">
           <p className="section-label">Seu plano</p>
           <div className="flex items-center justify-between">
             <div>
@@ -180,6 +180,22 @@ export default function ProfissionalFinanceiro() {
               </p>
             </div>
           </div>
+          {/* Upgrade — só mostra se não for ELITE */}
+          {(prof.plano || 'GRATIS') !== 'ELITE' && (
+            <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+              <div>
+                <p className="text-xs font-semibold" style={{ color: 'var(--text2)' }}>
+                  {prof.plano === 'PRO' ? 'Upgrade para Elite' : 'Upgrade para PRO ou Elite'}
+                </p>
+                <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                  Reduza sua comissão em {prof.plano === 'PRO' ? '2%' : 'até 4%'} por OS concluída
+                </p>
+              </div>
+              <a href="/profissional/planos" className="btn btn-primary btn-sm">
+                Ver planos →
+              </a>
+            </div>
+          )}
         </div>
       </main>
     </Shell>

@@ -11,11 +11,12 @@ import { useToast } from '@/hooks/useToast'
 
 const UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
 
-const KYC_DOCS: { tipo: string; label: string }[] = [
-  { tipo: 'RG_FRENTE',       label: 'RG / CNH — frente' },
-  { tipo: 'RG_VERSO',        label: 'RG / CNH — verso' },
-  { tipo: 'SELFIE',          label: 'Selfie segurando o documento' },
-  { tipo: 'COMP_RESIDENCIA', label: 'Comprovante de residência' },
+const KYC_DOCS: { tipo: string; label: string; hint?: string }[] = [
+  { tipo: 'RG_FRENTE',        label: 'RG / CNH — frente' },
+  { tipo: 'RG_VERSO',         label: 'RG / CNH — verso' },
+  { tipo: 'SELFIE',           label: 'Selfie segurando o documento' },
+  { tipo: 'COMP_RESIDENCIA',  label: 'Comprovante de residência' },
+  { tipo: 'COMPROVANTE_CREA', label: 'Comprovante de anuidade CREA/CAU vigente', hint: 'Comprova que sua inscrição no conselho está ativa e em dia. Aceito: PDF ou imagem da certidão de situação regular.' },
 ]
 
 export default function ProfissionalOnboardingPage() {
@@ -38,7 +39,8 @@ export default function ProfissionalOnboardingPage() {
   const [docsEnviados, setDocsEnviados] = useState<Record<string, boolean>>({})
   const [enviandoDoc, setEnviandoDoc] = useState<string | null>(null)
 
-  // step 4 — termos
+  // step 4 — PIX e termos
+  const [pixKeyPadrao, setPixKeyPadrao] = useState('')
   const [aceitaTermos, setAceitaTermos] = useState(false)
 
   const [step, setStep] = useState(1)
@@ -108,7 +110,7 @@ export default function ProfissionalOnboardingPage() {
     }
     const todosDocsEnviados = KYC_DOCS.every(d => docsEnviados[d.tipo])
     if (!todosDocsEnviados) {
-      toast('Envie todos os 4 documentos de verificação (KYC) antes de concluir', 'error')
+      toast('Envie todos os documentos de verificação (KYC) antes de concluir', 'error')
       setStep(3)
       return
     }
@@ -124,6 +126,7 @@ export default function ProfissionalOnboardingPage() {
         uf_conselho: ufConselho,
         svcs_habilitados: svcsSelecionados,
         aceita_termos: aceitaTermos,
+        pix_key_padrao: pixKeyPadrao.trim() || undefined,
       })
       toast('Onboarding concluído. Seus documentos serão analisados pela curadoria.', 'success')
       router.push('/profissional/perfil')
@@ -289,6 +292,20 @@ export default function ProfissionalOnboardingPage() {
                 <span style={{ color: 'var(--text)' }}>{Object.keys(docsEnviados).length} / {KYC_DOCS.length}</span>
               </div>
             </div>
+            {/* Chave PIX para saques */}
+            <div className="space-y-1">
+              <label className="label">Chave PIX para receber pagamentos</label>
+              <input
+                className="input"
+                placeholder="CPF, e-mail, telefone ou chave aleatória"
+                value={pixKeyPadrao}
+                onChange={e => setPixKeyPadrao(e.target.value)}
+              />
+              <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                Usada para transferências dos seus serviços concluídos. Pode ser alterada depois no Financeiro.
+              </p>
+            </div>
+
             <label className="flex items-start gap-2 text-sm" style={{ color: 'var(--text2)' }}>
               <input type="checkbox" checked={aceitaTermos} onChange={e => setAceitaTermos(e.target.checked)} className="mt-1" />
               <span>
