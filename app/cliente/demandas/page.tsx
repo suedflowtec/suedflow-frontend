@@ -78,7 +78,7 @@ export default function DemandasPage() {
                   return (
                     <tr key={d.id} onClick={() => router.push(`/cliente/demandas/${d.id}`)}>
                       <td className="mono">{d.numero || d.id?.slice(0,8)}</td>
-                      <td className="font-medium font-medium">{d.svc_nome || d.svc_codigo}</td>
+                      <td className="font-medium font-medium">{d.servico?.nome || d.svc_codigo}</td>
                       <td><span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span></td>
                       <td>{d.cidade}</td>
                       <td>{d.area_m2}m²</td>

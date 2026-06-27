@@ -402,19 +402,25 @@ export default function NovaDemandaPage() {
                   </Field>
                   <Field label="Urgência">
                     <div className="grid grid-cols-3 gap-2">
-                      {(['NORMAL', 'PRIORITARIO', 'URGENTE'] as const).map(u => (
-                        <button
-                          key={u}
-                          type="button"
-                          onClick={() => setImovel(i => ({ ...i, urgencia: u }))}
-                          className={`py-2.5 px-2 rounded text-xs font-semibold border transition-colors ${
-                            imovel.urgencia === u ? 'bg-orange text-white border-orange' : 'hover:bg-white/5'
-                          }`}
-                          style={imovel.urgencia === u ? undefined : { background: 'var(--navy3)', color: 'var(--text2)', borderColor: 'var(--border)' }}
-                        >
-                          {u === 'NORMAL' ? 'Normal' : u === 'PRIORITARIO' ? 'Prioritário +30%' : 'Urgente +60%'}
-                        </button>
-                      ))}
+                      {(['NORMAL', 'PRIORITARIO', 'URGENTE'] as const).map(u => {
+                        const baseSla = svcSelecionado?.sla_dias || 5
+                        const slaMap = { NORMAL: baseSla, PRIORITARIO: Math.max(1, Math.ceil(baseSla * 0.7)), URGENTE: Math.max(1, Math.ceil(baseSla * 0.5)) }
+                        const sla = slaMap[u]
+                        return (
+                          <button
+                            key={u}
+                            type="button"
+                            onClick={() => setImovel(i => ({ ...i, urgencia: u }))}
+                            className={`py-2.5 px-2 rounded text-xs font-semibold border transition-colors ${
+                              imovel.urgencia === u ? 'bg-orange text-white border-orange' : 'hover:bg-white/5'
+                            }`}
+                            style={imovel.urgencia === u ? undefined : { background: 'var(--navy3)', color: 'var(--text2)', borderColor: 'var(--border)' }}
+                          >
+                            <span className="block">{u === 'NORMAL' ? 'Normal' : u === 'PRIORITARIO' ? 'Prioritário +30%' : 'Urgente +60%'}</span>
+                            <span className="block font-normal opacity-70 mt-0.5">{sla}d úteis</span>
+                          </button>
+                        )
+                      })}
                     </div>
                   </Field>
                 </div>
@@ -464,6 +470,12 @@ export default function NovaDemandaPage() {
                         <span className="font-semibold" style={{ color: 'var(--text)' }}>Total estimado</span>
                         <span className="text-2xl font-bold font-mono" style={{ color: 'var(--orange)' }}>
                           {formatBRL(precoCalc.preco_cliente || 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-1" style={{ color: 'var(--text2)' }}>
+                        <span>Prazo de entrega</span>
+                        <span className="font-semibold" style={{ color: 'var(--green)' }}>
+                          {precoCalc.prazo_dias || svcSelecionado?.sla_dias || '—'} dias úteis
                         </span>
                       </div>
                     </div>

@@ -156,7 +156,7 @@ export default function ProfissionalHome() {
                 {ativas.slice(0,8).map(d => (
                   <tr key={d.id} onClick={() => router.push(`/profissional/demandas/${d.id}`)}>
                     <td className="mono">{d.numero || d.id?.slice(0,8)}</td>
-                    <td className="bold">{d.svc_nome || d.svc_codigo}</td>
+                    <td className="bold">{d.servico?.nome || d.svc_codigo}</td>
                     <td><span className={STATUS_BADGE[d.status] || 'badge badge-gray'}>{statusLabel(d.status).text}</span></td>
                     <td style={{ color: 'var(--text3)' }}>{d.prazo_entrega ? new Date(d.prazo_entrega).toLocaleDateString('pt-BR') : '—'}</td>
                     <td className="text-right font-mono font-bold" style={{ color: 'var(--green)' }}>

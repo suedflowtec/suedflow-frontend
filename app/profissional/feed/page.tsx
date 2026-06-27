@@ -155,7 +155,7 @@ export default function ProfissionalFeed() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-mono" style={{ color: 'var(--text3)' }}>{d.svc_codigo}</span>
-                        <span className="text-white font-semibold">{d.svc_nome || d.svc_codigo}</span>
+                        <span className="text-white font-semibold">{d.servico?.nome || d.svc_codigo}</span>
                         {d.urgencia !== 'NORMAL' && (
                           <span className="badge badge-orange">{URGENCIA_LABEL[d.urgencia]}</span>
                         )}

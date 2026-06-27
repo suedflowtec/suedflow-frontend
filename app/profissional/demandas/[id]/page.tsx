@@ -150,15 +150,7 @@ export default function ProfissionalDemandaDetalhePage() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
-          const fd = new FormData()
-          fd.append('lat', String(pos.coords.latitude))
-          fd.append('lng', String(pos.coords.longitude))
-          fd.append('selfie', selfieFile)
-          await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'https://suedflow-backend-production.up.railway.app'}/api/orders/${id}/checkin`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${localStorage.getItem('suedflow_token')}` },
-            body: fd,
-          }).then(async r => { if (!r.ok) throw new Error((await r.json()).error || 'Erro') })
+          await orders.checkin(id, pos.coords.latitude, pos.coords.longitude, selfieFile)
           toast('Check-in realizado com selfie! Execução iniciada.', 'success')
           setSelfieFile(null); setSelfiePreview(null)
           carregar()
@@ -192,7 +184,7 @@ export default function ProfissionalDemandaDetalhePage() {
   return (
     <Shell>
       <Topbar
-        title={demanda.svc_nome || demanda.svc_codigo || 'Demanda'}
+        title={demanda.servico?.nome || demanda.svc_codigo || 'Demanda'}
         subtitle={`OS ${demanda.numero || demanda.id?.slice(0, 8)}`}
         actions={<span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span>}
       />

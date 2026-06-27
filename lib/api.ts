@@ -117,8 +117,16 @@ export const orders = {
     request(`/api/orders/${id}/disputa`, { method: 'POST', body: { motivo } }),
   cancelar: (id: string, motivo: string) =>
     request(`/api/orders/${id}/cancelar`, { method: 'POST', body: { motivo } }),
-  checkin: (id: string, lat: number, lng: number) =>
-    request<any>(`/api/orders/${id}/checkin`, { method: 'POST', body: { lat, lng } }),
+  checkin: (id: string, lat: number, lng: number, selfie?: File) => {
+    if (selfie) {
+      const fd = new FormData()
+      fd.append('lat', String(lat))
+      fd.append('lng', String(lng))
+      fd.append('selfie', selfie)
+      return request<any>(`/api/orders/${id}/checkin`, { method: 'POST', formData: fd })
+    }
+    return request<any>(`/api/orders/${id}/checkin`, { method: 'POST', body: { lat, lng } })
+  },
   registrarMarco: (id: string, tipo: string, obs?: string) => {
     const fd = new FormData()
     fd.append('tipo', tipo)

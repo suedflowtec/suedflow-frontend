@@ -63,7 +63,7 @@ export default function ResultadoQaPage() {
     <Shell>
       <Topbar
         title="Resultado do QA"
-        subtitle={dados?.demanda?.numero ? `OS ${dados.demanda.numero} · ${dados.demanda.svc_nome || ''}` : 'Verificação SUE'}
+        subtitle={dados?.demanda?.numero ? `OS ${dados.demanda.numero} · ${dados.demanda.servico?.nome || dados.demanda.svc_codigo || ''}` : 'Verificação SUE'}
         actions={
           <button className="btn btn-secondary btn-sm" onClick={() => router.push(`/profissional/demandas/${id}`)}>
             ← Voltar à demanda

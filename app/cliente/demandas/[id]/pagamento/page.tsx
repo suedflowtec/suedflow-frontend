@@ -136,7 +136,7 @@ export default function PagamentoPixPage() {
     <Shell>
       <Topbar
         title="Pagamento via PIX"
-        subtitle={`${demanda.svc_nome || demanda.svc_codigo} · ${demanda.numero || demanda.id?.slice(0, 8)}`}
+        subtitle={`${demanda.servico?.nome || demanda.svc_codigo} · ${demanda.numero || demanda.id?.slice(0, 8)}`}
         actions={<Badge variant={s.variant as any}>{s.text}</Badge>}
       />
 
@@ -283,7 +283,7 @@ export default function PagamentoPixPage() {
               <p className="section-label mb-1">Resumo do pedido</p>
               <div className="flex justify-between text-sm">
                 <span style={{ color: 'var(--text3)' }}>Serviço</span>
-                <span style={{ color: 'var(--text)' }}>{demanda.svc_nome || demanda.svc_codigo}</span>
+                <span style={{ color: 'var(--text)' }}>{demanda.servico?.nome || demanda.svc_codigo}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span style={{ color: 'var(--text3)' }}>Área</span>

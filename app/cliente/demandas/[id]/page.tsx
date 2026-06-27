@@ -6,7 +6,7 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { StarRating } from '@/components/ui/StarRating'
-import { orders, admin } from '@/lib/api'
+import { orders } from '@/lib/api'
 import { formatBRL, statusLabel, formatDate, getInlineUrl, podeAbrirInline } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 import { CheckCircle2, AlertTriangle, FileText, CreditCard, MessageCircle, Lock, Paperclip, Upload, Eye, Download, Trash2 } from 'lucide-react'
@@ -62,7 +62,6 @@ export default function DemandaDetailPage() {
   const [cancelando, setCancelando] = useState(false)
   const [motivoCancelamento, setMotivoCancelamento] = useState('')
   const [enviandoCancelamento, setEnviandoCancelamento] = useState(false)
-  const [simulandoAceite, setSimulandoAceite] = useState(false)
   const [documentos, setDocumentos] = useState<any[]>([])
   const [tipoDoc, setTipoDoc] = useState('PROJETO')
   const [descricaoOutro, setDescricaoOutro] = useState('')
@@ -125,19 +124,6 @@ export default function DemandaDetailPage() {
     return () => clearInterval(t)
   }, [demanda])
 
-  const simularAceiteProfissional = async () => {
-    setSimulandoAceite(true)
-    try {
-      await admin.teste.forcarStatus(id, 'ACEITA', 'Simulação de aceite para teste')
-      toast('Aceite simulado — agora pague com PIX para continuar o fluxo.', 'success')
-      const updated = await orders.buscar(id)
-      setDemanda(updated)
-    } catch (err: any) {
-      toast(err.message || 'Erro ao simular aceite', 'error')
-    } finally {
-      setSimulandoAceite(false)
-    }
-  }
 
   const cancelarDemanda = async () => {
     if (motivoCancelamento.trim().length < 5) {
@@ -215,7 +201,7 @@ export default function DemandaDetailPage() {
     <Shell>
       <Topbar
         title={demanda.numero || demanda.id?.slice(0, 8)}
-        subtitle={`${demanda.svc_nome || demanda.svc_codigo} · ${demanda.area_m2}m² · ${demanda.cidade || '—'}`}
+        subtitle={`${demanda.servico?.nome || demanda.svc_codigo} · ${demanda.area_m2}m² · ${demanda.cidade || '—'}`}
         actions={<Badge variant={s.variant === 'glass' ? 'glass' : s.variant as any}>{s.text}</Badge>}
       />
 
@@ -265,22 +251,8 @@ export default function DemandaDetailPage() {
                   ))}
                 </div>
 
-                <div className="mt-4 inline-block text-2xs px-3 py-2 rounded-lg" style={{ background: 'rgba(255,193,7,0.1)', color: 'var(--gold)' }}>
-                  🎭 <strong>Modo demonstração</strong> — sem profissionais reais cadastrados ainda.
-                  Use o botão abaixo para simular o aceite e testar o fluxo completo de pagamento.
-                </div>
-
-                <div className="mt-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={simularAceiteProfissional}
-                    loading={simulandoAceite}
-                    className="border"
-                    style={{ borderColor: 'var(--gold)', color: 'var(--gold)' }}
-                  >
-                    🎭 Simular aceite de profissional (teste)
-                  </Button>
+                <div className="mt-4 inline-block text-2xs px-3 py-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text3)' }}>
+                  Profissionais habilitados na sua região serão notificados automaticamente e poderão aceitar esta demanda.
                 </div>
 
                 <div className="mt-5">

@@ -37,7 +37,7 @@ export default function ChatClientePage() {
     <Shell>
       <Topbar
         title="Chat"
-        subtitle={nomeProfissional ? `Profissional: ${nomeProfissional}` : demanda?.svc_nome || demanda?.svc_codigo}
+        subtitle={nomeProfissional ? `Profissional: ${nomeProfissional}` : demanda?.servico?.nome || demanda?.svc_codigo}
       />
       <main className="p-6 max-w-2xl">
         <ChatPanel demandaId={id} currentUserId={user.id} />

@@ -120,7 +120,7 @@ export default function ClienteHome() {
                     return (
                       <tr key={d.id} onClick={() => router.push(`/cliente/demandas/${d.id}`)}>
                         <td className="mono">{d.numero || d.id?.slice(0,8)}</td>
-                        <td className="font-medium bold">{d.svc_nome || d.svc_codigo}</td>
+                        <td className="font-medium bold">{d.servico?.nome || d.svc_codigo}</td>
                         <td><span className={badgeCls}>{s.text}</span></td>
                         <td>{d.cidade || '—'}</td>
                         <td>{d.area_m2 ? `${d.area_m2}m²` : '—'}</td>
