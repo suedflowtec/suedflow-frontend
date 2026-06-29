@@ -58,6 +58,38 @@ export default function NovaDemandaPage() {
   const [precoCalc, setPrecoCalc] = useState<any>(null)
   const [criando, setCriando] = useState(false)
   const [nivelCliente, setNivelCliente] = useState<'' | 'CANDIDATO' | 'PLENO' | 'SENIOR' | 'ELITE'>('')
+  const [svc009Sub, setSvc009Sub] = useState<'' | 'ORCAMENTACAO' | 'LEVANTAMENTO' | 'MEDICAO' | 'AUDITORIA'>('')
+
+  const SVC009_SUBS = [
+    {
+      id: 'ORCAMENTACAO' as const,
+      label: 'Orçamentação de Obra',
+      desc: 'Planilha de custos por etapas com referência SINAPI — ideal antes de contratar uma construtora',
+      entrega: 'Planilha orçamentária + memorial de composição de custos + ART/RRT',
+      sla: '10 dias úteis',
+    },
+    {
+      id: 'LEVANTAMENTO' as const,
+      label: 'Levantamento Arquitetônico (As-Built)',
+      desc: 'Planta do imóvel como construído — quando não existe projeto original ou houve alterações',
+      entrega: 'Planta cotada de todos os pavimentos + ART/RRT',
+      sla: '7 dias úteis',
+    },
+    {
+      id: 'MEDICAO' as const,
+      label: 'Medição de Obra para Pagamento',
+      desc: 'Certificação técnica independente do que foi executado — pague a construtora só pelo que está pronto',
+      entrega: 'Relatório de medição certificado com fotos das etapas aferidas + ART/RRT',
+      sla: '5 dias úteis',
+    },
+    {
+      id: 'AUDITORIA' as const,
+      label: 'Auditoria de Obra',
+      desc: 'Verificação técnica da conformidade da execução com o projeto e normas — detecta irregularidades',
+      entrega: 'Relatório de não-conformidades com fotos e referência normativa + ART/RRT',
+      sla: '7 dias úteis',
+    },
+  ]
 
   useEffect(() => {
     svcApi.listar()
@@ -173,6 +205,7 @@ export default function NovaDemandaPage() {
         urgencia: imovel.urgencia,
         meioPagamento: 'PIX',
         nivel_minimo_cliente: nivelCliente || undefined,
+        svc_subservico: svcSelecionado?.codigo === 'SVC009' ? svc009Sub || undefined : undefined,
       })
       if (!d?.demanda?.id) throw new Error('Resposta inesperada do servidor ao criar demanda.')
       if (d.demanda.status === 'DEMANDA_ESPECIAL') {
@@ -402,6 +435,43 @@ export default function NovaDemandaPage() {
                   <Field label="Descreva a necessidade" hint="Ajuda o profissional a se preparar">
                     <Textarea value={imovel.descricao} onChange={e => setImovel(i => ({ ...i, descricao: e.target.value }))} placeholder="Ex: trincas no teto da sala desde a obra do vizinho..." />
                   </Field>
+                  {/* SVC009 — sub-serviço obrigatório */}
+                  {svcSelecionado?.codigo === 'SVC009' && (
+                    <Field label="Qual assistência você precisa? (obrigatório — 1 por demanda)">
+                      <div className="space-y-2">
+                        {SVC009_SUBS.map(sub => {
+                          const sel = svc009Sub === sub.id
+                          return (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={() => setSvc009Sub(sub.id)}
+                              className="w-full text-left p-3 rounded-xl border transition-colors"
+                              style={{
+                                background: sel ? 'rgba(232,103,26,0.10)' : 'var(--navy3)',
+                                borderColor: sel ? 'rgba(232,103,26,0.5)' : 'var(--border)',
+                              }}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-semibold" style={{ color: sel ? 'var(--orange)' : 'var(--text)' }}>{sub.label}</p>
+                                <span className="text-2xs shrink-0 mt-0.5" style={{ color: 'var(--text3)' }}>{sub.sla}</span>
+                              </div>
+                              <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>{sub.desc}</p>
+                              {sel && (
+                                <p className="text-2xs mt-1.5 font-semibold" style={{ color: 'var(--orange)' }}>
+                                  ✓ Entrega: {sub.entrega}
+                                </p>
+                              )}
+                            </button>
+                          )
+                        })}
+                        {!svc009Sub && (
+                          <p className="text-2xs" style={{ color: 'var(--red)' }}>Selecione o sub-serviço para continuar</p>
+                        )}
+                      </div>
+                    </Field>
+                  )}
+
                   {/* Nível do profissional — seletor estilo Uber */}
                   <Field label="Nível do profissional">
                     <div className="space-y-2">
@@ -473,7 +543,7 @@ export default function NovaDemandaPage() {
                   <Button variant="ghost" onClick={() => setEtapa(1)} className="flex-1">← Voltar</Button>
                   <Button
                     onClick={() => setEtapa(3)}
-                    disabled={!imovel.area_m2 || !imovel.logradouro || !imovel.numero || !precoCalc}
+                    disabled={!imovel.area_m2 || !imovel.logradouro || !imovel.numero || !precoCalc || (svcSelecionado?.codigo === 'SVC009' && !svc009Sub)}
                     loading={!!(imovel.area_m2 && imovel.logradouro && imovel.numero && !precoCalc)}
                     className="flex-1"
                   >
