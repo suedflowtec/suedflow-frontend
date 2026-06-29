@@ -30,14 +30,14 @@ const NAV = {
     { href: '/cliente/imoveis',      Icon: Home,        label: 'Meus imóveis' },
   ],
   PROFISSIONAL: [
-    { href: '/profissional',            Icon: LayoutGrid,  label: 'Painel' },
-    { href: '/profissional/feed',       Icon: Radar,       label: 'Feed de demandas' },
-    { href: '/profissional/demandas',   Icon: List,        label: 'Em andamento' },
-    { href: '/profissional/financeiro', Icon: Wallet,      label: 'Financeiro' },
-    { href: '/profissional/score',      Icon: Star,        label: 'Score SQP' },
-    { href: '/profissional/planos',     Icon: CreditCard,      label: 'Meu plano' },
-    { href: '/profissional/prepara',    Icon: GraduationCap,   label: 'SUEDPrepara' },
-    { href: '/profissional/perfil',     Icon: User,            label: 'Meu perfil' },
+    { href: '/profissional',                  Icon: LayoutGrid,    label: 'Painel' },
+    { href: '/profissional/feed',             Icon: Radar,         label: 'Feed de demandas' },
+    { href: '/profissional/demandas',         Icon: List,          label: 'Em andamento' },
+    { href: '/profissional/financeiro',       Icon: Wallet,        label: 'Financeiro' },
+    { href: '/profissional/score',            Icon: Star,          label: 'Score SQP' },
+    { href: '/profissional/planos',           Icon: CreditCard,    label: 'Meu plano' },
+    { href: '/profissional/prepara',          Icon: GraduationCap, label: 'SUEDPrepara' },
+    { href: '/profissional/perfil',           Icon: User,          label: 'Meu perfil' },
   ],
   ADMIN: [
     { href: '/admin',                   Icon: LayoutGrid,        label: 'Centro de Controle' },
@@ -202,15 +202,27 @@ export function Shell({ children }: { children: React.ReactNode }) {
             })}
 
             <div className="pt-3 mt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-              <Link
-                href="/configuracoes"
-                onClick={() => isMobile && setOpen(false)}
-                className={`nav-item ${pathname === '/configuracoes' ? 'active' : ''} ${!open ? 'justify-center px-0' : ''}`}
-                title={!open ? 'Configurações' : undefined}
-              >
-                <Settings size={16} strokeWidth={1.8} className="shrink-0" />
-                {open && <span>Configurações</span>}
-              </Link>
+              {/* Link de Configurações — rota específica por modo para manter o nav correto */}
+              {(() => {
+                const configHref = temAmbosPerfis
+                  ? (emModoProfissional ? '/profissional/configuracoes' : '/cliente/configuracoes')
+                  : '/configuracoes'
+                const configActive = pathname === configHref
+                  || pathname === '/configuracoes'
+                  || pathname === '/profissional/configuracoes'
+                  || pathname === '/cliente/configuracoes'
+                return (
+                  <Link
+                    href={configHref}
+                    onClick={() => isMobile && setOpen(false)}
+                    className={`nav-item ${configActive ? 'active' : ''} ${!open ? 'justify-center px-0' : ''}`}
+                    title={!open ? 'Configurações' : undefined}
+                  >
+                    <Settings size={16} strokeWidth={1.8} className="shrink-0" />
+                    {open && <span>Configurações</span>}
+                  </Link>
+                )
+              })()}
 
               <button
                 onClick={toggle}
