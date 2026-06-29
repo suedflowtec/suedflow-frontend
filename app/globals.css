@@ -24,6 +24,8 @@
 }
 
 /* ── Tema claro (ativo via [data-theme="light"] no <html>) ── */
+/* color-scheme no html: força dropdown nativo do select com fundo claro e texto escuro */
+html[data-theme="light"] { color-scheme: light; }
 [data-theme="light"] {
   --navy:    #F4F6F8;
   --navy2:   #FFFFFF;
@@ -161,6 +163,36 @@
 /* Scrollbar discreta no light */
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
 
+/* ── Select e options — fix do dropdown branco-sobre-branco ───────────
+   Navegadores renderizam a lista de options com fundo do sistema.
+   Sem essa regra, em tema dark (fundo navy) o texto fica branco e o
+   dropdown abre com fundo branco = texto invisível.
+─────────────────────────────────────────────────────────────────────── */
+/* Tema escuro (padrão): options com fundo navy, texto claro */
+select.input option,
+select option {
+  background: #0A2238;
+  color: #F0F4F8;
+}
+/* Tema claro: options com fundo branco, texto escuro */
+html[data-theme="light"] select.input option,
+html[data-theme="light"] select option {
+  background: #FFFFFF;
+  color: #0E2A3D;
+}
+
+/* Inputs de data e hora: mesmo problema — browser renderiza calendário com esquema do sistema */
+input[type="date"].input,
+input[type="time"].input,
+input[type="datetime-local"].input {
+  color-scheme: dark;
+}
+html[data-theme="light"] input[type="date"].input,
+html[data-theme="light"] input[type="time"].input,
+html[data-theme="light"] input[type="datetime-local"].input {
+  color-scheme: light;
+}
+
 /* toast visível no tema claro */
 [data-theme="light"] .toast-success { background: #ECFDF5; border-color: #00D68F; color: #065F46; }
 [data-theme="light"] .toast-error   { background: #FFF1F2; border-color: #FF4D6D; color: #9B1C1C; }
@@ -183,7 +215,15 @@
 
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
-  html { font-size: 14px; -webkit-font-smoothing: antialiased; }
+  /* color-scheme: informa ao browser qual esquema usar em elementos nativos
+     (select, scrollbar, checkbox, date input). Sem isso, o browser renderiza
+     dropdowns com fundo branco/claro mesmo no tema dark, causando texto
+     branco-sobre-branco invisível. */
+  html {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    color-scheme: dark; /* padrão: tema escuro */
+  }
   body {
     margin: 0; padding: 0;
     font-family: 'Inter', system-ui, sans-serif;
