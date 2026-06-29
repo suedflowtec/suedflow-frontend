@@ -154,7 +154,12 @@ export const orders = {
 
 export const admin = {
   dashboard: () => request<any>('/api/admin/dashboard'),
-  demandas: () => request<any>('/api/admin/demandas'),
+  demandas: (params?: { status?: string; atrasada?: string; limit?: number; offset?: number; svc?: string }) => {
+    const qs = params ? new URLSearchParams(
+      Object.fromEntries(Object.entries(params).filter(([,v]) => v !== undefined).map(([k,v]) => [k, String(v)]))
+    ).toString() : ''
+    return request<any>(`/api/admin/demandas${qs ? `?${qs}` : ''}`)
+  },
   demanda: (id: string) => request<{ demanda: any }>(`/api/admin/demandas/${id}`),
   profissionais: () => request<{ profissionais: any[] }>('/api/admin/profissionais'),
   profissional: (id: string) => request<{ profissional: any }>(`/api/admin/profissionais/${id}`),
@@ -287,7 +292,7 @@ export const checklist = {
   buscar:      (demandaId: string) => request<any>(`/api/checklist/${demandaId}`),
   responder:   (itemExecucaoId: string, dados: { status: string; obs?: string }) =>
     request<any>(`/api/checklist/item/${itemExecucaoId}`, { method: 'PATCH', body: dados }),
-  uploadFoto:  (execucaoId: string, arquivo: File, item_execucao_id?: string) => {
+  uploadFoto:  (_execucaoId: string, arquivo: File, item_execucao_id?: string) => {
     const fd = new FormData(); fd.append('foto', arquivo)
     if (item_execucao_id) fd.append('item_execucao_id', item_execucao_id)
     return request<any>(`/api/checklist/foto`, { method: 'POST', formData: fd })

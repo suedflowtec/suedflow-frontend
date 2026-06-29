@@ -198,6 +198,42 @@ export default function AdminProfissionalDetalhePage() {
             </div>
           </div>
         )}
+
+        {/* Selo PIONEER — primeiros 100 profissionais aprovados */}
+        <div className="card-solid space-y-3">
+          <p className="section-label">🏅 Selo PIONEER</p>
+          <p className="text-xs" style={{ color: 'var(--text3)' }}>
+            Concede o Selo PIONEER (primeiros 100 aprovados). Benefícios: badge permanente, comissão reduzida 90 dias, prioridade no feed por 1 ano.
+          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold" style={{ color: profissional.is_pioneer ? 'var(--gold)' : 'var(--text3)' }}>
+                {profissional.is_pioneer ? '🏅 PIONEER ativo' : 'Sem selo PIONEER'}
+              </p>
+              {profissional.pioneer_desde && (
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>
+                  Concedido em {new Date(profissional.pioneer_desde).toLocaleDateString('pt-BR')}
+                </p>
+              )}
+            </div>
+            <Button
+              variant={profissional.is_pioneer ? 'ghost' : 'orange'}
+              size="sm"
+              disabled={enviando}
+              onClick={async () => {
+                setEnviando(true)
+                try {
+                  await admin.concederPioneer(id, !profissional.is_pioneer)
+                  toast(profissional.is_pioneer ? 'Selo revogado' : 'Selo PIONEER concedido!', 'success')
+                  carregar()
+                } catch (err: any) { toast(err.message || 'Erro', 'error') }
+                finally { setEnviando(false) }
+              }}
+            >
+              {profissional.is_pioneer ? 'Revogar PIONEER' : '+ Conceder PIONEER'}
+            </Button>
+          </div>
+        </div>
       </main>
     </Shell>
   )
