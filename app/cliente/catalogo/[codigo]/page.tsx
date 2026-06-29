@@ -1,7 +1,7 @@
 // app/cliente/catalogo/[codigo]/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/Button'
 import { svc } from '@/lib/api'
@@ -19,7 +19,9 @@ const SECOES = [
 export default function SvcDetalhePage() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const codigo = String(params?.codigo || '')
+  const veioDaSUE = searchParams.get('contratar') === '1'
   const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const [servico, setServico] = useState<any>(null)
@@ -53,6 +55,17 @@ export default function SvcDetalhePage() {
         >
           ← Voltar ao catálogo
         </button>
+
+        {veioDaSUE && (
+          <div className="card-accent">
+            <p className="text-sm font-semibold" style={{ color: 'var(--orange)' }}>
+              A SUE identificou este serviço para você
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text3)' }}>
+              Confira abaixo o que está incluído, o que você precisa ter e o que receberá. Quando estiver pronto, clique em "Contratar".
+            </p>
+          </div>
+        )}
 
         {loading ? (
           <p className="text-sm py-10 text-center" style={{ color: 'var(--text3)' }}>Carregando...</p>

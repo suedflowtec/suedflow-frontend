@@ -18,6 +18,11 @@
   line-height: 1.4;
 }
 
+/* Tema claro: forçar contraste suficiente no título da seção */
+:global([data-theme="light"]) .catTitle {
+  color: #1E3A4C;
+}
+
 .catTitle::after {
   content: '';
   display: block;
@@ -49,6 +54,11 @@
   background: linear-gradient(to right, transparent, rgba(6, 24, 40, 0.55));
   pointer-events: none;
   z-index: 10;
+}
+
+/* Tema claro: gradiente adapta ao fundo claro */
+:global([data-theme="light"]) .carouselOuter::after {
+  background: linear-gradient(to right, transparent, rgba(244, 246, 248, 0.85));
 }
 
 /* ── Trilho: scroll nativo (Instagram / Netflix style) ──

@@ -145,11 +145,8 @@ export default function CatalogoPage() {
                     </p>
                   )}
                   <div className="flex gap-2 pt-1">
-                    <button className="btn btn-primary btn-sm" onClick={() => router.push(`/cliente/nova-demanda?svc=${sugestao.svc_sugerido}`)}>
-                      Criar demanda →
-                    </button>
-                    <button className="btn btn-secondary btn-sm" onClick={() => router.push(`/cliente/catalogo/${sugestao.svc_sugerido}`)}>
-                      Ver detalhes
+                    <button className="btn btn-primary btn-sm" onClick={() => router.push(`/cliente/catalogo/${sugestao.svc_sugerido}?contratar=1`)}>
+                      Ver serviço e contratar →
                     </button>
                   </div>
                 </div>
