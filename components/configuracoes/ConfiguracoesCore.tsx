@@ -11,10 +11,14 @@ import { Camera, Check, X, Eye, EyeOff, Bell, Shield, User, CreditCard, MapPin, 
 
 // ── Tipos de seção por perfil ───────────────────────────────
 type RoleType = 'CLIENTE' | 'PROFISSIONAL' | 'ADMIN' | 'MODERADOR' | 'CURADOR_SUPORTE' | 'CURADOR_SENIOR'
-type Section = 'conta' | 'senha' | 'notificacoes' | 'privacidade' | 'profissional' | 'curador' | 'aparencia' | 'perigo'
+type Section = 'conta' | 'senha' | 'notificacoes' | 'privacidade' | 'profissional' | 'curador' | 'aparencia'
 
 interface TabDef { key: Section; label: string; Icon: any }
 
+// Tabs de navegação — "Cancelar conta" foi retirada das tabs propositalmente.
+// Colocar "Cancelar conta" como tab de mesmo peso visual que as outras
+// facilita o clique acidental. A zona de perigo fica sempre no final da página,
+// visualmente separada, como seção fixa — não como tab de navegação.
 function getTabsForRole(role: RoleType): TabDef[] {
   const conta:         TabDef = { key: 'conta',         label: 'Minha conta',   Icon: User }
   const senha:         TabDef = { key: 'senha',          label: 'Segurança',     Icon: Shield }
@@ -23,24 +27,26 @@ function getTabsForRole(role: RoleType): TabDef[] {
   const profissional:  TabDef = { key: 'profissional',   label: 'Dados profiss.',Icon: CreditCard }
   const curador:       TabDef = { key: 'curador',        label: 'Curadoria',     Icon: Shield }
   const aparencia:     TabDef = { key: 'aparencia',      label: 'Aparência',     Icon: Sun }
-  const perigo:        TabDef = { key: 'perigo',         label: 'Cancelar conta',Icon: AlertTriangle }
 
   switch (role) {
     case 'CLIENTE':
-      return [conta, senha, notificacoes, privacidade, aparencia, perigo]
+      return [conta, senha, notificacoes, privacidade, aparencia]
     case 'PROFISSIONAL':
-      return [conta, profissional, senha, notificacoes, privacidade, aparencia, perigo]
+      return [conta, profissional, senha, notificacoes, privacidade, aparencia]
     case 'ADMIN':
     case 'MODERADOR':
-      // Admin não cancela conta por aqui e não tem selo de imóvel
       return [conta, senha, notificacoes, aparencia]
     case 'CURADOR_SUPORTE':
     case 'CURADOR_SENIOR':
-      // Curador não cancela conta por aqui
       return [conta, curador, senha, notificacoes, aparencia]
     default:
       return [conta, senha, aparencia]
   }
+}
+
+// Perfis que podem cancelar conta por aqui (admin e curador usam processo diferente)
+function podeExibirZonaPerigo(role: RoleType) {
+  return role === 'CLIENTE' || role === 'PROFISSIONAL'
 }
 
 // ── Componente Toggle ─────────────────────────────────────
@@ -269,8 +275,8 @@ export default function ConfiguracoesCore({ modoForcado }: { modoForcado?: 'CLIE
               <button key={tab.key} onClick={() => setSection(tab.key)}
                 className="flex-1 px-2 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 min-w-[80px]"
                 style={{
-                  background: section === tab.key ? (tab.key === 'perigo' ? 'rgba(255,77,109,0.15)' : 'var(--navy2)') : 'transparent',
-                  color: section === tab.key ? (tab.key === 'perigo' ? 'var(--red)' : 'var(--text)') : 'var(--text3)',
+                  background: section === tab.key ? 'var(--navy2)' : 'transparent',
+                  color: section === tab.key ? 'var(--text)' : 'var(--text3)',
                   boxShadow: section === tab.key ? '0 1px 4px rgba(0,0,0,0.2)' : 'none',
                 }}>
                 <tab.Icon size={12} />
@@ -660,26 +666,49 @@ export default function ConfiguracoesCore({ modoForcado }: { modoForcado?: 'CLIE
             </div>
           )}
 
-          {/* ── CANCELAR CONTA (só CLIENTE e PROFISSIONAL) ── */}
-          {section === 'perigo' && (role === 'CLIENTE' || role === 'PROFISSIONAL') && (
-            <div className="card space-y-4" style={{ borderColor: 'rgba(255,77,109,0.3)', background: 'rgba(255,77,109,0.05)' }}>
-              <p className="section-label" style={{ color: 'var(--red)' }}>Zona de perigo</p>
-              {role === 'PROFISSIONAL' && (
-                <div className="rounded-xl p-3 text-xs" style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.2)', color: 'var(--text2)' }}>
-                  <p className="font-semibold" style={{ color: 'var(--gold)' }}>⚠ Atenção — profissional com demandas ativas</p>
-                  <p className="mt-1">Demandas em andamento serão mantidas até conclusão. Cancele sua conta apenas após concluir todas as demandas em execução. Saldo disponível: solicite saque antes de cancelar.</p>
-                </div>
-              )}
-              <p className="text-sm" style={{ color: 'var(--text2)' }}>
-                Ao cancelar, o acesso é encerrado imediatamente. Dados mantidos por 60 dias (LGPD Art. 18) e então removidos.
-              </p>
-              <button onClick={() => setCancelStep(1)} className="btn btn-danger btn-sm">
-                Cancelar minha conta
+        </div>
+
+        {/* ── ZONA DE PERIGO — fixa ao final da página, separada das tabs ──
+            Não é uma tab de navegação para evitar clique acidental.
+            Visualmente isolada por separador e espaçamento generoso. */}
+        {podeExibirZonaPerigo(role) && (
+          <div className="max-w-2xl mx-auto mt-16 mb-6">
+            {/* Separador visual claro */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,77,109,0.2)' }} />
+              <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,77,109,0.5)' }}>
+                Zona de perigo
+              </span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,77,109,0.2)' }} />
+            </div>
+
+            <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-4"
+              style={{ background: 'rgba(255,77,109,0.04)', border: '1px solid rgba(255,77,109,0.15)' }}>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'rgba(255,77,109,0.8)' }}>Cancelar conta</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>
+                  {role === 'PROFISSIONAL'
+                    ? 'Conclua todas as demandas e saque o saldo antes de cancelar.'
+                    : 'Acesso encerrado imediatamente · dados removidos após 60 dias (LGPD).'}
+                </p>
+              </div>
+              {/* Botão pequeno, ghost, sem glow — requer confirmação em modal */}
+              <button
+                onClick={() => setCancelStep(1)}
+                className="btn btn-sm shrink-0 font-semibold"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(255,77,109,0.35)',
+                  color: 'rgba(255,77,109,0.75)',
+                  padding: '6px 14px',
+                }}
+              >
+                Cancelar conta
               </button>
             </div>
-          )}
+          </div>
+        )}
 
-        </div>
       </main>
 
       {/* Modal de cancelamento */}
