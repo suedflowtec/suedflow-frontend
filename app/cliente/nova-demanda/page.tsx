@@ -60,6 +60,14 @@ export default function NovaDemandaPage() {
   const [nivelCliente, setNivelCliente] = useState<'' | 'CANDIDATO' | 'PLENO' | 'SENIOR' | 'ELITE'>('')
   const [svc009Sub, setSvc009Sub] = useState<'' | 'ORCAMENTACAO' | 'LEVANTAMENTO' | 'MEDICAO' | 'AUDITORIA'>('')
 
+  // Multiplicadores de nível vindos do backend (banco de dados, editáveis pelo admin)
+  // Atualizados sempre que o preço base é recalculado
+  const multNivel = {
+    PLENO:  precoCalc?.mult_nivel_pleno  ?? 1.18,
+    SENIOR: precoCalc?.mult_nivel_senior ?? 1.30,
+    ELITE:  precoCalc?.mult_nivel_elite  ?? 1.45,
+  }
+
   const SVC009_SUBS = [
     {
       id: 'ORCAMENTACAO' as const,
@@ -102,10 +110,11 @@ export default function NovaDemandaPage() {
     if (etapa !== 2 || !svcSelecionado || !imovel.area_m2) { setPrecoCalc(null); return }
     const t = setTimeout(() => {
       orders.calcularPreco({
-        codigoSvc: svcSelecionado.codigo,
-        tipoImovel: imovel.tipo_imovel,
-        areaM2: Number(imovel.area_m2),
-        urgencia: imovel.urgencia,
+        codigoSvc:    svcSelecionado.codigo,
+        tipoImovel:   imovel.tipo_imovel,
+        areaM2:       Number(imovel.area_m2),
+        urgencia:     imovel.urgencia,
+        nivelCliente: nivelCliente || undefined,
       })
         .then((r: any) => setPrecoCalc({
           preco_servico: r.precoServico,
@@ -125,7 +134,7 @@ export default function NovaDemandaPage() {
         })
     }, 400)
     return () => clearTimeout(t)
-  }, [etapa, svcSelecionado, imovel])
+  }, [etapa, svcSelecionado, imovel, nivelCliente])
 
   const buscarCep = async () => {
     const c = cep.replace(/\D/g, '')
@@ -480,10 +489,10 @@ export default function NovaDemandaPage() {
                       </p>
                       <div className="grid grid-cols-2 gap-2">
                         {([
-                          { nivel: '', label: 'Qualquer profissional', desc: 'Preço base', mult: 1.00, disponivel: true },
-                          { nivel: 'PLENO', label: 'Pleno ou acima', desc: '+18% · 400+ pts SQP', mult: 1.18, disponivel: false },
-                          { nivel: 'SENIOR', label: 'Sênior ou acima', desc: '+30% · 600+ pts SQP', mult: 1.30, disponivel: false },
-                          { nivel: 'ELITE', label: 'Elite', desc: '+45% · 800+ pts SQP', mult: 1.45, disponivel: false },
+                          { nivel: '',       label: 'Qualquer profissional', desc: 'Preço base',                         mult: 1.00,               disponivel: true  },
+                          { nivel: 'PLENO',  label: 'Pleno ou acima',        desc: `+${Math.round((multNivel.PLENO-1)*100)}% · 400+ pts SQP`,  mult: multNivel.PLENO,  disponivel: false },
+                          { nivel: 'SENIOR', label: 'Sênior ou acima',       desc: `+${Math.round((multNivel.SENIOR-1)*100)}% · 600+ pts SQP`, mult: multNivel.SENIOR, disponivel: false },
+                          { nivel: 'ELITE',  label: 'Elite',                 desc: `+${Math.round((multNivel.ELITE-1)*100)}% · 800+ pts SQP`,  mult: multNivel.ELITE,  disponivel: false },
                         ] as const).map(op => {
                           const sel = nivelCliente === op.nivel
                           return (

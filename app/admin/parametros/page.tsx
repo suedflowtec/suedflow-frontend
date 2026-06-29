@@ -16,7 +16,11 @@ const PARAM_META: Record<string, { label: string; descricao: string; tipo: 'nume
   IRRF_PISO:  { label: 'Piso IRRF saque (R$)',           tipo: 'numero', descricao: 'Valor mínimo de saque para retenção de IRRF 1,5%. Abaixo disso, isento.' },
   IRRF_PCT:   { label: 'Taxa IRRF sobre saque (%)',       tipo: 'numero', descricao: 'Percentual de Imposto de Renda Retido na Fonte sobre saques acima do piso.' },
   TAXA_PIX:   { label: 'Taxa PIX (%)',                   tipo: 'numero', descricao: 'Taxa percentual sobre o pagamento PIX do cliente (embutida no preço base).' },
-  TAXA_SAQUE: { label: 'Taxa de saque PIX (R$)',          tipo: 'numero', descricao: 'Custo fixo por saque PIX do profissional. Isento no Plano Elite.' },
+  TAXA_SAQUE:          { label: 'Taxa de saque PIX (R$)',        tipo: 'numero', descricao: 'Custo fixo por saque PIX do profissional. Isento no Plano Elite.' },
+  // Multiplicadores de nível (DECISÃO #007 — 29/06/2026)
+  MULT_NIVEL_PLENO:  { label: 'Multiplicador Pleno (×)',       tipo: 'numero', descricao: 'Fator aplicado ao preço quando cliente escolhe "Pleno ou acima". Ex: 1.18 = +18%. Incide sobre o serviço; a ART/RRT permanece intacta.' },
+  MULT_NIVEL_SENIOR: { label: 'Multiplicador Sênior (×)',      tipo: 'numero', descricao: 'Fator aplicado ao preço quando cliente escolhe "Sênior ou acima". Ex: 1.30 = +30%. Incide sobre o serviço; a ART/RRT permanece intacta.' },
+  MULT_NIVEL_ELITE:  { label: 'Multiplicador Elite (×)',       tipo: 'numero', descricao: 'Fator aplicado ao preço quando cliente escolhe "Elite". Ex: 1.45 = +45%. Incide sobre o serviço; a ART/RRT permanece intacta.' },
 }
 
 export default function AdminParametrosPage() {
@@ -90,6 +94,7 @@ export default function AdminParametrosPage() {
 
   const GRUPOS = [
     { titulo: 'Motor de Precificação (UTS)', chaves: ['PNR_UTS', 'FE', 'FASE', 'REGIAO'] },
+    { titulo: 'Multiplicadores de Nível (DECISÃO #007)', chaves: ['MULT_NIVEL_PLENO', 'MULT_NIVEL_SENIOR', 'MULT_NIVEL_ELITE'] },
     { titulo: 'Tributação e Taxas',          chaves: ['IRRF_PISO', 'IRRF_PCT', 'TAXA_PIX', 'TAXA_SAQUE'] },
   ]
 
