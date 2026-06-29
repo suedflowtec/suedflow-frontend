@@ -279,6 +279,23 @@ export const profissional = {
     ),
 }
 
+export const checklist = {
+  template:    (svcCodigo: string) => request<{ template: any }>(`/api/checklist/template/${svcCodigo}`),
+  patologias:  () => request<{ categorias: any[] }>('/api/checklist/patologias'),
+  iniciar:     (demanda_id: string, lat?: number, lng?: number) =>
+    request<{ execucao: any; retomada?: boolean }>('/api/checklist/iniciar', { method: 'POST', body: { demanda_id, lat, lng } }),
+  buscar:      (demandaId: string) => request<any>(`/api/checklist/${demandaId}`),
+  responder:   (itemExecucaoId: string, dados: { status: string; obs?: string }) =>
+    request<any>(`/api/checklist/item/${itemExecucaoId}`, { method: 'PATCH', body: dados }),
+  uploadFoto:  (execucaoId: string, arquivo: File, item_execucao_id?: string) => {
+    const fd = new FormData(); fd.append('foto', arquivo)
+    if (item_execucao_id) fd.append('item_execucao_id', item_execucao_id)
+    return request<any>(`/api/checklist/foto`, { method: 'POST', formData: fd })
+  },
+  finalizar:   (execucaoId: string) => request<any>(`/api/checklist/${execucaoId}/finalizar`, { method: 'POST' }),
+  relatorio:   (execucaoId: string) => request<any>(`/api/checklist/${execucaoId}/relatorio`),
+}
+
 export const saques = {
   criar: (data: { valor: number; pix_key: string }) =>
     request<{

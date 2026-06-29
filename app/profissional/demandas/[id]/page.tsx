@@ -191,6 +191,19 @@ export default function ProfissionalDemandaDetalhePage() {
 
       <main className="p-6 space-y-6 max-w-3xl">
 
+        {/* Checklist de Campo — disponível em execução */}
+        {demanda.status === 'EM_EXECUCAO' && (
+          <a href={`/profissional/demandas/${id}/checklist`} className="flex items-center gap-3 rounded-xl p-3 transition-colors"
+            style={{ background: 'rgba(232,103,26,0.07)', border: '1px solid rgba(232,103,26,0.25)', textDecoration: 'none' }}>
+            <span className="text-xl shrink-0">📋</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold" style={{ color: 'var(--orange)' }}>Checklist de Campo</p>
+              <p className="text-xs" style={{ color: 'var(--text3)' }}>Preencha durante a visita presencial ao imóvel com GPS e fotos</p>
+            </div>
+            <span style={{ color: 'var(--orange)' }}>→</span>
+          </a>
+        )}
+
         {/* Projeto Escola — banner quando ativo */}
         {demanda.is_escola && (
           <div className="rounded-xl p-3 flex items-center gap-3"

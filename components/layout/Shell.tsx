@@ -48,6 +48,7 @@ const NAV = {
     { href: '/admin/precos',            Icon: Settings,          label: 'Motor UTS' },
     { href: '/admin/parametros',        Icon: SlidersHorizontal, label: 'Parâmetros' },
     { href: '/admin/banco-estrategico', Icon: Database,          label: 'Banco Estratégico' },
+    { href: '/admin/b2b',               Icon: CreditCard,        label: 'B2B Corporate' },
     { href: '/admin/health',            Icon: FlaskConical,      label: 'Sistema' },
     { href: '/curador',                 Icon: ShieldCheck,       label: 'Curadoria' },
     { href: '/curador/fila',            Icon: List,              label: 'Fila de casos' },
@@ -57,6 +58,7 @@ const NAV = {
     { href: '/curador/fila',         Icon: List,          label: 'Fila de casos' },
     { href: '/curador/escola',       Icon: GraduationCap, label: 'Projeto Escola' },
     { href: '/curador/profissionais',Icon: User,          label: 'KYC Profissionais' },
+    { href: '/curador/financeiro',   Icon: Wallet,        label: 'Meu financeiro' },
     { href: '/curador/regras',       Icon: ShieldCheck,   label: 'Minhas regras' },
   ],
 }
