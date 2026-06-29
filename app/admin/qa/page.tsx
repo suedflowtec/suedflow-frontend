@@ -153,8 +153,8 @@ export default function AdminQAPage() {
                       </td>
                       <td>
                         {temVTC
-                          ? <CheckCircle2 size={14} style={{ color: 'var(--green)' }} title="VTC emitida" />
-                          : <XCircle size={14} style={{ color: 'var(--text3)' }} title="Sem VTC" />
+                          ? <span title="VTC emitida"><CheckCircle2 size={14} style={{ color: 'var(--green)' }} /></span>
+                          : <span title="Sem VTC"><XCircle size={14} style={{ color: 'var(--text3)' }} /></span>
                         }
                       </td>
                       <td>
