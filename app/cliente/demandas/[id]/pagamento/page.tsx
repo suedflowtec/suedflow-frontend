@@ -157,8 +157,9 @@ export default function PagamentoPixPage() {
             <p className="text-3xl">✅</p>
             <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Pagamento confirmado</p>
             <p className="text-sm" style={{ color: 'var(--text2)' }}>
-              O valor de {formatBRL(demanda.valor_total || 0)} está em escrow na plataforma e será liberado
-              ao profissional após a confirmação da entrega.
+              Seu dinheiro está protegido. <strong>{formatBRL(demanda.valor_total || 0)}</strong> ficam bloqueados
+              aqui e só são liberados ao profissional quando você confirmar que o serviço foi entregue corretamente.
+              Se houver problema, você abre uma contestação e nosso curador decide.
             </p>
             <Button className="w-full" onClick={() => router.push(`/cliente/demandas/${id}`)}>
               Voltar para a demanda
@@ -319,7 +320,7 @@ export default function PagamentoPixPage() {
                 </span>
               </div>
               <p className="text-2xs pt-1" style={{ color: 'var(--text3)' }}>
-                O valor fica em custódia (escrow) na plataforma até a confirmação da entrega. A Responsabilidade Técnica é repassada integralmente ao profissional para custear o registro da ART/RRT.
+                🔒 <strong>Proteção total:</strong> o valor só sai daqui quando você confirmar a entrega — ou automaticamente em 48h se tudo estiver correto. Problema? Você contesta e um curador técnico analisa antes de qualquer liberação. A Responsabilidade Técnica (ART/RRT) é repassada integralmente ao profissional para registro no conselho.
               </p>
             </div>
           </div>

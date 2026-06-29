@@ -57,6 +57,7 @@ export default function NovaDemandaPage() {
   const [buscandoCep, setBuscandoCep] = useState(false)
   const [precoCalc, setPrecoCalc] = useState<any>(null)
   const [criando, setCriando] = useState(false)
+  const [nivelCliente, setNivelCliente] = useState<'' | 'CANDIDATO' | 'PLENO' | 'SENIOR' | 'ELITE'>('')
 
   useEffect(() => {
     svcApi.listar()
@@ -171,6 +172,7 @@ export default function NovaDemandaPage() {
         descricao: imovel.descricao,
         urgencia: imovel.urgencia,
         meioPagamento: 'PIX',
+        nivel_minimo_cliente: nivelCliente || undefined,
       })
       if (!d?.demanda?.id) throw new Error('Resposta inesperada do servidor ao criar demanda.')
       if (d.demanda.status === 'DEMANDA_ESPECIAL') {
@@ -400,6 +402,48 @@ export default function NovaDemandaPage() {
                   <Field label="Descreva a necessidade" hint="Ajuda o profissional a se preparar">
                     <Textarea value={imovel.descricao} onChange={e => setImovel(i => ({ ...i, descricao: e.target.value }))} placeholder="Ex: trincas no teto da sala desde a obra do vizinho..." />
                   </Field>
+                  {/* Nível do profissional — seletor estilo Uber */}
+                  <Field label="Nível do profissional">
+                    <div className="space-y-2">
+                      <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                        Escolha o nível de experiência desejado. Profissionais mais experientes têm histórico verificado de demandas concluídas com qualidade.
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {([
+                          { nivel: '', label: 'Qualquer profissional', desc: 'Preço base', mult: 1.00, disponivel: true },
+                          { nivel: 'PLENO', label: 'Pleno ou acima', desc: '+18% · 400+ pts SQP', mult: 1.18, disponivel: false },
+                          { nivel: 'SENIOR', label: 'Sênior ou acima', desc: '+30% · 600+ pts SQP', mult: 1.30, disponivel: false },
+                          { nivel: 'ELITE', label: 'Elite', desc: '+45% · 800+ pts SQP', mult: 1.45, disponivel: false },
+                        ] as const).map(op => {
+                          const sel = nivelCliente === op.nivel
+                          return (
+                            <button
+                              key={op.nivel}
+                              type="button"
+                              disabled={!op.disponivel}
+                              onClick={() => op.disponivel && setNivelCliente(op.nivel as any)}
+                              className={`py-2.5 px-3 rounded-xl text-left border transition-colors ${!op.disponivel ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              style={{
+                                background: sel ? 'rgba(232,103,26,0.12)' : 'var(--navy3)',
+                                borderColor: sel ? 'rgba(232,103,26,0.5)' : 'var(--border)',
+                              }}
+                            >
+                              <p className="text-xs font-semibold" style={{ color: sel ? 'var(--orange)' : 'var(--text)' }}>{op.label}</p>
+                              <p className="text-2xs mt-0.5" style={{ color: 'var(--text3)' }}>
+                                {!op.disponivel ? '🔒 Em breve · nenhum disponível ainda' : op.desc}
+                              </p>
+                              {op.disponivel && precoCalc && op.mult > 1 && (
+                                <p className="text-2xs font-mono font-bold mt-0.5" style={{ color: 'var(--orange)' }}>
+                                  ≈ {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((precoCalc.preco_cliente || 0) * op.mult)}
+                                </p>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </Field>
+
                   <Field label="Urgência">
                     <div className="grid grid-cols-3 gap-2">
                       {(['NORMAL', 'PRIORITARIO', 'URGENTE'] as const).map(u => {

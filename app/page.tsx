@@ -708,7 +708,7 @@ export default function LandingPage() {
               <h4>Para clientes</h4>
               <Link href="/auth/cadastro?tipo=CLIENTE">Solicitar serviço</Link>
               <Link href="/auth/login">Acompanhar demanda</Link>
-              <a href="mailto:suporte@suedflow.com.br">Central de ajuda</a>
+              <a href="mailto:suedflowtecnologia@gmail.com">Central de ajuda</a>
             </div>
             <div className="lp-footer-col">
               <h4>Para profissionais</h4>
@@ -720,7 +720,7 @@ export default function LandingPage() {
               <h4>Legal &amp; Contato</h4>
               <Link href="/termos">Termos de uso</Link>
               <Link href="/privacidade">Privacidade (LGPD)</Link>
-              <a href="mailto:suporte@suedflow.com.br">suporte@suedflow.com.br</a>
+              <a href="mailto:suedflowtecnologia@gmail.com">suedflowtecnologia@gmail.com</a>
               <a href="mailto:contato@suedflow.com.br">Fale conosco</a>
             </div>
           </div>

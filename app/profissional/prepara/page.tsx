@@ -209,6 +209,24 @@ export default function SuedPreparaHomePage() {
           })}
         </div>
 
+        {/* Atalho rápido para Laboratório de Projetos Demo */}
+        {m1Concluido && (
+          <div className="card-accent flex items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl shrink-0">🧪</span>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Laboratório de Projetos Demo</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>
+                  Demonstre sua competência com casos reais simulados e ganhe Selo de Aptidão. Disponível para todos os módulos concluídos.
+                </p>
+              </div>
+            </div>
+            <a href="/profissional/prepara/m1/demo" className="btn btn-primary btn-sm shrink-0">
+              Acessar Labs →
+            </a>
+          </div>
+        )}
+
         {/* Info sobre conteúdo */}
         <div className="card-solid text-xs space-y-1" style={{ color: 'var(--text3)' }}>
           <p className="font-semibold text-white">Como funciona o SUEDPrepara</p>
