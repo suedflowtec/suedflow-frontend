@@ -136,9 +136,9 @@ export default function AdminBancoEstrategicoPage() {
                         ★ {s._avg.avaliacao_cliente.toFixed(1)}
                       </span>
                     )}
-                    {s._avg.sla_real_dias && (
+                    {s._avg.sla_dias_real && (
                       <span className="text-2xs" style={{ color: 'var(--text3)' }}>
-                        {s._avg.sla_real_dias.toFixed(0)}d
+                        {s._avg.sla_dias_real.toFixed(0)}d
                       </span>
                     )}
                   </div>
@@ -300,12 +300,12 @@ export default function AdminBancoEstrategicoPage() {
                           {r.cidade && r.estado ? `${r.cidade}/${r.estado}` : r.estado || '—'}
                         </td>
                         <td>
-                          {r.sla_real_dias != null ? (
+                          {r.sla_dias_real != null ? (
                             <span className="mono text-sm" style={{
-                              color: r.sla_contratado && r.sla_real_dias <= r.sla_contratado
+                              color: r.sla_contratado && r.sla_dias_real <= r.sla_contratado
                                 ? 'var(--green)' : 'var(--red)'
                             }}>
-                              {r.sla_real_dias}d
+                              {r.sla_dias_real}d
                               {r.sla_contratado && ` / ${r.sla_contratado}d`}
                             </span>
                           ) : '—'}
