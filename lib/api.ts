@@ -170,9 +170,15 @@ export const admin = {
     request<{ ok: boolean }>('/api/admin/params-globais', { method: 'PATCH', body: data }),
   verificarSue: (demandaId: string) =>
     request<{ ok: boolean; demanda_id: string; vtc: any; latencia_ms: number }>(`/api/admin/teste/qa/verificar/${demandaId}`, { method: 'POST' }),
-  bancoEstrategico: (status?: string) => {
-    const qs = status ? `?status=${status}` : ''
-    return request<{ registros: any[]; total: number; stats: any[] }>(`/api/admin/banco-estrategico${qs}`)
+  bancoEstrategico: (filtros?: {
+    status?: string; svc?: string; tipo_imovel?: string; cidade?: string; estado?: string;
+    qa_aprovado?: string; avaliacao_min?: string; sla_max?: string;
+    de?: string; ate?: string; limit?: number; offset?: number;
+  }) => {
+    const qs = filtros ? new URLSearchParams(
+      Object.fromEntries(Object.entries(filtros).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, String(v)]))
+    ).toString() : ''
+    return request<{ registros: any[]; total: number; stats: any[]; cidades: any[] }>(`/api/admin/banco-estrategico${qs ? `?${qs}` : ''}`)
   },
   atualizarBancoEstrategico: (id: string, status: 'APROVADO' | 'EXCLUIDO') =>
     request<{ ok: boolean }>(`/api/admin/banco-estrategico/${id}`, { method: 'PATCH', body: { status } }),
