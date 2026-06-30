@@ -32,7 +32,13 @@ export async function GET(req: NextRequest) {
     const buffer  = await response.arrayBuffer()
     const urlLow  = url.toLowerCase().split('?')[0]
 
-    // Detectar Content-Type pelo sufixo da URL (Cloudinary omite extensão em raw uploads)
+    // Detectar Content-Type em ordem de confiabilidade:
+    // 1) magic bytes (%PDF — 0x25 0x50 0x44 0x46): mais confiável para PDFs raw
+    // 2) extensão da URL
+    // 3) header Content-Type do Cloudinary (pode vir como octet-stream para raw)
+    const uint8 = new Uint8Array(buffer)
+    const isPdf = uint8.length > 4 && uint8[0] === 0x25 && uint8[1] === 0x50 && uint8[2] === 0x44 && uint8[3] === 0x46
+
     const extMap: Record<string, string> = {
       '.pdf':  'application/pdf',
       '.jpg':  'image/jpeg',
@@ -42,14 +48,14 @@ export async function GET(req: NextRequest) {
       '.gif':  'image/gif',
       '.svg':  'image/svg+xml',
     }
-    let contentType = response.headers.get('content-type') || 'application/octet-stream'
+    const cloudinaryType = response.headers.get('content-type') || ''
+    let contentType = cloudinaryType && cloudinaryType !== 'application/octet-stream'
+      ? cloudinaryType
+      : 'application/octet-stream'
     for (const [ext, mime] of Object.entries(extMap)) {
       if (urlLow.endsWith(ext)) { contentType = mime; break }
     }
-    // Fallback: se Cloudinary reportou PDF no header, respeitar
-    if (response.headers.get('content-type')?.includes('pdf')) {
-      contentType = 'application/pdf'
-    }
+    if (isPdf) contentType = 'application/pdf'
 
     return new NextResponse(buffer, {
       status: 200,

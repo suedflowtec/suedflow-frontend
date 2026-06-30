@@ -128,7 +128,7 @@ export default function CuradorKycPage() {
                               className="w-full rounded-lg object-cover" style={{ maxHeight: 160 }} />
                           </a>
                         ) : (
-                          <a href={doc.url_arquivo} target="_blank" rel="noreferrer"
+                          <a href={`/api/ver?url=${encodeURIComponent(doc.url_arquivo)}`} target="_blank" rel="noreferrer"
                             className="flex items-center gap-2 text-sm font-semibold"
                             style={{ color: 'var(--orange)' }}>
                             <FileText size={14} /> Abrir documento ↗
