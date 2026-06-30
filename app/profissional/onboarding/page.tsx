@@ -266,7 +266,7 @@ export default function ProfissionalOnboardingPage() {
               <Button
                 onClick={() => {
                   const todos = KYC_DOCS.every(d => docsEnviados[d.tipo])
-                  if (!todos) { toast('Envie todos os 4 documentos antes de avançar', 'error'); return }
+                  if (!todos) { toast('Envie todos os 5 documentos antes de avançar', 'error'); return }
                   setStep(4)
                 }}
               >Avançar</Button>
