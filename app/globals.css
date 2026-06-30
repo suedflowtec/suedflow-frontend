@@ -63,6 +63,15 @@ html[data-theme="light"] { color-scheme: light; }
   --text2: #A8BDCC;
   --text3: #6B8499;
 }
+/* Botões dentro do topbar mantêm aparência dark mesmo no tema claro */
+[data-theme="light"] .topbar .btn-secondary {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.22);
+  color: #F0F4F8;
+}
+[data-theme="light"] .topbar .btn-secondary:hover {
+  background: rgba(255,255,255,0.20);
+}
 
 /* Cards com mais profundidade no tema claro */
 [data-theme="light"] .card {
