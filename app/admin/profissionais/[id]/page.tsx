@@ -42,6 +42,8 @@ export default function AdminProfissionalDetalhePage() {
   const [loading, setLoading] = useState(true)
   const [motivo, setMotivo] = useState('')
   const [enviando, setEnviando] = useState(false)
+  const [docMotivo, setDocMotivo] = useState<Record<string, string>>({})
+  const [docEnviando, setDocEnviando] = useState<string | null>(null)
 
   const carregar = () => {
     admin.profissional(id)
@@ -77,6 +79,25 @@ export default function AdminProfissionalDetalhePage() {
       toast(err.message || 'Erro ao registrar decisão', 'error')
     } finally {
       setEnviando(false)
+    }
+  }
+
+  const decidirDoc = async (docId: string, aprovado: boolean) => {
+    const motivoDoc = docMotivo[docId] || ''
+    if (!aprovado && motivoDoc.trim().length < 5) {
+      toast('Informe o motivo da reprovação do documento (mínimo 5 caracteres)', 'error')
+      return
+    }
+    setDocEnviando(docId)
+    try {
+      await admin.aprovarKycDoc(docId, aprovado, motivoDoc.trim() || undefined)
+      toast(aprovado ? 'Documento aprovado' : 'Documento reprovado', 'success')
+      setDocMotivo(prev => ({ ...prev, [docId]: '' }))
+      carregar()
+    } catch (err: any) {
+      toast(err.message || 'Erro ao decidir documento', 'error')
+    } finally {
+      setDocEnviando(null)
     }
   }
 
@@ -177,8 +198,8 @@ export default function AdminProfissionalDetalhePage() {
                 const status = STATUS_BADGE[doc.status] || STATUS_BADGE.PENDENTE
                 const docUrl = admin.urlKycDoc(doc.id)
                 return (
-                  <div key={doc.id} className="p-3 rounded-xl" style={{ background: 'var(--glass)' }}>
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={doc.id} className="p-3 rounded-xl space-y-2" style={{ background: 'var(--glass)' }}>
+                    <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{DOC_LABELS[doc.tipo] || doc.tipo}</span>
                       <Badge variant={status.variant}>{status.text}</Badge>
                     </div>
@@ -188,7 +209,7 @@ export default function AdminProfissionalDetalhePage() {
                           src={doc.url_arquivo}
                           alt={doc.tipo}
                           className="w-full rounded-lg"
-                          style={{ maxHeight: 180, objectFit: 'cover' }}
+                          style={{ maxHeight: 160, objectFit: 'cover' }}
                           onError={(e) => {
                             const el = e.currentTarget
                             const parent = el.parentElement
@@ -203,8 +224,38 @@ export default function AdminProfissionalDetalhePage() {
                         Abrir no navegador ↗
                       </a>
                     )}
-                    <p className="text-2xs mt-2" style={{ color: 'var(--text3)' }}>Enviado em {formatDate(doc.created_at)}</p>
-                    {doc.motivo && <p className="text-2xs mt-1" style={{ color: 'var(--red)' }}>{doc.motivo}</p>}
+                    <p className="text-2xs" style={{ color: 'var(--text3)' }}>Enviado em {formatDate(doc.created_at)}</p>
+                    {doc.motivo && <p className="text-2xs" style={{ color: 'var(--red)' }}>{doc.motivo}</p>}
+                    {/* Aprovação individual por documento */}
+                    {doc.status !== 'APROVADO' && (
+                      <div className="space-y-1 pt-1" style={{ borderTop: '1px solid var(--glass)' }}>
+                        <input
+                          type="text"
+                          className="input text-xs py-1"
+                          placeholder="Motivo (obrigatório para reprovar)"
+                          value={docMotivo[doc.id] || ''}
+                          onChange={e => setDocMotivo(prev => ({ ...prev, [doc.id]: e.target.value }))}
+                        />
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => decidirDoc(doc.id, true)}
+                            disabled={docEnviando === doc.id}
+                            className="btn btn-sm flex-1 text-xs"
+                            style={{ background: 'rgba(0,214,143,0.15)', color: 'var(--green)', border: '1px solid rgba(0,214,143,0.3)' }}
+                          >
+                            ✓ Aprovar
+                          </button>
+                          <button
+                            onClick={() => decidirDoc(doc.id, false)}
+                            disabled={docEnviando === doc.id}
+                            className="btn btn-sm flex-1 text-xs"
+                            style={{ background: 'rgba(255,77,109,0.12)', color: 'var(--red)', border: '1px solid rgba(255,77,109,0.3)' }}
+                          >
+                            ✗ Reprovar
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })}

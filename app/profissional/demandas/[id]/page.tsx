@@ -76,7 +76,11 @@ export default function ProfissionalDemandaDetalhePage() {
 
   const marcos: any[] = demanda.marcos_execucao || []
   const temArtAtiva = marcos.some(m => m.tipo === 'ART_ATIVA')
-  const jaEnviouEntregavel = marcos.some(m => m.tipo === 'ENTREGAVEL_ENVIADO') || demanda.status === 'AGUARDANDO_CONFIRMACAO' || demanda.status === 'CONCLUIDA'
+  // QA_REPROVADO permite reenvio mesmo que o marco ENTREGAVEL_ENVIADO já exista
+  const qaReprovado = demanda.status === 'QA_REPROVADO'
+  const jaEnviouEntregavel = (marcos.some(m => m.tipo === 'ENTREGAVEL_ENVIADO') && !qaReprovado)
+    || demanda.status === 'AGUARDANDO_CONFIRMACAO'
+    || demanda.status === 'CONCLUIDA'
 
   const registrarMarco = async () => {
     setRegistrando(true)
@@ -479,6 +483,23 @@ export default function ProfissionalDemandaDetalhePage() {
           </div>
         )}
 
+        {/* Feedback de reprovação do QA pelo curador */}
+        {qaReprovado && (
+          <div className="card space-y-3" style={{ borderColor: 'rgba(255,80,80,0.3)', background: 'rgba(255,80,80,0.06)' }}>
+            <p className="section-label flex items-center gap-1" style={{ color: 'var(--red)' }}>
+              <AlertTriangle size={13} />QA reprovado pelo curador
+            </p>
+            {demanda.feedback_curador && (
+              <p className="text-sm p-3 rounded-lg" style={{ background: 'rgba(255,80,80,0.08)', color: 'var(--text2)', whiteSpace: 'pre-wrap' }}>
+                {demanda.feedback_curador}
+              </p>
+            )}
+            <p className="text-xs" style={{ color: 'var(--text3)' }}>
+              Corrija o entregável conforme o feedback acima e reenvie abaixo.
+            </p>
+          </div>
+        )}
+
         {/* Submissão do entregável */}
         {temArtAtiva && (
           <div className="card-accent space-y-3">
@@ -488,7 +509,9 @@ export default function ProfissionalDemandaDetalhePage() {
             ) : (
               <div>
                 <p className="text-sm mb-3" style={{ color: 'var(--text2)' }}>
-                  ART/RRT registrada. Envie o PDF do entregável final para o cliente confirmar.
+                  {qaReprovado
+                    ? 'Reenvie o PDF corrigido conforme o feedback do curador acima.'
+                    : 'ART/RRT registrada. Envie o PDF do entregável final para o cliente confirmar.'}
                 </p>
                 <input
                   ref={fileRef}

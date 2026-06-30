@@ -2,11 +2,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
-import { curador as curadorApi } from '@/lib/api'
+import { curador as curadorApi, admin as adminApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { formatDate } from '@/lib/utils'
-import { UserCheck, XCircle, Eye, FileText, Image } from 'lucide-react'
+import { UserCheck, XCircle, FileText } from 'lucide-react'
 
 const DOC_LABELS: Record<string, string> = {
   RG_FRENTE:      'RG / CNH — frente',
@@ -29,6 +29,8 @@ export default function CuradorKycPage() {
   const [decidindo, setDecidindo] = useState<string | null>(null)
   const [motivo, setMotivo] = useState('')
   const [expandido, setExpandido] = useState<string | null>(null)
+  const [docMotivo, setDocMotivo] = useState<Record<string, string>>({})
+  const [docDecidindo, setDocDecidindo] = useState<string | null>(null)
 
   const carregar = () => {
     curadorApi.profissionaisKyc?.()
@@ -64,6 +66,25 @@ export default function CuradorKycPage() {
       toast(err.message || 'Erro ao registrar decisão', 'error')
     } finally {
       setDecidindo(null)
+    }
+  }
+
+  const decidirDoc = async (docId: string, aprovado: boolean) => {
+    const motivoDoc = docMotivo[docId] || ''
+    if (!aprovado && motivoDoc.trim().length < 5) {
+      toast('Informe o motivo da reprovação do documento (mínimo 5 caracteres)', 'error')
+      return
+    }
+    setDocDecidindo(docId)
+    try {
+      await adminApi.aprovarKycDoc(docId, aprovado, motivoDoc.trim() || undefined)
+      toast(aprovado ? 'Documento aprovado' : 'Documento reprovado', 'success')
+      setDocMotivo(prev => ({ ...prev, [docId]: '' }))
+      carregar()
+    } catch (err: any) {
+      toast(err.message || 'Erro ao decidir documento', 'error')
+    } finally {
+      setDocDecidindo(null)
     }
   }
 
@@ -117,25 +138,62 @@ export default function CuradorKycPage() {
               {expandido === prof.id && (
                 <>
                   <div className="grid grid-cols-2 gap-3">
-                    {(prof.documentos_kyc || []).map((doc: any) => (
-                      <div key={doc.id} className="rounded-xl p-3" style={{ background: 'var(--glass)' }}>
-                        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text3)' }}>
-                          {DOC_LABELS[doc.tipo] || doc.tipo}
-                        </p>
-                        {isImg(doc.url_arquivo) ? (
-                          <a href={doc.url_arquivo} target="_blank" rel="noreferrer">
-                            <img src={doc.url_arquivo} alt={doc.tipo}
-                              className="w-full rounded-lg object-cover" style={{ maxHeight: 160 }} />
-                          </a>
-                        ) : (
-                          <a href={`/api/ver?url=${encodeURIComponent(doc.url_arquivo)}`} target="_blank" rel="noreferrer"
-                            className="flex items-center gap-2 text-sm font-semibold"
-                            style={{ color: 'var(--orange)' }}>
-                            <FileText size={14} /> Abrir documento ↗
-                          </a>
-                        )}
-                      </div>
-                    ))}
+                    {(prof.documentos_kyc || []).map((doc: any) => {
+                      const docStatusColor = doc.status === 'APROVADO' ? 'var(--green)' : doc.status === 'REPROVADO' ? 'var(--red)' : 'var(--gold)'
+                      return (
+                        <div key={doc.id} className="rounded-xl p-3 space-y-2" style={{ background: 'var(--glass)' }}>
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-semibold" style={{ color: 'var(--text3)' }}>
+                              {DOC_LABELS[doc.tipo] || doc.tipo}
+                            </p>
+                            <span className="text-2xs font-bold" style={{ color: docStatusColor }}>{doc.status}</span>
+                          </div>
+                          {isImg(doc.url_arquivo) ? (
+                            <a href={doc.url_arquivo} target="_blank" rel="noreferrer">
+                              <img src={doc.url_arquivo} alt={doc.tipo}
+                                className="w-full rounded-lg object-cover" style={{ maxHeight: 140 }} />
+                            </a>
+                          ) : (
+                            <a href={`/api/ver?url=${encodeURIComponent(doc.url_arquivo)}`} target="_blank" rel="noreferrer"
+                              className="flex items-center gap-2 text-sm font-semibold"
+                              style={{ color: 'var(--orange)' }}>
+                              <FileText size={14} /> Abrir documento ↗
+                            </a>
+                          )}
+                          {doc.motivo && <p className="text-2xs" style={{ color: 'var(--red)' }}>{doc.motivo}</p>}
+                          {/* Aprovação individual */}
+                          {doc.status !== 'APROVADO' && (
+                            <div className="space-y-1 pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                              <input
+                                type="text"
+                                className="input text-xs py-1"
+                                placeholder="Motivo (obrigatório para reprovar)"
+                                value={docMotivo[doc.id] || ''}
+                                onChange={e => setDocMotivo(prev => ({ ...prev, [doc.id]: e.target.value }))}
+                              />
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => decidirDoc(doc.id, true)}
+                                  disabled={docDecidindo === doc.id}
+                                  className="btn btn-sm flex-1 text-xs"
+                                  style={{ background: 'rgba(0,214,143,0.15)', color: 'var(--green)', border: '1px solid rgba(0,214,143,0.3)' }}
+                                >
+                                  ✓ Aprovar
+                                </button>
+                                <button
+                                  onClick={() => decidirDoc(doc.id, false)}
+                                  disabled={docDecidindo === doc.id}
+                                  className="btn btn-sm flex-1 text-xs"
+                                  style={{ background: 'rgba(255,77,109,0.12)', color: 'var(--red)', border: '1px solid rgba(255,77,109,0.3)' }}
+                                >
+                                  ✗ Reprovar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
 
                   <div className="space-y-2">

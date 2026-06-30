@@ -174,6 +174,8 @@ export const admin = {
     const token = typeof window !== 'undefined' ? (localStorage.getItem('suedflow_token') || '') : ''
     return `${API_BASE}/api/admin/kyc/${docId}/ver?token=${encodeURIComponent(token)}`
   },
+  aprovarKycDoc: (docId: string, aprovado: boolean, motivo?: string) =>
+    request<{ ok: boolean; documento: any }>(`/api/admin/kyc/${docId}`, { method: 'PATCH', body: { aprovado, motivo } }),
   intervirDemanda: (id: string, acao: string, motivo?: string) =>
     request(`/api/admin/demandas/${id}/intervir`, { method: 'PATCH', body: { acao, motivo } }),
   svcsConfig: () => request<{ svcs: any[] }>('/api/admin/svcs/config'),
