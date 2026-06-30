@@ -170,6 +170,10 @@ export const admin = {
   profissional: (id: string) => request<{ profissional: any }>(`/api/admin/profissionais/${id}`),
   aprovarKyc: (id: string, aprovado: boolean, motivo?: string) =>
     request(`/api/admin/profissionais/${id}/kyc`, { method: 'PATCH', body: { aprovado, motivo } }),
+  urlKycDoc: (docId: string) => {
+    const token = typeof window !== 'undefined' ? (localStorage.getItem('suedflow_token') || '') : ''
+    return `${API_BASE}/api/admin/kyc/${docId}/ver?token=${encodeURIComponent(token)}`
+  },
   intervirDemanda: (id: string, acao: string, motivo?: string) =>
     request(`/api/admin/demandas/${id}/intervir`, { method: 'PATCH', body: { acao, motivo } }),
   svcsConfig: () => request<{ svcs: any[] }>('/api/admin/svcs/config'),

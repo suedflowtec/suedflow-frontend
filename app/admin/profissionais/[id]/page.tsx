@@ -6,14 +6,15 @@ import { Shell, Topbar } from '@/components/layout/Shell'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { admin } from '@/lib/api'
-import { formatDate, getInlineUrl } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 
 const DOC_LABELS: Record<string, string> = {
-  RG_FRENTE: 'RG / CNH — frente',
-  RG_VERSO: 'RG / CNH — verso',
-  SELFIE: 'Selfie segurando o documento',
-  COMP_RESIDENCIA: 'Comprovante de residência',
+  RG_FRENTE:        'RG / CNH — frente',
+  RG_VERSO:         'RG / CNH — verso',
+  SELFIE:           'Selfie segurando o documento',
+  COMP_RESIDENCIA:  'Comprovante de residência',
+  COMPROVANTE_CREA: 'Anuidade CREA/CAU vigente',
 }
 
 const STATUS_BADGE: Record<string, { text: string; variant: any }> = {
@@ -92,6 +93,40 @@ export default function AdminProfissionalDetalhePage() {
       <main className="p-6 max-w-4xl space-y-4">
         <Button variant="ghost" onClick={() => router.push('/admin/profissionais')}>← Voltar para a lista</Button>
 
+        {/* ── Decisão de KYC — TOPO para visibilidade ── */}
+        {profissional.kyc_status !== 'APROVADO' && (
+          <div className="card-accent space-y-3">
+            <p className="section-label" style={{ color: 'var(--orange)' }}>
+              ⚠ KYC pendente de decisão
+            </p>
+            <p className="text-xs" style={{ color: 'var(--text3)' }}>
+              Revise os documentos abaixo e registre sua decisão. Ao aprovar, o profissional fica habilitado a receber demandas.
+            </p>
+            <textarea
+              className="input"
+              rows={2}
+              placeholder="Motivo da reprovação (obrigatório só para reprovar)"
+              value={motivo}
+              onChange={e => setMotivo(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <Button variant="green" className="flex-1" disabled={enviando} onClick={() => decidir(true)}>
+                ✓ Aprovar KYC
+              </Button>
+              <Button variant="orange" className="flex-1" disabled={enviando} onClick={() => decidir(false)}>
+                ✗ Reprovar KYC
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {profissional.kyc_status === 'APROVADO' && (
+          <div className="rounded-xl px-4 py-3 flex items-center gap-2 text-sm" style={{ background: 'rgba(0,214,143,0.08)', border: '1px solid rgba(0,214,143,0.2)' }}>
+            <span style={{ color: 'var(--green)' }}>✓ KYC aprovado</span>
+            <span style={{ color: 'var(--text3)' }}>— profissional habilitado a receber demandas</span>
+          </div>
+        )}
+
         {/* Dados profissionais */}
         <div className="card-solid">
           <p className="section-label mb-3">Dados profissionais</p>
@@ -140,31 +175,31 @@ export default function AdminProfissionalDetalhePage() {
             <div className="grid grid-cols-2 gap-4">
               {profissional.documentos_kyc.map((doc: any) => {
                 const status = STATUS_BADGE[doc.status] || STATUS_BADGE.PENDENTE
+                const docUrl = admin.urlKycDoc(doc.id)
                 return (
                   <div key={doc.id} className="p-3 rounded-xl" style={{ background: 'var(--glass)' }}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm" style={{ color: 'var(--text)' }}>{DOC_LABELS[doc.tipo] || doc.tipo}</span>
+                      <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{DOC_LABELS[doc.tipo] || doc.tipo}</span>
                       <Badge variant={status.variant}>{status.text}</Badge>
                     </div>
                     {isImagem(doc.url_arquivo) ? (
-                      <a href={getInlineUrl(doc.url_arquivo)} target="_blank" rel="noreferrer">
+                      <a href={docUrl} target="_blank" rel="noreferrer">
                         <img
                           src={doc.url_arquivo}
                           alt={doc.tipo}
                           className="w-full rounded-lg"
                           style={{ maxHeight: 180, objectFit: 'cover' }}
                           onError={(e) => {
-                            // Fallback se imagem não carregar — mostra como link
                             const el = e.currentTarget
                             const parent = el.parentElement
                             if (parent) {
-                              parent.innerHTML = `<a href="${getInlineUrl(doc.url_arquivo)}" target="_blank" rel="noreferrer" style="color:var(--orange);font-size:13px;">Abrir documento ↗</a>`
+                              parent.innerHTML = `<a href="${docUrl}" target="_blank" rel="noreferrer" style="color:var(--orange);font-size:13px;">Abrir documento ↗</a>`
                             }
                           }}
                         />
                       </a>
                     ) : (
-                      <a href={getInlineUrl(doc.url_arquivo)} target="_blank" rel="noreferrer" className="text-sm" style={{ color: 'var(--orange)' }}>
+                      <a href={docUrl} target="_blank" rel="noreferrer" className="text-sm" style={{ color: 'var(--orange)' }}>
                         Abrir no navegador ↗
                       </a>
                     )}
@@ -176,28 +211,6 @@ export default function AdminProfissionalDetalhePage() {
             </div>
           )}
         </div>
-
-        {/* Decisão de KYC */}
-        {profissional.kyc_status !== 'APROVADO' && (
-          <div className="card-solid space-y-3">
-            <p className="section-label">Decisão de KYC</p>
-            <textarea
-              className="input"
-              rows={2}
-              placeholder="Motivo (obrigatório apenas para reprovar)"
-              value={motivo}
-              onChange={e => setMotivo(e.target.value)}
-            />
-            <div className="flex gap-2">
-              <Button variant="green" className="flex-1" disabled={enviando} onClick={() => decidir(true)}>
-                ✓ Aprovar KYC
-              </Button>
-              <Button variant="orange" className="flex-1" disabled={enviando} onClick={() => decidir(false)}>
-                ✗ Reprovar KYC
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* Selo PIONEER — primeiros 100 profissionais aprovados */}
         <div className="card-solid space-y-3">
