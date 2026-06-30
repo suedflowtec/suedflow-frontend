@@ -150,6 +150,11 @@ export const orders = {
     return request<{ ok: boolean; documento: any }>(`/api/orders/${id}/documentos`, { method: 'POST', formData: fd })
   },
   deleteDocumento: (id: string, docId: string) => request<{ ok: boolean }>(`/api/orders/${id}/documentos/${docId}`, { method: 'DELETE' }),
+  /** URL para abrir/baixar documento via proxy autenticado do backend (funciona em <a href>) */
+  urlDocumento: (demandaId: string, docId: string) => {
+    const token = typeof window !== 'undefined' ? (localStorage.getItem('suedflow_token') || '') : ''
+    return `${API_BASE}/api/orders/${demandaId}/documentos/${docId}/ver?token=${encodeURIComponent(token)}`
+  },
 }
 
 export const admin = {
@@ -191,6 +196,7 @@ export const admin = {
     request<{ ok: boolean }>(`/api/admin/profissionais/${profId}/pioneer`, { method: 'PATCH', body: { conceder } }),
   simularEntregavel: (url_pdf: string, demanda_id?: string) =>
     request<{ ok: boolean; demanda_id: string; vtc: any }>('/api/admin/teste/qa/simular-entregavel', { method: 'POST', body: { url_pdf, demanda_id } }),
+  syncSvcs: () => request<{ ok: boolean; msg: string; svcs: any[] }>('/api/admin/sync-svcs', { method: 'POST' }),
   teste: {
     criarProfissionalCompleto: (data: any) =>
       request<any>('/api/admin/teste/criar-profissional-completo', { method: 'POST', body: data }),

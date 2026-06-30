@@ -31,6 +31,7 @@ export default function AdminParametrosPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
   const [editados, setEditados] = useState<Record<string, string>>({})
+  const [syncandoSvcs, setSyncandoSvcs] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -177,6 +178,36 @@ export default function AdminParametrosPage() {
               <p style={{ color: 'var(--text3)' }}>
                 Onde FEA é o fator de área (0.90–2.20 por faixa de m²), UTS_base varia por tipo de imóvel (Res/Com/Ind) e SVC.
               </p>
+            </div>
+
+            {/* ── Sincronização do catálogo de SVCs ─────────────────── */}
+            <div className="card-solid space-y-3">
+              <p className="section-label">Catálogo de Serviços (SVCs)</p>
+              <p className="text-xs" style={{ color: 'var(--text3)' }}>
+                Sincroniza os 12 SVCs do banco de dados com o catálogo canônico da plataforma — nome, descrição, para quem é, o que precisa ter e entregáveis. Use quando o banco de produção estiver desatualizado após uma atualização de catálogo.
+              </p>
+              <button
+                className="btn btn-sm"
+                disabled={syncandoSvcs}
+                onClick={async () => {
+                  setSyncandoSvcs(true)
+                  try {
+                    const r = await admin.syncSvcs()
+                    toast(`✓ ${r.msg}`, 'success')
+                  } catch (err: any) {
+                    toast(err.message || 'Erro ao sincronizar SVCs', 'error')
+                  } finally {
+                    setSyncandoSvcs(false)
+                  }
+                }}
+                style={{
+                  background: syncandoSvcs ? 'rgba(255,255,255,0.06)' : 'var(--orange)',
+                  color: '#fff',
+                  opacity: syncandoSvcs ? 0.6 : 1,
+                }}
+              >
+                {syncandoSvcs ? 'Sincronizando...' : '↺ Sincronizar catálogo de SVCs'}
+              </button>
             </div>
           </>
         )}

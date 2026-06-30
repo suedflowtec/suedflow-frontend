@@ -6,7 +6,7 @@ import { orders } from '@/lib/api'
 import { formatBRL, statusLabel } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { CheckCircle2, AlertTriangle, MapPin, MessageCircle, Camera, Navigation } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, MapPin, MessageCircle, Camera, Navigation, Eye, Download, FileText } from 'lucide-react'
 
 const MARCOS_VALIDOS = [
   { tipo: 'CHECK_IN_GPS',       label: 'Check-in GPS' },
@@ -30,6 +30,7 @@ export default function ProfissionalDemandaDetalhePage() {
 
   const [demanda, setDemanda] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [docsCliente, setDocsCliente] = useState<any[]>([])
   const [tipoMarco, setTipoMarco] = useState(MARCOS_VALIDOS[0].tipo)
   const [obsMarco, setObsMarco] = useState('')
   const [registrando, setRegistrando] = useState(false)
@@ -49,7 +50,12 @@ export default function ProfissionalDemandaDetalhePage() {
   const carregar = () => {
     if (!id) return
     orders.buscar(id)
-      .then(setDemanda)
+      .then(d => {
+        setDemanda(d)
+        orders.listarDocumentos(id)
+          .then(r => setDocsCliente(r.documentos || []))
+          .catch(() => {})
+      })
       .catch(() => toast('Erro ao carregar demanda', 'error'))
       .finally(() => setLoading(false))
   }
@@ -436,6 +442,45 @@ export default function ProfissionalDemandaDetalhePage() {
 
         {/* Submissão do entregável */}
         {temArtAtiva && (
+          {/* Documentos enviados pelo cliente — somente leitura para o profissional */}
+          {docsCliente.length > 0 && (
+            <div className="card space-y-2">
+              <p className="section-label flex items-center gap-1">
+                <FileText size={12} />
+                Documentos do cliente ({docsCliente.length})
+              </p>
+              <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+                Arquivos de suporte enviados pelo cliente. Você pode visualizar e baixar, mas não remover.
+              </p>
+              <div className="space-y-1.5 mt-1">
+                {docsCliente.map((doc: any) => (
+                  <div key={doc.id} className="flex items-center gap-2 text-xs rounded px-2 py-1.5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <FileText size={11} className="shrink-0" style={{ color: 'var(--orange)' }} />
+                    <span className="flex-1 truncate" style={{ color: 'var(--text2)' }}>{doc.nome}</span>
+                    <span className="shrink-0 text-2xs font-mono px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text3)' }}>{doc.tipo}</span>
+                    <a
+                      href={orders.urlDocumento(id, doc.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Abrir no navegador"
+                      style={{ color: 'var(--text3)' }}
+                    >
+                      <Eye size={11} />
+                    </a>
+                    <a
+                      href={doc.url}
+                      download={doc.nome}
+                      title="Baixar"
+                      style={{ color: 'var(--text3)' }}
+                    >
+                      <Download size={11} />
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="card-accent space-y-3">
             <p className="section-label">Entregável</p>
             {jaEnviouEntregavel ? (
