@@ -1,7 +1,7 @@
 // app/cliente/nova-demanda/page.tsx
 'use client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/Button'
 import { Input, Field, Textarea } from '@/components/ui/Input'
@@ -27,6 +27,18 @@ const SVC_IMG: Record<string, string> = {
   SVC009: '/imagens/svc009.png',
   SVC010: '/imagens/svc010.png',
   SVC011: '/imagens/svc011.png',
+}
+
+// Lê ?svc=SVC001 da URL (quando vem de /cliente/catalogo/[codigo]) e pré-seleciona o SVC
+function SvcParamReader({ svcs, onFound }: { svcs: SVC[], onFound: (s: SVC) => void }) {
+  const searchParams = useSearchParams()
+  const cod = searchParams.get('svc')
+  useEffect(() => {
+    if (!cod || svcs.length === 0) return
+    const found = svcs.find(s => s.codigo === cod)
+    if (found) onFound(found)
+  }, [cod, svcs, onFound])
+  return null
 }
 
 export default function NovaDemandaPage() {
@@ -189,7 +201,8 @@ export default function NovaDemandaPage() {
     }
   }
 
-  const usarSvcSugerido = (s: SVC) => { setSvcSelecionado(s); setEtapa(2) }
+  const usarSvcSugerido = useCallback((s: SVC) => { setSvcSelecionado(s); setEtapa(2) }, [])
+  const irParaDetalhe = (codigo: string) => router.push(`/cliente/catalogo/${codigo}?contratar=1`)
 
   const criarDemanda = async () => {
     if (!svcSelecionado) { toast('Selecione um serviço antes de continuar.', 'error'); return }
@@ -232,6 +245,9 @@ export default function NovaDemandaPage() {
 
   return (
     <Shell>
+      <Suspense fallback={null}>
+        <SvcParamReader svcs={svcs} onFound={usarSvcSugerido} />
+      </Suspense>
       <Topbar title="Nova demanda" />
 
       <main className="p-6 lg:p-8">
@@ -278,10 +294,10 @@ export default function NovaDemandaPage() {
                           <p>{m.texto}</p>
                           {m.svc && (
                             <button
-                              onClick={() => usarSvcSugerido(m.svc!)}
+                              onClick={() => irParaDetalhe(m.svc!.codigo)}
                               className="mt-2 text-2xs font-semibold text-white bg-orange rounded px-2 py-1 hover:opacity-90"
                             >
-                              {m.svc.codigo} · {m.svc.nome} — usar este serviço →
+                              {m.svc.codigo} · {m.svc.nome} — ver detalhes e contratar →
                             </button>
                           )}
                         </div>
@@ -322,7 +338,7 @@ export default function NovaDemandaPage() {
                   ) : svcs.filter(s => s.codigo !== 'SVC000').map(s => (
                     <button
                       key={s.codigo}
-                      onClick={() => { setSvcSelecionado(s); setEtapa(2) }}
+                      onClick={() => irParaDetalhe(s.codigo)}
                       className="w-full text-left rounded-xl overflow-hidden transition-all"
                       style={{
                         background: 'var(--navy2)',
