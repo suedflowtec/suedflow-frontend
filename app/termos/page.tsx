@@ -18,6 +18,14 @@ export default function TermosPage() {
   const [carregando, setCarregando] = useState(true)
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const tipo = params.get('tipo')
+      if (tipo === 'PROFISSIONAL' || tipo === 'PRIVACIDADE_DADOS') setAba(tipo)
+    }
+  }, [])
+
+  useEffect(() => {
     const tipo = aba === 'PRIVACIDADE_DADOS' ? 'CLIENTE' : aba
     setCarregando(true)
     termosApi.listar(tipo as 'CLIENTE' | 'PROFISSIONAL')

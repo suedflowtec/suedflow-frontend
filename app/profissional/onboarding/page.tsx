@@ -309,8 +309,16 @@ export default function ProfissionalOnboardingPage() {
             <label className="flex items-start gap-2 text-sm" style={{ color: 'var(--text2)' }}>
               <input type="checkbox" checked={aceitaTermos} onChange={e => setAceitaTermos(e.target.checked)} className="mt-1" />
               <span>
-                Declaro que as informações fornecidas são verdadeiras e aceito os termos de uso da plataforma
-                SUEDFLOW para profissionais.
+                Declaro que as informações fornecidas são verdadeiras e aceito os{' '}
+                <a
+                  href="/termos?tipo=PROFISSIONAL"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'var(--orange)', textDecoration: 'underline' }}
+                >
+                  Termos de Uso para Profissionais
+                </a>
+                {' '}da plataforma SUEDFLOW.
               </span>
             </label>
             <div className="flex gap-2">
