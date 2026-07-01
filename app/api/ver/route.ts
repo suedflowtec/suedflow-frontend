@@ -18,19 +18,25 @@ export async function GET(req: NextRequest) {
     return new NextResponse('URL não autorizada.', { status: 403 })
   }
 
+  // Limpar ?_a= e outros parâmetros que extensões de browser possam ter adicionado à URL.
+  // Nunca redirecionar para a URL do Cloudinary: extensões adicionam ?_a=... que invalida
+  // a assinatura s-- e causa 401 visível ao usuário.
+  const cleanUrl = url.split('?')[0]
+
   try {
-    const response = await fetch(url, {
+    const response = await fetch(cleanUrl, {
       headers: { 'User-Agent': 'SUEDFLOW/4.4.5' },
     })
 
-    // Se o Cloudinary retornou erro, redireciona direto — o browser mostrará a resposta original
-    // (útil para diagnóstico em vez de esconder o erro com mensagem genérica)
     if (!response.ok) {
-      return NextResponse.redirect(url, { status: 302 })
+      return new NextResponse(
+        `<html><body style="font-family:sans-serif;padding:2rem;color:#333"><h3 style="color:#c00">Documento indisponível</h3><p>O servidor de armazenamento retornou status ${response.status}.</p><p style="font-size:12px;color:#888">Tente novamente ou contate o suporte.</p></body></html>`,
+        { status: 502, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      )
     }
 
     const buffer  = await response.arrayBuffer()
-    const urlLow  = url.toLowerCase().split('?')[0]
+    const urlLow  = cleanUrl.toLowerCase()
 
     // Detectar Content-Type em ordem de confiabilidade:
     // 1) magic bytes (%PDF — 0x25 0x50 0x44 0x46): mais confiável para PDFs raw
@@ -67,7 +73,9 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch {
-    // Falha de rede: redireciona para o URL original como último recurso
-    return NextResponse.redirect(url, { status: 302 })
+    return new NextResponse(
+      `<html><body style="font-family:sans-serif;padding:2rem;color:#333"><h3 style="color:#c00">Erro de rede</h3><p>Não foi possível acessar o arquivo. Verifique sua conexão ou tente novamente.</p></body></html>`,
+      { status: 502, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    )
   }
 }
