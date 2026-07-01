@@ -136,8 +136,10 @@ export function NotificacaoBell() {
   }, [user])
 
   // Socket.io — notificações em tempo real
+  // Dependência em user?.id (não no objeto inteiro) para recriar listener
+  // quando muda de conta, mesmo que o objeto user seja recriado com outro id
   useEffect(() => {
-    if (!user) return
+    if (!user?.id) return
     const socket = getSocket()
 
     const handler = (n: any) => {
@@ -163,7 +165,7 @@ export function NotificacaoBell() {
 
     socket.on('notificacao', handler)
     return () => { socket.off('notificacao', handler) }
-  }, [user])
+  }, [user?.id])
 
   const toggleSound = () => {
     setSoundOn(prev => { setSoundPref(!prev); return !prev })

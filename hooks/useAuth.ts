@@ -47,6 +47,7 @@ export function useAuth() {
   }, [])
 
   const login = useCallback(async (email: string, senha: string) => {
+    destroySocket()  // limpa socket de sessão anterior antes de criar nova
     const data = await authApi.login(email, senha)
     tokenStorage.set(data.token)
     userStorage.set(data.usuario)
