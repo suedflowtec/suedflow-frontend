@@ -222,6 +222,27 @@ html[data-theme="light"] input[type="datetime-local"].input {
   50% { opacity: 0.5; transform: scale(1.1); }
 }
 
+@keyframes bell-shake {
+  0%, 100% { transform: rotate(0deg); }
+  10%       { transform: rotate(14deg); }
+  30%       { transform: rotate(-11deg); }
+  50%       { transform: rotate(8deg); }
+  70%       { transform: rotate(-5deg); }
+  90%       { transform: rotate(2deg); }
+}
+
+@keyframes notif-slide-in {
+  from { transform: translateX(calc(100% + 28px)); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes notif-progress {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+.bell-shaking { animation: bell-shake 0.65s ease-in-out; }
+
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
   /* color-scheme: informa ao browser qual esquema usar em elementos nativos

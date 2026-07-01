@@ -12,6 +12,7 @@ import { Logo } from '@/components/ui/Logo'
 import { Avatar } from '@/components/ui/Avatar'
 import { SueChat } from '@/components/ui/SueChat'
 import { NotificacaoBell } from '@/components/ui/NotificacaoBell'
+import { NotifToastStack } from '@/components/ui/NotifToastStack'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -323,6 +324,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
         {/* SUE — assistente flutuante */}
         <SueChat />
+
+        {/* Popups de notificação em tempo real */}
+        <NotifToastStack />
       </div>
     </SidebarCtx.Provider>
   )

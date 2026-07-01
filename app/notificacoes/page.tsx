@@ -7,20 +7,18 @@ import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import {
   ShieldCheck, UserCheck, Wallet, ClipboardList, Settings,
-  Bell, AlertTriangle, CheckCircle2, Info, XCircle,
+  Bell, AlertTriangle, CheckCircle2, Info, XCircle, ExternalLink,
 } from 'lucide-react'
-
-// ── Configuração visual por categoria ────────────────────────
 
 type Categoria = 'TODAS' | 'SEGURANCA' | 'CADASTRO' | 'FINANCEIRO' | 'DEMANDA' | 'SISTEMA'
 
 const CAT_CONFIG: Record<Categoria, { label: string; icon: React.FC<any>; color: string; bg: string }> = {
-  TODAS:     { label: 'Todas',     icon: Bell,          color: 'var(--text2)',   bg: 'rgba(255,255,255,0.06)' },
-  SEGURANCA: { label: 'Segurança', icon: ShieldCheck,   color: '#60a5fa',        bg: 'rgba(96,165,250,0.10)' },
-  CADASTRO:  { label: 'Cadastro',  icon: UserCheck,     color: 'var(--purple)',  bg: 'rgba(155,109,255,0.10)' },
-  FINANCEIRO:{ label: 'Financeiro',icon: Wallet,        color: 'var(--green)',   bg: 'rgba(0,214,143,0.10)' },
-  DEMANDA:   { label: 'Demandas',  icon: ClipboardList, color: 'var(--orange)',  bg: 'rgba(232,103,26,0.10)' },
-  SISTEMA:   { label: 'Sistema',   icon: Settings,      color: 'var(--text3)',   bg: 'rgba(255,255,255,0.04)' },
+  TODAS:     { label: 'Todas',      icon: Bell,          color: 'var(--text2)',  bg: 'rgba(255,255,255,0.06)' },
+  SEGURANCA: { label: 'Segurança',  icon: ShieldCheck,   color: '#60a5fa',       bg: 'rgba(96,165,250,0.10)' },
+  CADASTRO:  { label: 'Cadastro',   icon: UserCheck,     color: 'var(--purple)', bg: 'rgba(155,109,255,0.10)' },
+  FINANCEIRO:{ label: 'Financeiro', icon: Wallet,        color: 'var(--green)',  bg: 'rgba(0,214,143,0.10)' },
+  DEMANDA:   { label: 'Demandas',   icon: ClipboardList, color: 'var(--orange)', bg: 'rgba(232,103,26,0.10)' },
+  SISTEMA:   { label: 'Sistema',    icon: Settings,      color: 'var(--text3)',  bg: 'rgba(255,255,255,0.04)' },
 }
 
 const TIPO_ICON: Record<string, React.FC<any>> = {
@@ -29,7 +27,6 @@ const TIPO_ICON: Record<string, React.FC<any>> = {
   ERRO:    XCircle,
   INFO:    Info,
 }
-
 const TIPO_COLOR: Record<string, string> = {
   SUCESSO: 'var(--green)',
   ALERTA:  'var(--gold)',
@@ -37,16 +34,24 @@ const TIPO_COLOR: Record<string, string> = {
   INFO:    'var(--text3)',
 }
 
+function getRolePrefix(user: any): string {
+  if (user?.profissional)                                         return 'profissional'
+  if (user?.role === 'CLIENTE' || user?.cliente)                  return 'cliente'
+  if (['CURADOR_SUPORTE', 'CURADOR_SENIOR'].includes(user?.role)) return 'curador'
+  if (['ADMIN', 'MODERADOR'].includes(user?.role))                return 'admin'
+  return 'profissional'
+}
+
 export default function NotificacoesPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
 
-  const [itens, setItens]         = useState<any[]>([])
-  const [naoLidas, setNaoLidas]   = useState(0)
-  const [loading, setLoading]     = useState(true)
-  const [catAtiva, setCatAtiva]   = useState<Categoria>('TODAS')
-  const [marcando, setMarcando]   = useState(false)
+  const [itens, setItens]       = useState<any[]>([])
+  const [naoLidas, setNaoLidas] = useState(0)
+  const [loading, setLoading]   = useState(true)
+  const [catAtiva, setCatAtiva] = useState<Categoria>('TODAS')
+  const [marcando, setMarcando] = useState(false)
 
   const carregar = (cat?: Categoria) => {
     setLoading(true)
@@ -79,9 +84,29 @@ export default function NotificacoesPage() {
     finally { setMarcando(false) }
   }
 
+  const clicar = async (n: any) => {
+    if (!user) return
+    // Marca como lida antes de navegar
+    if (!n.lida) {
+      notifApi.marcarLida(n.id).catch(() => {})
+      setItens(prev => prev.map(x => x.id === n.id ? { ...x, lida: true } : x))
+      setNaoLidas(prev => Math.max(0, prev - 1))
+    }
+    // Navega para destino contextual
+    const role = getRolePrefix(user)
+    if (n.demanda_id) {
+      router.push(`/${role}/demandas/${n.demanda_id}`)
+      return
+    }
+    switch (n.categoria) {
+      case 'FINANCEIRO': router.push(`/${role}/financeiro`); break
+      case 'CADASTRO':   router.push(role === 'profissional' ? '/profissional/perfil' : '/cliente/perfil'); break
+    }
+  }
+
   if (authLoading || !user) return null
 
-  const CATEGORIAS: Categoria[] = ['TODAS','SEGURANCA','CADASTRO','FINANCEIRO','DEMANDA','SISTEMA']
+  const CATEGORIAS: Categoria[] = ['TODAS', 'SEGURANCA', 'CADASTRO', 'FINANCEIRO', 'DEMANDA', 'SISTEMA']
 
   return (
     <Shell>
@@ -99,10 +124,10 @@ export default function NotificacoesPage() {
 
       <main className="p-6 max-w-2xl space-y-4">
 
-        {/* Filtro por categoria */}
+        {/* Filtros por categoria */}
         <div className="flex gap-1.5 flex-wrap">
           {CATEGORIAS.map(cat => {
-            const cfg = CAT_CONFIG[cat]
+            const cfg  = CAT_CONFIG[cat]
             const Icon = cfg.icon
             const ativa = catAtiva === cat
             return (
@@ -111,9 +136,9 @@ export default function NotificacoesPage() {
                 onClick={() => trocarCategoria(cat)}
                 className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
                 style={{
-                  background:  ativa ? cfg.bg : 'rgba(255,255,255,0.04)',
-                  color:       ativa ? cfg.color : 'var(--text3)',
-                  border:      `1px solid ${ativa ? cfg.color + '40' : 'rgba(255,255,255,0.07)'}`,
+                  background: ativa ? cfg.bg : 'rgba(255,255,255,0.04)',
+                  color:      ativa ? cfg.color : 'var(--text3)',
+                  border:     `1px solid ${ativa ? cfg.color + '40' : 'rgba(255,255,255,0.07)'}`,
                 }}
               >
                 <Icon size={13} />
@@ -123,7 +148,7 @@ export default function NotificacoesPage() {
           })}
         </div>
 
-        {/* Lista de notificações */}
+        {/* Lista */}
         {loading ? (
           <p className="text-sm py-10 text-center" style={{ color: 'var(--text3)' }}>Carregando...</p>
         ) : itens.length === 0 ? (
@@ -143,35 +168,36 @@ export default function NotificacoesPage() {
               const tipoCor = TIPO_COLOR[n.tipo] || 'var(--text3)'
               const CatIco  = catCfg.icon
               const isLida  = n.lida
+              const temAcao = !!n.demanda_id || ['FINANCEIRO', 'CADASTRO'].includes(n.categoria)
 
               return (
                 <div
                   key={n.id}
-                  onClick={() => {
-                    if (n.demanda_id) {
-                      const role = user.profissional ? 'profissional' : 'cliente'
-                      router.push(`/${role}/demandas/${n.demanda_id}`)
-                    }
-                  }}
+                  onClick={() => clicar(n)}
                   className="rounded-xl p-4 flex gap-3 items-start transition-all"
                   style={{
-                    background:  isLida ? 'rgba(255,255,255,0.03)' : catCfg.bg,
-                    border:      `1px solid ${isLida ? 'rgba(255,255,255,0.06)' : catCfg.color + '30'}`,
-                    cursor:      n.demanda_id ? 'pointer' : 'default',
-                    opacity:     isLida ? 0.75 : 1,
+                    background: isLida ? 'rgba(255,255,255,0.03)' : catCfg.bg,
+                    border:     `1px solid ${isLida ? 'rgba(255,255,255,0.06)' : catCfg.color + '30'}`,
+                    borderLeft: isLida ? `3px solid transparent` : `3px solid ${catCfg.color}`,
+                    cursor:     temAcao ? 'pointer' : 'default',
+                    opacity:    isLida ? 0.8 : 1,
                   }}
+                  onMouseEnter={e => { if (temAcao) e.currentTarget.style.background = catCfg.bg }}
+                  onMouseLeave={e => { e.currentTarget.style.background = isLida ? 'rgba(255,255,255,0.03)' : catCfg.bg }}
                 >
                   {/* Ícone de categoria */}
-                  <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
-                    style={{ background: catCfg.bg, color: catCfg.color }}>
+                  <div
+                    className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ background: catCfg.bg, color: catCfg.color }}
+                  >
                     <CatIco size={16} />
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    {/* Header: título + badge não-lida + tipo */}
-                    <div className="flex items-start justify-between gap-2 mb-0.5">
-                      <p className="font-semibold text-sm text-white leading-snug">{n.titulo}</p>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Título + ícone tipo + badge não-lida */}
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="font-bold text-sm text-white leading-snug">{n.titulo}</p>
+                      <div className="flex items-center gap-2 shrink-0">
                         {!isLida && (
                           <span className="w-2 h-2 rounded-full" style={{ background: catCfg.color }} />
                         )}
@@ -179,22 +205,38 @@ export default function NotificacoesPage() {
                       </div>
                     </div>
 
-                    {/* Corpo */}
+                    {/* Corpo — texto completo */}
                     {n.corpo && (
-                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text2)' }}>{n.corpo}</p>
+                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text2)' }}>{n.corpo}</p>
                     )}
 
-                    {/* Footer: categoria + data */}
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-2xs px-1.5 py-0.5 rounded font-semibold uppercase"
-                        style={{ background: catCfg.bg, color: catCfg.color }}>
-                        {catCfg.label}
-                      </span>
-                      <span className="text-2xs" style={{ color: 'var(--text3)' }}>
-                        {n.created_at
-                          ? new Date(n.created_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
-                          : ''}
-                      </span>
+                    {/* Rodapé: categoria + data + CTA */}
+                    <div className="flex items-center justify-between mt-2 gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-2xs px-1.5 py-0.5 rounded font-bold uppercase"
+                          style={{ background: catCfg.bg, color: catCfg.color }}
+                        >
+                          {catCfg.label}
+                        </span>
+                        <span className="text-2xs" style={{ color: 'var(--text3)' }}>
+                          {n.created_at
+                            ? new Date(n.created_at).toLocaleString('pt-BR', {
+                                day: '2-digit', month: 'short',
+                                hour: '2-digit', minute: '2-digit',
+                              })
+                            : ''}
+                        </span>
+                      </div>
+
+                      {n.demanda_id && (
+                        <span
+                          className="flex items-center gap-1 text-xs font-bold"
+                          style={{ color: catCfg.color }}
+                        >
+                          Ver demanda <ExternalLink size={11} />
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
