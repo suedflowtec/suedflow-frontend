@@ -176,6 +176,8 @@ export const admin = {
   },
   aprovarKycDoc: (docId: string, aprovado: boolean, motivo?: string) =>
     request<{ ok: boolean; documento: any }>(`/api/admin/kyc/${docId}`, { method: 'PATCH', body: { aprovado, motivo } }),
+  desbloquearProfissional: (id: string) =>
+    request<{ ok: boolean; mensagem: string }>(`/api/admin/profissionais/${id}/desbloquear`, { method: 'POST' }),
   intervirDemanda: (id: string, acao: string, motivo?: string) =>
     request(`/api/admin/demandas/${id}/intervir`, { method: 'PATCH', body: { acao, motivo } }),
   svcsConfig: () => request<{ svcs: any[] }>('/api/admin/svcs/config'),

@@ -44,6 +44,7 @@ export default function AdminProfissionalDetalhePage() {
   const [enviando, setEnviando] = useState(false)
   const [docMotivo, setDocMotivo] = useState<Record<string, string>>({})
   const [docEnviando, setDocEnviando] = useState<string | null>(null)
+  const [desbloqueando, setDesbloqueando] = useState(false)
 
   const carregar = () => {
     admin.profissional(id)
@@ -101,6 +102,28 @@ export default function AdminProfissionalDetalhePage() {
     }
   }
 
+  const desbloquear = async () => {
+    if (!confirm('Liberar este profissional para receber demandas? Isso vai aprovar KYC, documentos e habilitar M1.')) return
+    setDesbloqueando(true)
+    try {
+      await admin.desbloquearProfissional(id)
+      toast('Profissional liberado com sucesso', 'success')
+      carregar()
+    } catch (err: any) {
+      toast(err.message || 'Erro ao desbloquear', 'error')
+    } finally {
+      setDesbloqueando(false)
+    }
+  }
+
+  // Verifica se o profissional tem acesso completo ao feed de demandas
+  const feedOk = profissional.kyc_aprovado && profissional.prepara_m1 && !!profissional.crea_verificado_em
+  const feedBloqueios = [
+    !profissional.kyc_aprovado       && 'KYC não aprovado',
+    !profissional.prepara_m1         && 'M1 do SUEDPrepara não concluído',
+    !profissional.crea_verificado_em && 'Conselho (CREA/CAU) não verificado',
+  ].filter(Boolean)
+
   const kycBadge = STATUS_BADGE[profissional.kyc_status] || STATUS_BADGE.PENDENTE
 
   return (
@@ -141,12 +164,49 @@ export default function AdminProfissionalDetalhePage() {
           </div>
         )}
 
-        {profissional.kyc_status === 'APROVADO' && (
+        {profissional.kyc_status === 'APROVADO' && feedOk && (
           <div className="rounded-xl px-4 py-3 flex items-center gap-2 text-sm" style={{ background: 'rgba(0,214,143,0.08)', border: '1px solid rgba(0,214,143,0.2)' }}>
             <span style={{ color: 'var(--green)' }}>✓ KYC aprovado</span>
             <span style={{ color: 'var(--text3)' }}>— profissional habilitado a receber demandas</span>
           </div>
         )}
+
+        {/* Acesso ao feed — sempre visível para diagnóstico */}
+        <div className="card-solid space-y-3">
+          <p className="section-label">Acesso ao feed de demandas</p>
+          <div className="grid grid-cols-3 gap-3 text-xs">
+            {[
+              { label: 'KYC aprovado',       ok: !!profissional.kyc_aprovado },
+              { label: 'M1 SUEDPrepara',     ok: !!profissional.prepara_m1 },
+              { label: 'Conselho verificado', ok: !!profissional.crea_verificado_em },
+            ].map(({ label, ok }) => (
+              <div key={label} className="rounded-lg p-2 text-center" style={{ background: ok ? 'rgba(0,214,143,0.08)' : 'rgba(255,77,109,0.08)' }}>
+                <span style={{ color: ok ? 'var(--green)' : 'var(--red)' }}>{ok ? '✓' : '✗'}</span>
+                <span className="ml-1" style={{ color: 'var(--text2)' }}>{label}</span>
+              </div>
+            ))}
+          </div>
+          {profissional.crea_verificado_em && (
+            <p className="text-2xs" style={{ color: 'var(--text3)' }}>
+              Conselho verificado em: {new Date(profissional.crea_verificado_em).toLocaleDateString('pt-BR')}
+            </p>
+          )}
+          {!feedOk && (
+            <div className="space-y-2">
+              <p className="text-xs" style={{ color: 'var(--red)' }}>
+                Bloqueios: {feedBloqueios.join(' · ')}
+              </p>
+              <Button
+                variant="orange"
+                size="sm"
+                disabled={desbloqueando}
+                onClick={desbloquear}
+              >
+                {desbloqueando ? 'Liberando...' : 'Liberar para receber demandas'}
+              </Button>
+            </div>
+          )}
+        </div>
 
         {/* Dados profissionais */}
         <div className="card-solid">
