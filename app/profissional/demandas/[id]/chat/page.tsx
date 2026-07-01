@@ -40,7 +40,12 @@ export default function ChatProfissionalPage() {
         subtitle={nomeCliente ? `Cliente: ${nomeCliente}` : demanda?.servico?.nome || demanda?.svc_codigo}
       />
       <main className="p-6 max-w-2xl">
-        <ChatPanel demandaId={id} currentUserId={user.id} />
+        <ChatPanel
+          demandaId={id}
+          currentUserId={user.id}
+          demandaStatus={demanda?.status}
+          outroNome={nomeCliente}
+        />
       </main>
     </Shell>
   )

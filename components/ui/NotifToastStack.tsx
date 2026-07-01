@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { X } from 'lucide-react'
@@ -47,17 +47,32 @@ function getNavUrl(n: Toast, user: any): string {
 const TOAST_DURATION = 5000
 
 export function NotifToastStack() {
-  const { user } = useAuth()
-  const router   = useRouter()
+  const { user }  = useAuth()
+  const router    = useRouter()
   const [toasts, setToasts] = useState<Toast[]>([])
+  const chatsAtivos = useRef<Set<string>>(new Set())
 
   const dismiss = useCallback((uid: number) => {
     setToasts(prev => prev.filter(t => t.uid !== uid))
   }, [])
 
+  // Rastrear quais chats estão com o usuário ativamente visualizando
+  useEffect(() => {
+    const onAtivo  = (e: Event) => chatsAtivos.current.add((e as CustomEvent).detail?.demandaId)
+    const onFechado = (e: Event) => chatsAtivos.current.delete((e as CustomEvent).detail?.demandaId)
+    window.addEventListener('chat:ativo',  onAtivo)
+    window.addEventListener('chat:fechado', onFechado)
+    return () => {
+      window.removeEventListener('chat:ativo',  onAtivo)
+      window.removeEventListener('chat:fechado', onFechado)
+    }
+  }, [])
+
   useEffect(() => {
     const handler = (e: Event) => {
       const n = (e as CustomEvent).detail as Omit<Toast, 'uid'>
+      // Suprimir toast se o usuário já está no chat dessa demanda
+      if (n.demanda_id && chatsAtivos.current.has(n.demanda_id)) return
       const uid = Date.now() + Math.random()
       setToasts(prev => [...prev.slice(-2), { ...n, uid }])
       setTimeout(() => dismiss(uid), TOAST_DURATION)

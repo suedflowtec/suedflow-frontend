@@ -4,20 +4,28 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Shell, Topbar } from '@/components/layout/Shell'
-import { orders } from '@/lib/api'
+import { orders, chat as chatApi } from '@/lib/api'
 import { formatBRL, statusLabel, formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
+import { MessageCircle } from 'lucide-react'
 
 export default function DemandasPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [demandas, setDemandas] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filtro, setFiltro] = useState<'TODAS' | 'ATIVAS' | 'CONCLUIDAS'>('TODAS')
+  const [loading, setLoading]   = useState(true)
+  const [filtro, setFiltro]     = useState<'TODAS' | 'ATIVAS' | 'CONCLUIDAS'>('TODAS')
+  const [naoLidas, setNaoLidas] = useState<Record<string, number>>({})
 
   useEffect(() => {
-    orders.listarMinhas('cliente')
-      .then(d => setDemandas(Array.isArray(d) ? d : []))
+    Promise.all([
+      orders.listarMinhas('cliente'),
+      chatApi.naoLidas().catch(() => ({ nao_lidas: {} })),
+    ])
+      .then(([d, nl]) => {
+        setDemandas(Array.isArray(d) ? d : [])
+        setNaoLidas(nl.nao_lidas || {})
+      })
       .catch(() => toast('Erro ao carregar', 'error'))
       .finally(() => setLoading(false))
   }, [toast])
@@ -70,20 +78,46 @@ export default function DemandasPage() {
                   <th>Área</th>
                   <th>Criada em</th>
                   <th className="text-right">Valor</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {filtradas.map(d => {
-                  const s = statusLabel(d.status)
+                  const s    = statusLabel(d.status)
+                  const msgs = naoLidas[d.id] || 0
                   return (
                     <tr key={d.id} onClick={() => router.push(`/cliente/demandas/${d.id}`)}>
                       <td className="mono">{d.numero || d.id?.slice(0,8)}</td>
-                      <td className="font-medium font-medium">{d.servico?.nome || d.svc_codigo}</td>
+                      <td className="font-medium">{d.servico?.nome || d.svc_codigo}</td>
                       <td><span className={`badge badge-${s.variant === 'glass' ? 'gray' : s.variant}`}>{s.text}</span></td>
                       <td>{d.cidade}</td>
                       <td>{d.area_m2}m²</td>
                       <td>{formatDate(d.created_at || d.criado_em)}</td>
-                      <td className="text-right font-mono font-semibold font-medium">{formatBRL(d.preco_cliente || d.preco_servico || 0)}</td>
+                      <td className="text-right font-mono font-semibold">{formatBRL(d.preco_cliente || d.preco_servico || 0)}</td>
+                      <td>
+                        {d.profissional_id && (
+                          <button
+                            onClick={e => { e.stopPropagation(); router.push(`/cliente/demandas/${d.id}/chat`) }}
+                            className="relative flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
+                            style={{
+                              background: msgs > 0 ? 'rgba(232,103,26,0.15)' : 'var(--glass)',
+                              color: msgs > 0 ? 'var(--orange)' : 'var(--text3)',
+                              border: `1px solid ${msgs > 0 ? 'rgba(232,103,26,0.35)' : 'var(--border)'}`,
+                            }}
+                            title={msgs > 0 ? `${msgs} nova${msgs > 1 ? 's' : ''} mensagem${msgs > 1 ? 's' : ''}` : 'Chat'}
+                          >
+                            <MessageCircle size={13} />
+                            {msgs > 0 && (
+                              <span
+                                className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full text-white font-black"
+                                style={{ background: 'var(--orange)', fontSize: 9, padding: '0 3px', boxShadow: '0 0 6px rgba(232,103,26,0.5)' }}
+                              >
+                                {msgs > 9 ? '9+' : msgs}
+                              </span>
+                            )}
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   )
                 })}

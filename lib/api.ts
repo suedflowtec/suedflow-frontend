@@ -229,7 +229,9 @@ export const notificacoes = {
   },
   marcarLidas: () => request<{ ok: boolean; atualizadas: number }>('/api/notificacoes/marcar-lidas', { method: 'PATCH' }),
   marcarLida:  (id: string) => request<{ ok: boolean }>(`/api/notificacoes/${id}/lida`, { method: 'PATCH' }),
-  deletar:     (id: string) => request<{ ok: boolean }>(`/api/notificacoes/${id}`, { method: 'DELETE' }),
+  marcarLidasPorDemanda: (demandaId: string) =>
+    request<{ ok: boolean; atualizadas: number }>(`/api/notificacoes/demanda/${demandaId}/lida`, { method: 'PATCH' }),
+  deletar: (id: string) => request<{ ok: boolean }>(`/api/notificacoes/${id}`, { method: 'DELETE' }),
 }
 
 export const imovel = {
@@ -345,9 +347,14 @@ export const curador = {
 }
 
 export const chat = {
-  listar: (demandaId: string) => request<{ mensagens: any[] }>(`/api/chat/${demandaId}`),
-  enviar: (demandaId: string, conteudo: string) =>
+  listar:      (demandaId: string) =>
+    request<{ mensagens: any[]; chat_ativo: boolean; status_demanda: string }>(`/api/chat/${demandaId}`),
+  enviar:      (demandaId: string, conteudo: string) =>
     request<any>(`/api/chat/${demandaId}`, { method: 'POST', body: { conteudo } }),
+  marcarLidas: (demandaId: string) =>
+    request<{ ok: boolean; marcadas: number }>(`/api/chat/${demandaId}/lida`, { method: 'PATCH' }),
+  naoLidas:    () =>
+    request<{ nao_lidas: Record<string, number> }>('/api/chat/nao-lidas'),
 }
 
 export const termos = {
