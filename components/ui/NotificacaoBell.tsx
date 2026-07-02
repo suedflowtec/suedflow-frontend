@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Bell, X, CheckCheck, Volume2, VolumeX, ExternalLink } from 'lucide-react'
 import { notificacoes as notifApi } from '@/lib/api'
 import { getSocket } from '@/lib/socket'
@@ -91,11 +91,24 @@ function playNotifSound() {
   } catch { /* sem AudioContext no browser */ }
 }
 
+// Detecta o role corrente pelo path da URL para separar notificações de duplo-perfil
+function getRoleFromPath(pathname: string, user: any): string | null {
+  if (pathname?.startsWith('/profissional')) return 'PROFISSIONAL'
+  if (pathname?.startsWith('/cliente'))      return 'CLIENTE'
+  if (pathname?.startsWith('/curador'))      return null
+  if (pathname?.startsWith('/admin'))        return null
+  // Fallback por perfil do usuário
+  if (user?.profissional) return 'PROFISSIONAL'
+  if (user?.role === 'CLIENTE' || user?.cliente) return 'CLIENTE'
+  return null
+}
+
 // ── Componente ─────────────────────────────────────────────────
 
 export function NotificacaoBell() {
   const { user }   = useAuth()
   const router     = useRouter()
+  const pathname   = usePathname()
   const ref        = useRef<HTMLDivElement>(null)
   const bellRef    = useRef<HTMLSpanElement>(null)
 
@@ -116,33 +129,38 @@ export function NotificacaoBell() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // Carrega contagem inicial
+  const paraRole = getRoleFromPath(pathname, user)
+
+  // Carrega contagem inicial filtrada pelo role corrente
   useEffect(() => {
     if (!user) return
-    notifApi.listar({ nao_lida: 'true', limit: 1 } as any)
+    notifApi.listar({ nao_lida: true, limit: 1, para_role: paraRole })
       .then(r => setNaoLidas(r.nao_lidas || 0))
       .catch(() => {})
-  }, [user])
+  }, [user, paraRole])
 
-  // Polling (fallback para quando socket não está conectado)
+  // Polling filtrado por role (fallback quando socket não está conectado)
   useEffect(() => {
     if (!user) return
     const t = setInterval(() => {
-      notifApi.listar({ nao_lida: 'true', limit: 1 } as any)
+      notifApi.listar({ nao_lida: true, limit: 1, para_role: paraRole })
         .then(r => setNaoLidas(r.nao_lidas || 0))
         .catch(() => {})
     }, 30_000)
     return () => clearInterval(t)
-  }, [user])
+  }, [user, paraRole])
 
   // Socket.io — notificações em tempo real
-  // Dependência em user?.id (não no objeto inteiro) para recriar listener
-  // quando muda de conta, mesmo que o objeto user seja recriado com outro id
+  // Filtra por para_role para não mostrar notificações do outro perfil
   useEffect(() => {
     if (!user?.id) return
-    const socket = getSocket()
+    const socket   = getSocket()
+    const roleSnap = paraRole  // captura o role no momento do efeito
 
     const handler = (n: any) => {
+      // Filtrar pelo role corrente: ignorar notificações de outro role
+      if (n.para_role && roleSnap && n.para_role !== roleSnap) return
+
       // Atualiza badge
       setNaoLidas(prev => prev + 1)
       // Adiciona ao topo da lista se dropdown estiver aberto
@@ -165,7 +183,7 @@ export function NotificacaoBell() {
 
     socket.on('notificacao', handler)
     return () => { socket.off('notificacao', handler) }
-  }, [user?.id])
+  }, [user?.id, paraRole])
 
   const toggleSound = () => {
     setSoundOn(prev => { setSoundPref(!prev); return !prev })
@@ -177,13 +195,13 @@ export function NotificacaoBell() {
     if (novoEstado) {
       setLoading(true)
       try {
-        const r = await notifApi.listar({ limit: 30 } as any)
+        const r = await notifApi.listar({ limit: 30, para_role: paraRole })
         setNotifs(r.notificacoes || [])
         setNaoLidas(r.nao_lidas || 0)
       } catch { /* silencioso */ }
       finally { setLoading(false) }
     }
-  }, [aberto])
+  }, [aberto, paraRole])
 
   const marcarTodasLidas = async () => {
     try {

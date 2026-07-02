@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { X } from 'lucide-react'
 
@@ -46,9 +46,18 @@ function getNavUrl(n: Toast, user: any): string {
 
 const TOAST_DURATION = 5000
 
+function getRoleFromPath(pathname: string, user: any): string | null {
+  if (pathname?.startsWith('/profissional')) return 'PROFISSIONAL'
+  if (pathname?.startsWith('/cliente'))      return 'CLIENTE'
+  if (user?.profissional) return 'PROFISSIONAL'
+  if (user?.role === 'CLIENTE' || user?.cliente) return 'CLIENTE'
+  return null
+}
+
 export function NotifToastStack() {
   const { user }  = useAuth()
   const router    = useRouter()
+  const pathname  = usePathname()
   const [toasts, setToasts] = useState<Toast[]>([])
   const chatsAtivos = useRef<Set<string>>(new Set())
 
@@ -69,8 +78,11 @@ export function NotifToastStack() {
   }, [])
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      const n = (e as CustomEvent).detail as Omit<Toast, 'uid'>
+    const paraRole = getRoleFromPath(pathname, user)
+    const handler  = (e: Event) => {
+      const n = (e as CustomEvent).detail as Omit<Toast, 'uid'> & { para_role?: string }
+      // Filtrar toast se for de role diferente do contexto atual
+      if (n.para_role && paraRole && n.para_role !== paraRole) return
       // Suprimir toast se o usuário já está no chat dessa demanda
       if (n.demanda_id && chatsAtivos.current.has(n.demanda_id)) return
       const uid = Date.now() + Math.random()
@@ -79,7 +91,7 @@ export function NotifToastStack() {
     }
     window.addEventListener('notif:nova', handler)
     return () => window.removeEventListener('notif:nova', handler)
-  }, [dismiss])
+  }, [dismiss, pathname, user])
 
   if (!toasts.length || !user) return null
 
